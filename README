@@ -68,9 +68,9 @@ DESCRIPTION
     arguments. If you are testing a local file, Apache is started on a
     private/dynamic port with a configuration file in a temporary directory.
     The module displays the test results on the terminal by default or
-    directs them to a file. The module will also optionally e-mails the test
-    results. When the calling program exits, the module stops the local
-    instance of Apache and deletes the temporary directory.
+    directs them to a file. The module optionally e-mails the test results.
+    When the calling program exits, the module stops the local instance of
+    Apache and deletes the temporary directory.
 
     Each test consists of literal strings or regular expressions that are
     either required to exist or forbidden to exist in the fetched page. You
@@ -80,6 +80,55 @@ DESCRIPTION
     fetched from Apache. If messages are written to the error log during the
     fetch, the module flags this as an error and writes the messages to the
     output test report.
+
+    The wt script is provided for running HTTP::WebTest from the command
+    line.
+
+    Data flow for WebTest using a remote URL:
+
+              --------------              -------------
+              |            |              |           |
+              | Input      |------------->|  WebTest  |
+              | parameters |              |           |
+              |            |              -------------
+              --------------                  |   ^
+                                              |   |
+                                              V   |
+              -------------               ------------
+              |           |    request    |          |
+              | Remote    |<--------------|   HTTP   |
+              | webserver |-------------->|   user   |
+              |           |    response   |   agent  |
+              -------------               |          |
+                                          ------------
+                                          
+    Data flow diagram for WebTest using a local web file:
+
+              --------------           ---------------------
+              |            |           |                   |
+              | Input      |           |  web page code    |
+              | parameters |           |  (HTML/perl/etc.  |
+              |            |           |                   |
+              --------------           ---------------------
+                    |                            |
+                    |  ---------------------------
+                    |  |
+                    V  V              ------------------------
+              -------------           |                      |
+              |           |---------->| Temporary Apache     |
+              |  WebTest  |           | directories (htdocs, |
+              |           |<----------| conf, logs)          |
+              -------------           |                      |
+                  |  ^                ------------------------
+                  |  |                        |    ^
+                  V  |                        V    |
+              ------------             ----------------------
+              |          |   request   |                    |
+              |   HTTP   |------------>| Local instance of  |
+              |   user   |             | Apache webserver   |
+              |   agent  |<------------|                    |
+              |          |   response  ----------------------
+              ------------
 
 METHODS
      new($proto) 
@@ -1027,7 +1076,7 @@ RESTRICTIONS / BUGS
     must be stored on a local disk.
 
 VERSION
-    This document describes version 0.01, release date 13 January 2001.
+    This document describes version 0.20, release date 22 January 2001.
 
 TODO
     Add option to validate HTML syntax using HTML::Validator. Add option to
@@ -1043,5 +1092,5 @@ COPYRIGHT
     terms of the Perl Artistic License.
 
 SEE ALSO
-    perl(1), perlre(1), perldoc Apache::ASP.
+    wt(1), perl(1), perlre(1), perldoc Apache::ASP.
 

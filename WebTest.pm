@@ -57,10 +57,9 @@ The test specifications can be read from a parameter file or
 input as method arguments.  If you are testing a local file, Apache 
 is started on a private/dynamic port with a configuration file in a 
 temporary directory.  The module displays the test results on the 
-terminal by default or directs them to a file.  The module will 
-also optionally e-mails the test results.  When the calling program 
-exits, the module stops the local instance of Apache and deletes 
-the temporary directory.
+terminal by default or directs them to a file.  The module optionally
+e-mails the test results.  When the calling program exits, the module
+stops the local instance of Apache and deletes the temporary directory.
 
 Each test consists of literal strings or regular expressions that are
 either required to exist or forbidden to exist in the fetched page.
@@ -70,6 +69,56 @@ module checks the error log in the temporary directory before and
 after the file is fetched from Apache.  If messages are written to
 the error log during the fetch, the module flags this as an error
 and writes the messages to the output test report.
+
+The wt script is provided for running HTTP::WebTest from the command
+line.
+
+Data flow for WebTest using a remote URL:
+
+          --------------              -------------
+          |            |              |           |
+          | Input      |------------->|  WebTest  |
+          | parameters |              |           |
+          |            |              -------------
+          --------------                  |   ^
+                                          |   |
+                                          V   |
+          -------------               ------------
+          |           |    request    |          |
+          | Remote    |<--------------|   HTTP   |
+          | webserver |-------------->|   user   |
+          |           |    response   |   agent  |
+          -------------               |          |
+                                      ------------
+                                      
+Data flow diagram for WebTest using a local web file:
+
+          --------------           ---------------------
+          |            |           |                   |
+          | Input      |           |  web page code    |
+          | parameters |           |  (HTML/perl/etc.  |
+          |            |           |                   |
+          --------------           ---------------------
+                |                            |
+                |  ---------------------------
+                |  |
+                V  V              ------------------------
+          -------------           |                      |
+          |           |---------->| Temporary Apache     |
+          |  WebTest  |           | directories (htdocs, |
+          |           |<----------| conf, logs)          |
+          -------------           |                      |
+              |  ^                ------------------------
+              |  |                        |    ^
+              V  |                        V    |
+          ------------             ----------------------
+          |          |   request   |                    |
+          |   HTTP   |------------>| Local instance of  |
+          |   user   |             | Apache webserver   |
+          |   agent  |<------------|                    |
+          |          |   response  ----------------------
+          ------------
+                                      
 
 =head1 METHODS
 
@@ -100,7 +149,7 @@ use URI::URL;
 use vars qw($AUTHOR $Debug $VERSION);
 $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
-$VERSION = 0.01;
+$VERSION = 0.20;
  
 #############################
 # Constants (magic numbers) #
@@ -482,6 +531,7 @@ sub get_response {
 
    if (uc($test->{method}) eq 'POST') {
       $request = POST($url, %{$test->{params}});
+      $request->header('Content-type' => 'application/x-www-form-urlencoded');
    } else {
       if (ref($test->{params}) eq 'HASH') {
 #
@@ -507,7 +557,8 @@ sub get_response {
 #
 # If server response code is a redirect, follow the redirect using recursion
    if ($response->is_redirect()) {
-      $url = $response->header('Location');
+#      $url = $response->header('Location');
+      $url = $uri->abs($response->header('Location'));
       $response = get_response($url, $user_agent, $test, $cookie_jar);
    }
    return $response;
@@ -985,7 +1036,13 @@ my $_fetch_url = sub {
 #
 # Fetch the URL
    $response = get_response($test->{url}, $user_agent, $test, $cookie_jar);
-   if ($response->is_error()) {
+   if (not defined($response)) {
+      $$nbytes = 0;
+      $$report .= " Return Code: NONE - Invalid URL or bad HTTP redirect\n";
+      $$report .= "              HTTP request for web page satisfied ?"
+                  . "                     FAIL\n";
+      ++$test->{num_fail};
+   } elsif ($response->is_error()) {
       $$nbytes = 0;
       $$report .= " Return Code: " . $response->status_line . "\n";
       $$report .= "              HTTP request for web page satisfied ?"
@@ -1018,8 +1075,9 @@ my $_fetch_url = sub {
          close READ_COOKIE;
       }
    }
-   return 0 if $response->is_error();
-   return 1;
+   return 0 unless defined($response);
+   return 1 if $response->is_success();
+   return 0;
 };
  
 my $_load_other_param = sub {
@@ -3656,7 +3714,7 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 0.01, release date 13 January 2001.
+This document describes version 0.20, release date 22 January 2001.
 
 =head1 TODO
 
@@ -3676,7 +3734,7 @@ terms of the Perl Artistic License.
 
 =head1 SEE ALSO
 
-perl(1), perlre(1), perldoc Apache::ASP.
+wt(1), perl(1), perlre(1), perldoc Apache::ASP.
 
 =cut
 1;

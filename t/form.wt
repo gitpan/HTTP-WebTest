@@ -4,6 +4,7 @@
 # Global parameters
 ###################
 
+save_output = yes
 # debug = yes
 ignore_case = yes
 text_forbid = ( Premature end of script headers
@@ -17,6 +18,7 @@ show_cookies = yes
 
 test_name = 'Portable Unix Toolkit download survey form' 
    url = http://www.unixscripts.com/cgi-bin/webtest_form.cgi
+   method = get
    params = ( 
               unix_type => Linux
               email => tester@unixscripts.com

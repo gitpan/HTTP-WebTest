@@ -4,6 +4,7 @@
 # Global parameters
 ###################
 
+save_output = yes
 accept_cookies = yes
 # debug = yes
 ignore_case = yes

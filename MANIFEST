@@ -5,4 +5,4 @@ Makefile.PL
 README
 WebTest.pm
 test.pl
-wt
+wt_dist

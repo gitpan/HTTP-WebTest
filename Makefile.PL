@@ -20,8 +20,8 @@ sub MY::postamble {
    if (-t STDIN and -t STDOUT) {
 #
 # Prompt for name of http-webtest installation directory
-      print STDOUT "The default location to install the http-webtest ",
-                   "directory is /usr/local/etc,\n",
+      print STDOUT "Default directory to install the http-webtest ",
+                   "directory in is /usr/local/etc,\n",
                    "but you should probably use another location if MYSQL ",
                    "is installed.\n";
       print STDOUT "Install http-webtest directory in /usr/local/etc? (y/n): ";
@@ -29,7 +29,8 @@ sub MY::postamble {
       while ($response ne 'y' and $response ne 'Y' and $response ne 'yes'
              and $response ne 'YES')
       {
-         print STDOUT "Enter desired location of http-webtest directory: ";
+         print STDOUT "Enter directory that will contain http-webtest "
+            . "directory: ";
          chomp($response = <STDIN>);
          if (-d $response) {
             $apachedir = $response;
@@ -45,6 +46,20 @@ pure_install ::
 	-\@\$(CP) -r http-webtest $apachedir
 
 EOF
+#
+# Add pathname of Perl to wt file
+   if (($perl = $^X) =~ /^perl$/) { chomp($perl = `which perl`); }
+   open(WT, ">wt") or die "Can't open file wt: $!";
+   print WT "#! $perl -w\n";
+   open(WT_DIST, "<wt_dist") or die "Can't open file wt_dist: $!";
+   open(WT, ">>wt") or die "Can't open file wt: $!";
+   while (<WT_DIST>) {
+      print WT;
+   }
+   close WT;
+   close WT_DIST;
+   chmod 0755, 'wt';
+
    print "\nWARNING: If your system does not have an HTTP connection to ",
          "the Internet or\n",
          "your system requires a proxy HTTP server, the \"make test\" tests ",
