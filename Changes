@@ -1,6 +1,18 @@
-$Id: Changes,v 1.72 2003/03/02 11:42:21 m_ilya Exp $
+$Id: Changes,v 1.76 2003/03/24 19:44:45 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
+
+2.02 Mon Mar 24 2003
+
+BUG FIXES:
+
+* Fixed bug when test reports were not send when multiple email
+addresses were specified as test report recipients (test parameter
+'mail_addresses').  Thanks to Amit Kaul for a bugreport and a patch.
+
+* New versions of LWP add Client-Peer header in all responses what
+breaks one of tests in the self-testing suite.  This test was supposed
+to be fixed by the previous release but apparently it wasn't.
 
 2.01 Sun Mar  2 2003
 
@@ -24,17 +36,17 @@ is deprecated.
 BUG FIXES:
 
 * New versions of LWP add Client-Peer header in all responses what
-breaks one of tests in self-testing suite. This test is fixed so it
-should pass ok with both new and old versions of LWP.  Thanks to
+breaks one of tests in the self-testing suite. This test is fixed so
+it should pass ok with both new and old versions of LWP.  Thanks to
 Johannes la Poutre for bug report.
 
-* Test in self-testing suite for 'timeout' parameter was buggy and
+* Test in the self-testing suite for 'timeout' parameter was buggy and
 could fail on some machines.  Thanks to Johannes la Poutre for bug
 report.
 
-* HTTP::WebTest::Plugin::HarnessReport produced report output on
-STDERR what was adding noise in 'make test' output when being used in
-Test::Harness-style test suites.
+* HTTP::WebTest::Plugin::HarnessReport produced a report output on
+STDERR what was adding some noise in 'make test' output when being
+used in Test::Harness-style test suites.
 
 2.00 Sat Dec 14 2002
 

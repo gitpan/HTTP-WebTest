@@ -25,7 +25,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '2.01';
+$VERSION = '2.02';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -470,6 +470,10 @@ from CPAN.
 =item L<HTTP::WebTest::Plugin::Apache|HTTP::WebTest::Plugin::Apache>
 
 This plugin supports testing web files using a local instance of Apache.
+
+=item L<HTTP::WebTest::Plugin::TagAttTest|HTTP::WebTest::Plugin::TagAttTest>
+
+This plugin allows to forbid or require tags and/or attributes in a web page.
 
 =item L<HTTP::WebTest::Plugin::DateTest|HTTP::WebTest::Plugin::DateTest>
 

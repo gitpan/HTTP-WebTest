@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.6 2003/03/02 11:52:10 m_ilya Exp $
+# $Id: ReportPlugin.pm,v 1.7 2003/03/22 12:26:35 m_ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -215,36 +215,57 @@ the superclass method in the new method:
 sub end_tests {
     my $self = shift;
 
-    $self->global_validate_params(qw(mail_addresses mail
-                                     mail_server mail_from));
+    if($self->_email_report_is_expected) {
+        $self->_send_email_report;
+    }
+}
 
-    my $mail_addresses = $self->global_test_param('mail_addresses');
-    my $mail           = $self->global_test_param('mail');
-    my $mail_server    = $self->global_test_param('mail_server');
-    my $mail_from      = $self->global_test_param('mail_from');
+# check if we need to mail report
+sub _email_report_is_expected {
+    my $self = shift;
 
-    my $num_fail = $self->webtest->num_fail;
+    $self->global_validate_params(qw(mail));
+
+    my $mail = $self->global_test_param('mail');
 
     # check if we need to mail report
-    return unless $mail;
-    return unless $mail eq 'all' or $mail eq 'errors';
-    return if $mail eq 'errors' and $num_fail == 0;
+    return 0 unless defined $mail;
+    return 0 unless $mail eq 'all' or $mail eq 'errors';
+    return 0 if $mail eq 'errors' and $self->webtest->num_fail == 0;
 
-    # mail report
-    my $smtp = Net::SMTP->new($mail_server || 'localhost');
+    return 1;
+}
+
+# sends test report on email
+sub _send_email_report {
+    my $self = shift;
+
+    $self->global_validate_params(qw(mail_addresses mail_server mail_from));
+
+    my $mail_addresses = $self->global_test_param('mail_addresses');
+    my $mail_server    = $self->global_test_param('mail_server', 'localhost');
+    my $mail_from      = $self->global_test_param('mail_from');
+
+    my $smtp = Net::SMTP->new($mail_server);
     die "HTTP::WebTest: Can't create Net::SMTP object"
 	unless defined $smtp;
+
     my $from = $mail_from || getlogin() || getpwuid($<) || 'nobody';
-    my $to = join ', ', @$mail_addresses;
+
     $self->_smtp_cmd($smtp, 'mail', $from);
-    $self->_smtp_cmd($smtp, 'to', $to);
+    $self->_smtp_cmd($smtp, 'to', @$mail_addresses);
     $self->_smtp_cmd($smtp, 'data');
     $self->_smtp_cmd($smtp, 'datasend', "From: $from\n");
-    $self->_smtp_cmd($smtp, 'datasend', "To: $to\n");
-    if ($num_fail > 0) {
+    {
+        local $" = ', ';
+        $self->_smtp_cmd($smtp, 'datasend', "To: @$mail_addresses\n");
+    }
+    if ($self->webtest->num_fail > 0) {
 	$self->_smtp_cmd($smtp, 'datasend',
-			 "Subject: WEB TESTS FAILED! " .
-			 "FOUND $num_fail ERROR(S)\n");
+			 'Subject: WEB TESTS FAILED! ' .
+			 'FOUND ' .
+                         $self->webtest->num_fail .
+                         "ERROR(S)\n");
     } else {
 	$self->_smtp_cmd($smtp, 'datasend',
 			 "Subject: Web tests succeeded\n");

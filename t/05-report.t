@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.12 2003/01/03 22:32:32 m_ilya Exp $
+# $Id: 05-report.t,v 1.13 2003/03/24 11:21:16 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -22,6 +22,13 @@ my $TEST = { url => abs_url($URL, '/test-file1'),
 	     text_require => [ '987654' ] };
 my $COOKIE_TEST = { url => abs_url($URL, '/set-cookie-c1-v1') };
 my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
+my $HEADER_FILTER =
+    sub {
+        $_[0] =~ s/: .*?GMT/: SOMEDAY/g;
+        $_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
+        $_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
+        $_[0] =~ s|Client-.*?: .*?\n||g;
+    };
 
 # 1: test fh_out parameter
 {
@@ -138,10 +145,7 @@ SKIP: {
     my $opts = { show_headers => 'yes' };
 
     my $out_filter = sub {
-	$_[0] =~ s|: .*?GMT|: SOMEDAY|g;
-	$_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
-	$_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
-        $_[0] =~ s|Client-.*?: .*?\n||g;
+        $HEADER_FILTER->($_[0]);
     };
 
     check_webtest(webtest    => $WEBTEST,
@@ -163,9 +167,7 @@ SKIP: {
                   { url => abs_url($URL, '/non-existent') } ];
 
     my $out_filter = sub {
-        $_[0] =~ s/: .*?GMT/: SOMEDAY/g;
-        $_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
-        $_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
+        $HEADER_FILTER->($_[0]);
         $COOKIE_FILTER->($_[0]);
     };
 
