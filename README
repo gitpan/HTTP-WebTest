@@ -1,20 +1,3 @@
-Table of Contents:
-
-NAME
-SYNOPSIS
-DESCRIPTION
-METHODS
-ENVIRONMENT VARIABLES
-FILES
-PREREQUISITES
-RESTRICTIONS / BUGS
-VERSION
-CHANGES
-TODO
-AUTHOR
-COPYRIGHT
-SEE ALSO
-
 NAME
     HTTP::WebTest - Test remote URLs or local web files
 
@@ -47,7 +30,7 @@ SYNOPSIS
 
      use sigtrap qw(die normal-signals); # Recommended, not necessary
      use HTTP::WebTest;
-     $webtest = HTTP::WebTest->new(); 
+     $webtest = HTTP::WebTest->new();
      foreach $file (@ARGV) {
         $webtest->web_test($file, \$num_fail, \$num_succeed);
      }
@@ -75,18 +58,16 @@ DESCRIPTION
 
     Each URL/web file is tested by fetching it from the web server using a
     local instance of an HTTP user agent. The basic test is simply whether
-    or not the fetch was successful. You may also test using literal
-    strings or regular expressions that are either required to exist or
-    forbidden to exist in the fetched page. You may also specify tests for
-    the minimum and maximum number of bytes in the returned page. You may
-    also specify tests for the minimum and maximum web server response
-    time.
+    or not the fetch was successful. You may also test using literal strings
+    or regular expressions that are either required to exist or forbidden to
+    exist in the fetched page. You may also specify tests for the minimum
+    and maximum number of bytes in the returned page. You may also specify
+    tests for the minimum and maximum web server response time.
 
     If you are testing a local file, the module checks the error log in the
-    temporary directory before and after the file is fetched from Apache.
-    If messages are written to the error log during the fetch, the module
-    flags this as an error and writes the messages to the output test
-    report.
+    temporary directory before and after the file is fetched from Apache. If
+    messages are written to the error log during the fetch, the module flags
+    this as an error and writes the messages to the output test report.
 
     The wt script is provided for running HTTP::WebTest from the command
     line.
@@ -108,7 +89,7 @@ DESCRIPTION
               |           |    response   |   agent  |
               -------------               |          |
                                           ------------
-                                          
+
     Data flow diagram for HTTP::WebTest using a local web file:
 
               --------------           ---------------------
@@ -138,10 +119,10 @@ DESCRIPTION
               ------------
 
 METHODS
-     new($proto) 
+     new($proto)
      new()
-        Create new HTTP::WebTest object.  $proto (optional) is 
-        either a reference or a class (package) name.  Returns a new 
+        Create new HTTP::WebTest object.  $proto (optional) is
+        either a reference or a class (package) name.  Returns a new
         HTTP::WebTest object.
 
      web_test($param_file, \$num_fail, \$num_succeed)
@@ -154,10 +135,10 @@ METHODS
         a temporary htdocs directory.
 
         Input arguments:
-        $param_file - A relative or absolute pathname to a parameter 
-           file.  See the FILES section for a description of the file.  
+        $param_file - A relative or absolute pathname to a parameter
+           file.  See the FILES section for a description of the file.
         $save_output (optional) - Option to save program output to a file.
-           The routine constructs the file name by taking the value of 
+           The routine constructs the file name by taking the value of
            $param_file, removing the file extension if it exists and
            appending ".out".  Error messages are always sent to standard
            error.
@@ -172,7 +153,7 @@ METHODS
         Return values:
         1 -> All tests ran successfully with no failures.
         0 -> Syntax error in input parameter file, system runtime error or
-             one or more of the tests failed. 
+             one or more of the tests failed.
 
      run_web_test(\@web_tests, \$num_fail, \$num_succeed, \%test_options)
      run_web_test(\@web_tests, \$num_fail, \$num_succeed)
@@ -181,9 +162,9 @@ METHODS
         e-mails test results.
 
         Input/output arguments:
-        \@web_tests - An arrayref of hashrefs.  Each hashref defines 
-           tests for one URL.  
-     
+        \@web_tests - An arrayref of hashrefs.  Each hashref defines
+           tests for one URL.
+
            Some of the hash keys can override the value of the
            corresponding $test_options keys.  For example, if the
            max_bytes hash key is defined in $test_options and you want
@@ -218,12 +199,12 @@ METHODS
              *version: Version number of cookie spec to use, usually 0.
              *name: Name of cookie. Cannot begin with a $ character.
              *value: Value of cookie.
-             *path: URL path name for which this cookie applies. Must 
+             *path: URL path name for which this cookie applies. Must
                  begin with a / character.  See also path_spec.
-             *domain: Domain for which cookie is valid. Should begin 
+             *domain: Domain for which cookie is valid. Should begin
                  with a period.  Must either contain two periods or be
                  equal to '.local'.
-              port: List of allowed port numbers that the cookie may be 
+              port: List of allowed port numbers that the cookie may be
                  returned to.  If not specified, cookie can be returned
                  to any port.  Must be specified using the format N or
                  N,N ..., where N is one or more digits.
@@ -231,13 +212,13 @@ METHODS
                  ignore the value of path.  Default value is 0.
                  = 1 -> Use the value of path.
                  = 0 -> Ignore the specified value of path.
-              secure: Option to require secure protocols for cookie 
+              secure: Option to require secure protocols for cookie
                  transmission.  Default value is 0.
                  = 1 -> Use only secure protocols to transmit cookie.
                  = 0 -> Secure protocols not required for transmission.
               maxage: Number of seconds until cookie expires.
               discard: Option to discard cookie when program exits.
-                 Default 0.  (The cookie will be discarded regardless 
+                 Default 0.  (The cookie will be discarded regardless
                  of the value of this element.)
                  = 1 -> Discard cookie.
                  = 0 -> Don't discard cookie.
@@ -251,24 +232,24 @@ METHODS
                           = 'yes'   -> Ignore case while matching strings.
                           Otherwise -> Do case-sensitive string matching.
            ignore_error_log - Option to ignore messages in Apache error
-              log.  (See the error_log key in test_options argument.) 
+              log.  (See the error_log key in test_options argument.)
               = 'yes' -> Do not check for messages in the error log
                          FOR THIS URL ONLY.
               Otherwise, check messages if error_log key in test_options
               argument is defined.
-           max_bytes - Overrides the value of the corresponding 
+           max_bytes - Overrides the value of the corresponding
               $test_options key FOR THIS URL ONLY.
-           min_bytes - Overrides the value of the corresponding 
+           min_bytes - Overrides the value of the corresponding
               $test_options key FOR THIS URL ONLY.
-           max_rtime - Overrides the value of the corresponding 
+           max_rtime - Overrides the value of the corresponding
               $test_options key FOR THIS URL ONLY.
-           min_rtime - Overrides the value of the corresponding 
+           min_rtime - Overrides the value of the corresponding
               $test_options key FOR THIS URL ONLY.
            method - The type of the HTTP request, either 'get' or 'post'.
               If undefined or key does not exist, 'get' is used.
-           num_fail (Output) - The number of tests that failed.  If the 
-              fetch of the URL fails, one error is counted and the tests 
-              for that URL are skipped.  
+           num_fail (Output) - The number of tests that failed.  If the
+              fetch of the URL fails, one error is counted and the tests
+              for that URL are skipped.
            num_succeed (Output) - The number of tests that succeeded.  The
               successful fetch of the URL is not counted, only successful
               tests.  If the error_log argument is specified, the absence
@@ -277,11 +258,11 @@ METHODS
               be passed as parameters to the URL.  (This element is
               used to test pages that process input from forms.) Unless
               the method key is set to post, these pairs are URI-escaped
-              and appended to the requested URL.  (See 
+              and appended to the requested URL.  (See
               http://www.ietf.org/rfc/rfc2396.txt for URI escapes.)
            pauth - Overrides the value of the corresponding test_options
-              key FOR THIS URL ONLY.    
-           proxies - A hashref or arrayref containing service name 
+              key FOR THIS URL ONLY.
+           proxies - A hashref or arrayref containing service name
               / proxy URL pairs that specify proxy servers to use for
               requests.  For example:
               proxies = ( http => http://http_proxy.mycompany.com
@@ -311,7 +292,7 @@ METHODS
         \%test_options - (Optional) A hashref defining testing options.
            All, some or none of the keys may be defined.  Some of these
            options can also be specified in the web_tests argument.  The
-           allowed hash keys are: 
+           allowed hash keys are:
 
            accept_cookies - Option to accept cookies from the web server.
               = 'no'     -> Do not accept cookies.
@@ -335,8 +316,8 @@ METHODS
               = 'all'     -> Send e-mail containing test results.
               = 'errors'  -> Send e-mail only if one or more tests fails.
               Otherwise   -> Do not send e-mail.
-           mail_server - Fully-qualified name of of the mail server 
-              (e.g., mailhost.mycompany.com). 
+           mail_server - Fully-qualified name of of the mail server
+              (e.g., mailhost.mycompany.com).
            max_bytes - Maximum number of bytes expected in returned
               pages.  If this value is exceeded, an error message is
               displayed.
@@ -348,7 +329,7 @@ METHODS
            min_rtime - Minimum web server response time (seconds) expected.
               If this value is exceeded, an error message is displayed.
            pauth - Arrayref containing a userid and password to be used
-              for proxy access authorization.  
+              for proxy access authorization.
 
            (The regex_forbid and regex_require parameters contain
            one or more Perl regular expressions.  These are compared
@@ -359,38 +340,38 @@ METHODS
            3rd edition, Chapter 5.)
 
            regex_forbid - Arrayref of regular expressions that are
-              forbidden to exist in the returned page.  
+              forbidden to exist in the returned page.
            regex_require - Arrayref of regular expressions that are
-              required to exist in the returned page.  
+              required to exist in the returned page.
            send_cookies - Option to send cookies to web server.  This
               applies to cookies received from the web server or cookies
-              specified using the cookies key of the web_test argument. 
+              specified using the cookies key of the web_test argument.
               = 'no'     -> Do not send cookies to the web server.
               Otherwise  -> Send cookies to the web server.
            show_cookies - Option to display any cookies sent or received.
               = 'yes'    -> Display cookies in report.
               Otherwise  -> Do not display.
-           show_html - Option to include the returned web page in the 
+           show_html - Option to include the returned web page in the
               test report.
               = 'yes'    -> Display the web page in the test report.
               Otherwise  -> Do not display the web page.
            terse - Option to display shorter test report.
               = 'summary'     -> Only a one-line summary for each URL.
-              = 'failed_only' -> Only tests that failed and the summary. 
+              = 'failed_only' -> Only tests that failed and the summary.
               Otherwise       -> Show all tests and the summary.
            text_forbid - Arrayref of text strings that are forbidden to
-              exist in the returned page.  
+              exist in the returned page.
            text_require - Arrayref of text strings that are required to
-              exist in the returned page.  
+              exist in the returned page.
 
         Return values:
         1 -> All tests succeeded.
         0 -> Error in input parameters, system runtime error, or one
              or more of the tests failed.
 
-     DESTROY() 
-        Kills Apache (if started), deletes temporary directories (if 
-        created).  Returns 1 if clean up tasks were successful, 0 
+     DESTROY()
+        Kills Apache (if started), deletes temporary directories (if
+        created).  Returns 1 if clean up tasks were successful, 0
         otherwise.
 
 ENVIRONMENT VARIABLES
@@ -405,7 +386,7 @@ FILES
      The run_web_test method does not require a parameter file.
 
      PARAMETER FILE
-     
+
      If the input parameters are specified in a text file, you must pass
      the name of the file as an argument to the web_test() method.
      If you are running dozens of tests, you may want to divide them
@@ -443,13 +424,13 @@ FILES
 
      Parameters - Short descriptions
      ===============================
-     Parameters that are always required are marked with an asterisk.  
+     Parameters that are always required are marked with an asterisk.
      Parameters that are usually required are marked with a plus sign.
 
       accept_cookies: Option to accept cookies sent by web server.
       apache_dir: Name of directory containing Apache files.
      +apache_exec: Path name of Apache executable.
-      apache_loglevel: Apache logging level. 
+      apache_loglevel: Apache logging level.
       apache_max_wait: Maximum seconds to wait for Apache to start.
       apache_options: Additional Apache command line options.
       auth: Two-element list containing userid and password to be passed
@@ -462,7 +443,7 @@ FILES
       ignore_case: Option to do case-insensitive matching with text_forbid
          and text_require parameters.
       ignore_error_log: Option to ignore errors found in Apache error log.
-      include_file_path: List containing files to copy and subdirectory 
+      include_file_path: List containing files to copy and subdirectory
          path relative to the Apache ServerRoot directory to copy them to.
       mail: Option to send e-mail containing results of tests.
       mail_addresses: List of e-mail addresses to send reports to.
@@ -473,7 +454,7 @@ FILES
       max_rtime: Maximum web server response time (seconds) expected.
       min_rtime: Minimum web server response time (seconds) expected.
       pauth: Two-element list containing userid and password to be passed
-         to web server for proxy authorization.  
+         to web server for proxy authorization.
       params: List of parameter name/value pairs to be passed to server.
       proxies: List of service name / proxy URL pairs to use for requests.
       regex_forbid: List of strings/regexs that must NOT occur in page.
@@ -496,7 +477,7 @@ FILES
         * lines beginning with white space (blanks or tabs) followed by
           a number sign
 
-     The order of the parameters in the parameter file is arbitrary, 
+     The order of the parameters in the parameter file is arbitrary,
      with the following exceptions:
         * Test block parameters MUST occur between a test_name parameter
           and an end_test directive.
@@ -506,46 +487,46 @@ FILES
         * The parameter save_output, if specified, should be the first
           parameter in the file.  (This is not required.)
 
-     Parameters are either scalar (single-valued) or lists (single or 
-     multi-valued).  
+     Parameters are either scalar (single-valued) or lists (single or
+     multi-valued).
 
-     You can specify scalar parameters using forms such as: 
-     name = value 
+     You can specify scalar parameters using forms such as:
+     name = value
      name =
             value
-     name = 'value' 
+     name = 'value'
 
      You can specify list parameters using forms such as:
-     name = ( first value  
+     name = ( first value
               second value )
      name = ( first value => second value
               third value => fourth value
             )
      name = ( first value => second value )
-     name = ( 
+     name = (
               'first value'
               'second value' )
-     name = ( 
+     name = (
               first value
-              second value 
+              second value
               third value => 'fourth value'
             )
-     name = 
+     name =
         ( first value
           'second value' )
-     name = ( 
+     name = (
               'first value'
-              'second value' 
+              'second value'
             )
-     (The equals sign must be followed by a space, tab or newline; all 
+     (The equals sign must be followed by a space, tab or newline; all
      other spaces are optional.)
 
      PARAMETER VALUES BEGINNING AND ENDING WITH A SINGLE QUOTE WILL HAVE
      THE SINGLE QUOTES REMOVED.  For example, 'foobar' is parsed as a
-     value of foobar and ''foobar'' is parsed as a value of 'foobar'.  
+     value of foobar and ''foobar'' is parsed as a value of 'foobar'.
      To specify a null (placeholder) value, use ''.
 
-     You MUST enclose the parameter value in single quotes if you want 
+     You MUST enclose the parameter value in single quotes if you want
      to specify:
         * A value beginning with a left parenthesis
         * A value ending with a right parenthesis
@@ -556,14 +537,14 @@ FILES
      Examples of parameter files
      ===========================
      The parameters below specify tests of a local file and a remote
-     URL.  The tests specified by the text_forbid parameter apply to 
-     both the "RayCosoft home page" and the "Yahoo home page" tests.  
+     URL.  The tests specified by the text_forbid parameter apply to
+     both the "RayCosoft home page" and the "Yahoo home page" tests.
      Hence, if either returned page contains one of the case-
-     insensitive strings in text_forbid, the test fails.  If any test 
-     fails or the fetch of the URL fails,, an e-mail will be sent to 
+     insensitive strings in text_forbid, the test fails.  If any test
+     fails or the fetch of the URL fails,, an e-mail will be sent to
      tester@unixscripts.com.
 
-     apache_exec = /usr/sbin/apache 
+     apache_exec = /usr/sbin/apache
      ignore_case = yes
      mail = errors
      mail_addresses = ( tester@unixscripts.com )
@@ -571,15 +552,15 @@ FILES
      text_forbid = ( Premature end of script headers
                      an error occurred while processing this directive
                    )
-     
-     test_name = 'RayCosoft home page (static)' 
+
+     test_name = 'RayCosoft home page (static)'
         file_path = ( raycosoft_home.html => . )
-        text_require = (     
+        text_require = (
            <a href="/dept/peopledev/new_employee/"><font color="#0033cc">
            <a href="https://www.raycosoft.com/"><font color=
                        )
      end_test
-     
+
      test_name = Yahoo home page
         url = www.yahoo.com
         text_require = ( <a href=r/qt>Quotations</a>...<br> )
@@ -596,9 +577,9 @@ FILES
 
      apache_exec = /usr/sbin/apache
      ignore_case = yes
-     include_file_path = ( footer.inc => htdocs/apps/myapp/inc 
-                           header.inc => htdocs/apps/myapp/inc 
-                           head.inc   => htdocs/apps/myapp/inc 
+     include_file_path = ( footer.inc => htdocs/apps/myapp/inc
+                           header.inc => htdocs/apps/myapp/inc
+                           head.inc   => htdocs/apps/myapp/inc
                            go.script  => htdocs/shared/includes
                            go.include => htdocs/shared/includes
                            ../utils/DBconn.pm  => lib/perl/utils
@@ -614,10 +595,10 @@ FILES
                           an error occurred while processing this directive
                         )
      end_test
-     
+
      Parameters - Detailed descriptions
      ==================================
-     PARAMETER: accept_cookies TYPE: global and/or test block parameter  
+     PARAMETER: accept_cookies TYPE: global and/or test block parameter
      DEFAULT: yes  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
      DESCRIPTION: Option to accept and save cookies sent by the web
      server.  These cookies exist only while the program is executing
@@ -631,27 +612,27 @@ FILES
      the send_cookies parameter.
 
      PARAMETER: apache_dir  TYPE: global parameter
-     DEFAULT: /usr/local/etc/http-webtest  
+     DEFAULT: /usr/local/etc/http-webtest
      DESCRIPTION: Absolute or relative path name of directory containing
      Apache files.  See the APACHE DIRECTORY AND FILES section below.
      This parameter is ignored unless the file_path parameter is specified.
 
-     PARAMETER: apache_exec  TYPE: global parameter  
+     PARAMETER: apache_exec  TYPE: global parameter
      NO DEFAULT.  REQUIRED if the file_path parameter is specified.
      DESCRIPTION: Path name of Apache executable.  This command must be
      in your $PATH or the path name must start with '/'.  This parameter
      is ignored unless the file_path parameter is specified.
 
-     PARAMETER: apache_loglevel  TYPE: global parameter  
+     PARAMETER: apache_loglevel  TYPE: global parameter
      DEFAULT: warn  OPTIONAL PARAMETER.
-     ALLOWED VALUES: debug info notice warn error crit alert emerg 
+     ALLOWED VALUES: debug info notice warn error crit alert emerg
      DESCRIPTION: Apache logging level.  If you use a level less than
      warn (i.e., debug, info, or notice), the program may generate
      irrelevant errors.  This parameter is ignored unless the file_path
      parameter is specified.  See also the ignore_error_log parameter.
 
      PARAMETER: apache_max_wait  TYPE: global parameter
-     DEFAULT: 64  ALLOWED VALUES: Any integer > 9 and < 601  OPTIONAL 
+     DEFAULT: 64  ALLOWED VALUES: Any integer > 9 and < 601  OPTIONAL
      PARAMETER.
      DESCRIPTION: Maximum number of seconds to wait for Apache to start.
      The program starts Apache, waits 4 seconds and fetches a test page.
@@ -661,7 +642,7 @@ FILES
      greater than apache_max_wait.  This parameter is ignored unless
      the file_path parameter is specified.
 
-     PARAMETER: apache_options  TYPE: global parameter 
+     PARAMETER: apache_options  TYPE: global parameter
      DEFAULT: -X  ALLOWED VALUES: See Apache man page.  OPTIONAL PARAMETER.
      DESCRIPTION: Additional Apache command line options.  Many of the
      options cause Apache to exit immediately after starting, so the
@@ -686,11 +667,11 @@ FILES
      If you specify it as both a global and a test block parameter,
      the value in the test block applies only to that test block.
 
-     PARAMETER: cookie  TYPE: test block parameter  
+     PARAMETER: cookie  TYPE: test block parameter
      NO DEFAULT.  ALLOWED VALUES: A list with at least 5 elements.  If
-     there are more than 10 elements, there must be an even number of 
-     elements.  The cookie parameter is ignored if the send_cookies 
-     parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie 
+     there are more than 10 elements, there must be an even number of
+     elements.  The cookie parameter is ignored if the send_cookies
+     parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie
      parameters may be specified.
      DESCRIPTION: List that specifies a cookie to send to the web server.
      See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
@@ -698,16 +679,16 @@ FILES
      specifying multiple instances of the cookie parameter.  The cookie
      parameter has the form:
 
-     ( version 
-       name 
-       value 
-       path 
-       domain 
-       port 
-       path_spec 
-       secure 
-       maxage 
-       discard 
+     ( version
+       name
+       value
+       path
+       domain
+       port
+       path_spec
+       secure
+       maxage
+       discard
        name1
        value1
        name2
@@ -715,55 +696,55 @@ FILES
        ...
      )
 
-     Any element not marked below as REQUIRED may be defaulted by 
-     specifying a null value of ''  
+     Any element not marked below as REQUIRED may be defaulted by
+     specifying a null value of ''
 
      version: Version number of cookie spec to use, usually 0. (REQUIRED)
      name: Name of cookie. (REQUIRED)  Cannot begin with a $ character.
      value: Value of cookie. (REQUIRED)
-     path: URL path name for which this cookie applies. (REQUIRED)  Must 
-        begin with a / character.  See also path_spec. 
-     domain: Domain for which cookie is valid. (REQUIRED)  Should begin 
+     path: URL path name for which this cookie applies. (REQUIRED)  Must
+        begin with a / character.  See also path_spec.
+     domain: Domain for which cookie is valid. (REQUIRED)  Should begin
         with a period.  Must either contain two periods or be equal
         to .local
-     port: List of allowed port numbers that the cookie may be returned 
-        to.  If not specified, cookie can be returned to any port.  
-        Must be specified using the format N or N,N ..., where N is one 
-        or more digits. 
+     port: List of allowed port numbers that the cookie may be returned
+        to.  If not specified, cookie can be returned to any port.
+        Must be specified using the format N or N,N ..., where N is one
+        or more digits.
      path_spec: Ignored if version is less than 1.  Option to ignore the
         value of path.  Default value is 0.
         = 1 -> Use the value of path.
         = 0 -> Ignore the specified value of path.
      secure: Option to require secure protocols for cookie transmission.
         Default value is 0.
-        = 1 -> Use only secure protocols to transmit this cookie. 
+        = 1 -> Use only secure protocols to transmit this cookie.
         = 0 -> Secure protocols are not required for transmission.
      maxage: Number of seconds until cookie expires.
-     discard: Option to discard cookie when the program finishes.  
+     discard: Option to discard cookie when the program finishes.
         Default 0.  (The cookie will be discarded regardless of the value
         of this element.)
         = 1 -> Discard cookie when the program finishes.
         = 0 -> Don't discard cookie.
      name/value: Zero, one or several name/value pairs may be specified.
-        The name parameters are words such as Comment or 
-        CommentURL and the value parameters are strings that 
-        may contain embedded blanks. 
+        The name parameters are words such as Comment or
+        CommentURL and the value parameters are strings that
+        may contain embedded blanks.
 
      See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
 
      An example cookie would look like:
-     ( 0 
-       WebTest cookie #1 
-       expires&2592000&type&consumer 
+     ( 0
+       WebTest cookie #1
+       expires&2592000&type&consumer
        /
-       .unixscripts.com  
+       .unixscripts.com
        ''
-       0 
-       0 
-       200 
-       1 
+       0
+       0
+       200
+       1
      )
-     
+
      PARAMETER: debug  TYPE: global parameter
      DEFAULT: no  ALLOWED VALUES: no yes preserve  OPTIONAL PARAMETER.
      DESCRIPTION: This parameter is primarily for use by programmers
@@ -772,9 +753,9 @@ FILES
      diagnostics on the parameter processing, this parameter should
      preceed all other parameters.)  The "preserve" value makes the
      program display verbose diagnostic messages and prevents the
-     program from deleting the temporary Apache directory, which is 
+     program from deleting the temporary Apache directory, which is
      named "/tmp/webtest_x_y", where x and y are arbitrary positive
-     integers. 
+     integers.
 
      DIRECTIVE: end_test  TYPE: test block directive
      NO VALUE (i.e. specify end_test with no equals sign or value).
@@ -782,7 +763,7 @@ FILES
      Directive is REQUIRED.
      DESCRIPTION: Signifies the end of a test block.
 
-     PARAMETER: file_path  TYPE: test block parameter 
+     PARAMETER: file_path  TYPE: test block parameter
      NO DEFAULT.  ALLOWED VALUES: Second list element cannot begin with
      '../' or contain '/../'.  You MUST specify file_path or url, but
      not both, in each test block.
@@ -792,7 +773,7 @@ FILES
      copy the file to.  The copied file will have the same basename as
      the first element and the relative pathname of the second element.
      To copy the file directly to the htdocs directory, use a pathname of
-     . or './.'.  
+     . or './.'.
 
      For example:
      file_path = ( /home/tester/testfile.html => mydepartment/myproject )
@@ -804,7 +785,7 @@ FILES
      and text_require parameters.  This does not affect the regex_forbid
      or regex_require parameters.
 
-     PARAMETER: ignore_error_log  TYPE: global and/or test block 
+     PARAMETER: ignore_error_log  TYPE: global and/or test block
      parameter  DEFAULT: no  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
      DESCRIPTION: Option to ignore any errors found in the Apache error
      log.  The default behavior is to flag an error if the fetch causes
@@ -814,7 +795,7 @@ FILES
      See also the Restrictions / Bugs section.
 
      PARAMETER: include_file_path  TYPE: global parameter
-     NO DEFAULT.  ALLOWED VALUES: Even-numbered list elements cannot 
+     NO DEFAULT.  ALLOWED VALUES: Even-numbered list elements cannot
      begin with '../' or contain '/../'.  OPTIONAL PARAMETER.  You can
      specify more than one instance of this paramter.
      DESCRIPTION: List with an even number of elements.  Odd-numbered
@@ -835,15 +816,15 @@ FILES
      This parameter is also useful for adding Perl modules that are
      needed by the web page specified by the file_path parameter.  For
      example:
-     include_file_path = ( ../apps/myapp/DBconn.pm => lib/perl/apps ) 
-     will copy the Perl module DBconn.pm to a directory that is in the 
+     include_file_path = ( ../apps/myapp/DBconn.pm => lib/perl/apps )
+     will copy the Perl module DBconn.pm to a directory that is in the
      Perl @INC array.
 
      An alternative to using the include_file_path parameter is to
      manually copy the files into the desired subdirectory in the
      directory specified by the apache_dir parameter.
 
-     PARAMETER: mail  TYPE: global parameter  
+     PARAMETER: mail  TYPE: global parameter
      DEFAULT: no  ALLOWED VALUES: no errors all  OPTIONAL PARAMETER.
      DESCRIPTION: Option to e-mail reports to the addresses in
      the mail_addresses parameter using the server specified by the
@@ -854,7 +835,7 @@ FILES
      results of all tests in the parameter file, regardless of success
      or failure.
 
-     PARAMETER: mail_addresses  TYPE: global parameter  
+     PARAMETER: mail_addresses  TYPE: global parameter
      NO DEFAULT.  REQUIRED unless mail = no.
      DESCRIPTION: List of e-mail addresses to send mail to.  This
      parameter has two uses.  If the mail parameter is set to "errors"
@@ -865,44 +846,44 @@ FILES
      scripts will be e-mailed to the first address in the mail_addresses
      list.
 
-     PARAMETER: mail_server  TYPE: global parameter  
+     PARAMETER: mail_server  TYPE: global parameter
      NO DEFAULT.  REQUIRED unless mail = no.
-     DESCRIPTION: Name of mail server.  
+     DESCRIPTION: Name of mail server.
 
      PARAMETER: method  TYPE: test block parameter
      DEFAULT: get  ALLOWED VALUES: get post  OPTIONAL PARAMETER.
-     DESCRIPTION: HTTP method for the request(s).  See RFC 2616 
+     DESCRIPTION: HTTP method for the request(s).  See RFC 2616
      (HTTP/1.1 protocol).
 
      PARAMETER: max_bytes  TYPE: global and/or test block parameter
      NO DEFAULT   ALLOWED VALUES: Any integer greater that zero and
      greater than min_bytes (if min_bytes is specified).  OPTIONAL
      PARAMETER.
-     DESCRIPTION: Maximum number of bytes expected in returned page.  
+     DESCRIPTION: Maximum number of bytes expected in returned page.
      If this value is exceeded, an error message is displayed.
 
      PARAMETER: min_bytes  TYPE: global and/or test block parameter
-     NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if 
+     NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if
      max_bytes is specified).  OPTIONAL PARAMETER.
-     DESCRIPTION: Minimum number of bytes expected in returned page.  
-     If the number of returned bytes is less than this value, an error 
+     DESCRIPTION: Minimum number of bytes expected in returned page.
+     If the number of returned bytes is less than this value, an error
      message is displayed.
 
      PARAMETER: max_rtime  TYPE: global and/or test block parameter
      NO DEFAULT   ALLOWED VALUES: Any number greater that zero and
      greater than min_rtime (if min_rtime is specified).  OPTIONAL
      PARAMETER.
-     DESCRIPTION: Maximum web server response time expected.  If this 
+     DESCRIPTION: Maximum web server response time expected.  If this
      value is exceeded, an error message is displayed.
 
      PARAMETER: min_rtime  TYPE: global and/or test block parameter
-     NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if 
+     NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if
      max_rtime is specified).  OPTIONAL PARAMETER.
-     DESCRIPTION: Minimum web server response time expected.  If this 
+     DESCRIPTION: Minimum web server response time expected.  If this
      value is exceeded, an error message is displayed.
 
      PARAMETER: params  TYPE: test block parameter
-     NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
+     NO DEFAULT.  ALLOWED VALUES: A list with an even number of
      elements.  OPTIONAL PARAMETER.
      DESCRIPTION: A set of parameter name/value pairs to be passed
      with the request.  (This parameter is used to test pages that
@@ -910,14 +891,14 @@ FILES
      these pairs are URI-escaped and appended to the requested URL.
      For example,
      url = http://www.hotmail.com/cgi-bin/hmhome
-     params = ( curmbox 
-                F001 A005 
+     params = ( curmbox
+                F001 A005
                 from
-                HotMail ) 
+                HotMail )
      generates the request:
      http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
      The names and values will be URI-escaped as defined by RFC 2396.
-     (See http://www.ietf.org/rfc/rfc2396.txt.) 
+     (See http://www.ietf.org/rfc/rfc2396.txt.)
 
      PARAMETER: pauth  TYPE: global and/or test block parameter
      No default.  ALLOWED VALUES: A one or two element list.  OPTIONAL
@@ -934,10 +915,10 @@ FILES
      userid and web page userid are the same.)
 
      PARAMETER: proxies  TYPE: global parameter
-     NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
+     NO DEFAULT.  ALLOWED VALUES: A list with an even number of
      elements.  OPTIONAL PARAMETER.
      DESCRIPTION: A set of service name / proxy URL pairs that specify
-     proxy servers to use for requests.  For example: 
+     proxy servers to use for requests.  For example:
      proxies = ( http => http://http_proxy.mycompany.com
                  ftp  => http://ftp_proxy.mycompany.com )
 
@@ -953,14 +934,14 @@ FILES
 
      You can specify these parameters globally or within a test block.
      If you specify one as both a global and a test block parameter, the
-     value in the test block applies only to that test block.  
+     value in the test block applies only to that test block.
 
-     PARAMETER: regex_forbid  TYPE: global and/or test block parameter  
-     NO DEFAULT.  OPTIONAL PARAMETER.  
+     PARAMETER: regex_forbid  TYPE: global and/or test block parameter
+     NO DEFAULT.  OPTIONAL PARAMETER.
      DESCRIPTION: List of one or more regular expressions that must
      NOT exist on the web page.  See also the text_forbid parameter.
 
-     PARAMETER: regex_require  TYPE: global and/or test block parameter  
+     PARAMETER: regex_require  TYPE: global and/or test block parameter
      NO DEFAULT.  OPTIONAL PARAMETER.
      DESCRIPTION: List of one or more regular expressions that MUST
      exist on the web page.  See also the text_require parameter.
@@ -979,7 +960,7 @@ FILES
      This parameter should precede all other parameters in the parameter
      file. (This order is not required.)
 
-     PARAMETER: send_cookies TYPE: global and/or test block parameter  
+     PARAMETER: send_cookies TYPE: global and/or test block parameter
      DEFAULT: yes  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
      DESCRIPTION: Option to send cookies to the web server.  This applies
      to cookies passed by the web server(s) during the test session and
@@ -994,25 +975,25 @@ FILES
      value in the test block applies only to that test block.  See also
      the accept_cookies parameter.
 
-     PARAMETER: show_cookies TYPE: global parameter  
+     PARAMETER: show_cookies TYPE: global parameter
      DEFAULT: no  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
      DESCRIPTION: Option to list cookies sent to or received from the web
      server.  Each cookie will be preceded with the string "Set-Cookie3:"
      and the cookie elements will be separated by semicolons.
 
-     PARAMETER: show_html  TYPE: global parameter  
+     PARAMETER: show_html  TYPE: global parameter
      DEFAULT: no  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
      DESCRIPTION: Option to display the HTML source with the output.
      You can specify this parameter globally or within a test block.
      If you specify it as both a global and a test block parameter,
      the value in the test block applies only to that test block.
-     
+
      If, and only if, you specify the file_path parameter, the program
      starts a local instance of Apache, copies the file to its htdocs
      directory, fetches the file from Apache and runs the specified
      tests.
 
-     PARAMETER: terse  TYPE: global parameter  
+     PARAMETER: terse  TYPE: global parameter
      DEFAULT: no  ALLOWED VALUES: no failed_only summary  OPTIONAL
      PARAMETER.
      DESCRIPTION: Option to display short test report.  If you set
@@ -1022,7 +1003,7 @@ FILES
      the summary.  If you set terse to 'no', the program displays all
      the test results and the summary.
 
-     PARAMETER: test_name  TYPE: test block parameter  
+     PARAMETER: test_name  TYPE: test block parameter
      NO DEFAULT.  Parameter is REQUIRED.
      DESCRIPTION: Name of this test, usually just the URL.  Only the
      first 56 characters are used.  This MUST be the first parameter
@@ -1030,19 +1011,19 @@ FILES
      within a parameter file.  There MUST be one end_test directive
      for each test_name parameter.
 
-     PARAMETER: text_forbid  TYPE: global and/or test block parameter  
-     NO DEFAULT.  OPTIONAL PARAMETER.  
+     PARAMETER: text_forbid  TYPE: global and/or test block parameter
+     NO DEFAULT.  OPTIONAL PARAMETER.
      DESCRIPTION: List of one or more text strings that must NOT exist
-     on the web page.  See also the ignore_case and regex_forbid 
+     on the web page.  See also the ignore_case and regex_forbid
      parameters.
 
-     PARAMETER: text_require  TYPE: global and/or test block parameter  
+     PARAMETER: text_require  TYPE: global and/or test block parameter
      NO DEFAULT.  OPTIONAL PARAMETER.
      DESCRIPTION: List of one or more text strings that MUST exist on
      the web page.  See also the ignore_case and regex_require
-     parameters. 
+     parameters.
 
-     PARAMETER: url  TYPE: test block parameter  
+     PARAMETER: url  TYPE: test block parameter
      NO DEFAULT.  You MUST specify file_path or url, but not both, in
      each test block.
      DESCRIPTION: URL to test, if value starts with "www.", "http://"
@@ -1050,7 +1031,7 @@ FILES
      that specify file_path and some that specify url.
 
      APACHE DIRECTORY AND FILES
-     
+
      The apache_dir parameter must be set to the name of a directory
      that contains the subdirectories "conf", "logs" and "htdocs".
      The conf subdirectory must contain a file named "httpd.conf-dist".
@@ -1095,8 +1076,8 @@ FILES
      VirtualHost block for the PerlHandler Apache::ASP.  At runtime
      these tags are replaced with the the directive PerlSetVar followed
      by the name of the parameter (Global, MailHost, MailErrorsTo)
-     and a parameter value derived from other input parameters.  See 
-     the Apache::ASP documentation for details 
+     and a parameter value derived from other input parameters.  See
+     the Apache::ASP documentation for details
      (http://www.apache-asp.org/config.html).
 
      The subdirectory htdocs must contain a subdirectory named webtest
@@ -1106,15 +1087,15 @@ FILES
      used to verify that Apache has started successfully.)
 
 PREREQUISITES
-     Perl version 5.000 or higher is required. The following Perl modules
-     are also required.  (These are all part of the base distribution of
-     version 5.005_03 and higher.)
+    Perl version 5.005 or higher is required. The following Perl modules are
+    also required. (Some of them are part of the base distribution.)
 
      Cwd
      File::Basename
      File::Copy
      File::Find
      File::Path
+     File::Temp
      HTTP::Cookies
      HTTP::Request::Common
      HTTP::Response
@@ -1123,100 +1104,20 @@ PREREQUISITES
      Net::SMTP
      Sys::Hostname
      Term::ReadKey
-     Time::HiRes 
-     URI::URL 
+     Time::HiRes
+     URI::URL
 
 RESTRICTIONS / BUGS
-    This module only works on Unix (e.g., Solaris, Linux, AIX, etc.). The
-    module's HTTP requests time out after 3 minutes (the default value for
-    LWP::UserAgent). If the file_path parameter is specified, Apache must
-    be installed. If the file_path parameter is specified, the directory
-    /tmp cannot be NFS-mounted, since Apache's lockfile and the SSL mutex
-    file must be stored on a local disk.
+    This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
+    etc.) but it should work on Win32 systems.
 
-VERSION
-    This document describes version 1.02, release date 14 June 2001
+    Local file tests don't work on Win32 systems.
 
-CHANGES
-     1.02  Tue Jun 26 2001
-
-       * OWNERSHIP OF HTTP:WebTest HAS BEEN TRANSFERRED FROM Richard
-         Anderson <Richard.Anderson@raycosoft.com> TO Ilya Martynov
-         <ilya@martynov.org>.  PLEASE DIRECT ALL QUESTIONS AND COMMENTS 
-         TO Ilya Martynov.  So long, and thanks for all the fish.
-
-       * Change succeed/fail count so that a successful fetch of a 
-         page counts as a successful test.  (An unsuccessful fetch
-         still counts as a failed test.)
-
-       * Removed extraneous call to extract_cookies from get_response.
-
-     1.01  Wed Jun 14 2001
-
-       * Modified cookies parameter to allow less than 10 elements.  
-         (Thanks to Thomas Ayles <tayles@arsdigita.com> for suggesting
-         this.)
-
-       * Fixed bug that caused get_response() to fail to capture all 
-         cookies returned by the webserver during redirects.  Added
-         subclass HTTP::WebTest::Cookies (a modified HTTP::Cookies
-         class).  (Thanks to Ilya Martynov <ilya@martynov.org> for
-         this fix.)
-
-       * Modified web server response time measurement to be more 
-         accurate.
-
-       * Exported run_web_test method so it can be called directly.
-
-     1.00  Wed Jun 06 2001
-
-       * Added max_rtime and min_rtime parameters to test web server 
-         response time.  The perl module Time::HiRes is now a
-         prerequisite to install HTTP::WebTest.  (This code was
-         a collaborative effort by the author and Michael Blakeley 
-         <mike@blakeley.com>.)
-
-       * Added pauth parameter for proxy authorization.  (This code 
-         was a collaborative effort by the author and Darren Fulton 
-         <Darren.Fulton@team.telstra.com>.)
-
-       * Changed max_bytes and min_bytes paramters from test block 
-         parameters to global and/or test block parameters.
-
-       * Made format of output report more robust for max_bytes and 
-         min_bytes parameters.
-
-     0.30  Mon Mar 05 2001
-
-       * Fixed ./t/*.t files so that "make test" runs correctly on 
-         Solaris.  (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; 
-         export WEBTEST_LIB.)  (Thanks to M. Simon Cavalletto 
-         <simonm@evolution.com> for reporting this bug.)
-
-       * Improved clarity of documentation and program output.
-
-     0.20  Mon Feb 26 2001
-
-       * Fixed bug that caused module to abort when a HTTP-Redirect 
-         (302) is sent back with a relative URL.  Thanks to Andre 
-         Machowiak <ama@ision.net> for this fix.
-
-       * Set Content-type to 'application/x-www-form-urlencoded' 
-         for POST.  Thanks to Andre Machowiak <ama@ision.net> for
-         this fix.
-
-       * Modified Makefile.PL to get path of perl using the which 
-         command and create the wt script with this path in the 
-         she-bang line (#!).  (Thanks to Britton <fsblk@aurora.uaf.edu>
-         for reporting this bug.)
-
-       * Modified "make test" tests to write output to files in the 
-         t subdirectory.
-
-     0.01  Sat Dec  9 10:14:53 2000
-            - original version; created by h2xs 1.19
-            First release to CPAN by Richard Anderson 
-            <Richard.Anderson@raycosoft.com>.
+    The module's HTTP requests time out after 3 minutes (the default value
+    for LWP::UserAgent). If the file_path parameter is specified, Apache
+    must be installed. If the file_path parameter is specified, the
+    directory /tmp cannot be NFS-mounted, since Apache's lockfile and the
+    SSL mutex file must be stored on a local disk.
 
 TODO
     Add option to validate HTML syntax using HTML::Validator. Add option to
@@ -1224,7 +1125,11 @@ TODO
     parameter to pass to LWP::UserAgent. Move test_regexes into a plugin.
 
 AUTHOR
-     Richard Anderson <Richard.Anderson@unixscripts.com>
+    Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
+    HTTP::WebTest.
+
+    Ilya Martynov <ilya@martynov.org> maintains HTTP::WebTest now. Please
+    email him bug reports, suggestions, questions, etc.
 
 COPYRIGHT
     Copyright (c) 2000-2001 Richard Anderson. All rights reserved. This

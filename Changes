@@ -1,9 +1,31 @@
 Revision history for Perl extension HTTP::WebTest.
 
+ 1.05  Wed Aug  8 2001
+
+   * Installation of http-webtest directory is optional now for Unix
+     platforms. It is completely disabled on Win32 platform.
+
+   * Mentioned in docs that this module should work on Win32
+     platform. Bug reports from this platform would be appreciated.
+
+   * Do not use environment variable WEBTEST_LIB in 'wt' script. It
+     seems to be needed only for debuging purposes and it was a source
+     of many Perl warnings if it was not defined.
+
+   * Sample Apache config file bundled with this module now contains
+     directives to disable usage of apache access and resource config
+     files.
+
+   * Use File::Temp for sane creation of temporary directories.
+
+   * Removed section 'CHANGES' from HTTP::WebTest POD docs since it
+     became too long. Anybody interested in changes should consult
+     this file.
+
  1.04  Mon Jul 16 2001
 
-   * Added PREREQ_PM entry into Makefile.PL.  (Thanks Britton
-     <fsblk@aurora.uaf.edu> for suggesting this.)
+   * Added PREREQ_PM entry into Makefile.PL. Thanks Britton
+     <fsblk@aurora.uaf.edu> for suggesting this.
 
    * Fixed bug: test parameters accept_cookies and send_cookies did not
      affected transmission and receipt of cookies at all.

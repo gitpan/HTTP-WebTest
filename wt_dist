@@ -845,7 +845,6 @@ perl(1), perlre(1), perldoc Apache::ASP.
 =cut
 
 use strict;
-use lib $ENV{WEBTEST_LIB};
 use Getopt::Std;
 use HTTP::WebTest;
 use sigtrap qw(die normal-signals);

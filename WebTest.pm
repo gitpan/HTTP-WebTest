@@ -34,7 +34,7 @@ HTTP::WebTest - Test remote URLs or local web files
 
  use sigtrap qw(die normal-signals); # Recommended, not necessary
  use HTTP::WebTest;
- $webtest = HTTP::WebTest->new(); 
+ $webtest = HTTP::WebTest->new();
  foreach $file (@ARGV) {
     $webtest->web_test($file, \$num_fail, \$num_succeed);
  }
@@ -52,14 +52,14 @@ HTTP::WebTest - Test remote URLs or local web files
 =head1 DESCRIPTION
 
 This module runs tests on remote URLs or local web files containing
-Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.  
+Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.
 
-The test specifications can be read from a parameter file or 
-input as method arguments.  If you are testing a local file, Apache 
-is started on a private/dynamic port with a configuration file in a 
-temporary directory.  The module displays the test results on the 
+The test specifications can be read from a parameter file or
+input as method arguments.  If you are testing a local file, Apache
+is started on a private/dynamic port with a configuration file in a
+temporary directory.  The module displays the test results on the
 terminal by default or directs them to a file.  The module optionally
-e-mails the test results.  
+e-mails the test results.
 
 Each URL/web file is tested by fetching it from the web server using
 a local instance of an HTTP user agent.  The basic test is simply
@@ -68,7 +68,7 @@ literal strings or regular expressions that are either required to
 exist or forbidden to exist in the fetched page.  You may also
 specify tests for the minimum and maximum number of bytes in the
 returned page.  You may also specify tests for the minimum and
-maximum web server response time.  
+maximum web server response time.
 
 If you are testing a local file, the module checks the error log in
 the temporary directory before and after the file is fetched from
@@ -96,7 +96,7 @@ Data flow for HTTP::WebTest using a remote URL:
           |           |    response   |   agent  |
           -------------               |          |
                                       ------------
-                                      
+
 Data flow diagram for HTTP::WebTest using a local web file:
 
           --------------           ---------------------
@@ -132,12 +132,13 @@ Data flow diagram for HTTP::WebTest using a local web file:
 require 5.005;
 require Exporter;
 use strict;
- 
+
 use Cwd qw(cwd);
 use File::Basename qw(fileparse);
 use File::Copy qw(copy);
 use File::Find qw(find);
 use File::Path qw(rmtree);
+use File::Temp qw(tempdir);
 use HTTP::Request::Common qw(GET POST);
 use HTTP::Response qw(code content is_error status_line);
 use LWP::UserAgent qw(agent request);
@@ -147,121 +148,121 @@ use Sys::Hostname qw(hostname);
 use Term::ReadKey qw(ReadMode ReadLine);
 use Time::HiRes qw/ gettimeofday /;
 use URI::URL;
- 
+
 ###########################
 # Class (package) globals #
 ###########################
- 
+
 use vars qw($AUTHOR $Debug @EXPORT_OK @ISA $VERSION);
 $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
-@ISA = qw(Exporter);  
+@ISA = qw(Exporter);
 @EXPORT_OK = qw(run_web_test);
-$VERSION = 1.04;
- 
+$VERSION = 1.05;
+
 #############################
 # Constants (magic numbers) #
 #############################
- 
-# Default max time to wait for Apache 
+
+# Default max time to wait for Apache
 sub DEFAULT_MAX_APACHE_WAIT_SECONDS () { return 64; };
 #
 # Initial time to wait for Apache to start
 sub INITIAL_APACHE_WAIT_SECONDS () { return 4; };
 #
-# Maximum time to wait for Apache 
+# Maximum time to wait for Apache
 sub MAX_APACHE_WAIT_SECONDS () { return 600; };
 #
-# Minimum upper bound to wait for Apache 
+# Minimum upper bound to wait for Apache
 sub MIN_APACHE_WAIT_SECONDS () { return 10; };
 #
 # Permissions for creating directories, user's umask is superimposed on this
-sub DIR_MODE () { return 0755; };  
+sub DIR_MODE () { return 0755; };
 #
 # Minimum number of cookie arguments
-sub MIN_COOKIE_ARGS () { return 5; }; 
+sub MIN_COOKIE_ARGS () { return 5; };
 #
 # Range for private/dynamic ports, see http://www.iana.org/numbers.html
 sub MAX_PRIVATE_PORT () { return 65535; };
 sub MIN_PRIVATE_PORT () { return 49152; };
 #
 # Maximum number of cookie arguments that do not require reformatting cookie
-sub NCOOKIE_REFORMAT () { return 10; }; 
+sub NCOOKIE_REFORMAT () { return 10; };
 
 ###################
 # Other constants #
 ###################
 #
 # Allowed types for Apache input parameters/arguments
-my %_APACHE_PARAMS = ( 
-   apache_dir         => 'scalar', 
-   apache_exec        => 'scalar', 
-   apache_loglevel    => 'scalar', 
-   apache_max_wait    => 'scalar', 
+my %_APACHE_PARAMS = (
+   apache_dir         => 'scalar',
+   apache_exec        => 'scalar',
+   apache_loglevel    => 'scalar',
+   apache_max_wait    => 'scalar',
    apache_options     => 'scalar',
    include_file_path  => 'list',   # With an even number of elements
 );
 #
 # Input parameters/arguments that have a Boolean value
-my %_BOOLEAN = ( 
+my %_BOOLEAN = (
    accept_cookies   => 'arbitrary_value',
    ignore_error_log => 'arbitrary_value',
    ignore_case      => 'arbitrary_value',
    send_cookies     => 'arbitrary_value',
-   show_cookies     => 'arbitrary_value',           
+   show_cookies     => 'arbitrary_value',
    show_html        => 'arbitrary_value',
 );
 #
 # Mapping of values for debug parameter
-my %_DEBUG = ( 
-   no       => 0, 
-   yes      => 1, 
-   preserve => 2, 
+my %_DEBUG = (
+   no       => 0,
+   yes      => 1,
+   preserve => 2,
 );
 #
 # Allowed values of apache_loglevel parameter
-my %_LOGLEVEL = ( 
-   debug  => 'arbitrary_value',    
-   info   => 'arbitrary_value', 
-   notice => 'arbitrary_value', 
-   warn   => 'arbitrary_value', 
-   error  => 'arbitrary_value', 
-   crit   => 'arbitrary_value', 
-   alert  => 'arbitrary_value', 
-   emerg  => 'arbitrary_value', 
+my %_LOGLEVEL = (
+   debug  => 'arbitrary_value',
+   info   => 'arbitrary_value',
+   notice => 'arbitrary_value',
+   warn   => 'arbitrary_value',
+   error  => 'arbitrary_value',
+   crit   => 'arbitrary_value',
+   alert  => 'arbitrary_value',
+   emerg  => 'arbitrary_value',
 );
 #
 # Allowed values of mail parameter/argument
-my %_MAIL = ( 
+my %_MAIL = (
    no      => 'arbitrary_value',
    errors  => 'arbitrary_value',
-   all     => 'arbitrary_value', 
+   all     => 'arbitrary_value',
 );
 #
-# Allowed values of save_output parameter/argument 
-my %_SAVE_OUTPUT = ( 
-   no       => 'arbitrary_value', 
-   yes      => 'arbitrary_value', 
-   preserve => 'arbitrary_value', 
+# Allowed values of save_output parameter/argument
+my %_SAVE_OUTPUT = (
+   no       => 'arbitrary_value',
+   yes      => 'arbitrary_value',
+   preserve => 'arbitrary_value',
 );
 #
 # Allowed values of terse parameter/argument
-my %_TERSE = ( 
-   summary      => 'arbitrary_value', 
+my %_TERSE = (
+   summary      => 'arbitrary_value',
    failed_only  => 'arbitrary_value',
-   no           => 'arbitrary_value', 
+   no           => 'arbitrary_value',
 );
 #
 # Allowed types for test_options input parameters/arguments (global params)
 my %_TEST_OPTIONS_PARAMS = (
    accept_cookies   => 'scalar',
    auth             => 'list',   # Two-element list
-   debug            => 'scalar', 
-   ignore_error_log => 'scalar', 
-   ignore_case      => 'scalar', 
-   mail             => 'scalar', 
+   debug            => 'scalar',
+   ignore_error_log => 'scalar',
+   ignore_case      => 'scalar',
+   mail             => 'scalar',
    mail_addresses   => 'list',
-   mail_server      => 'scalar', 
+   mail_server      => 'scalar',
    max_bytes        => 'scalar',
    max_rtime        => 'scalar',
    min_bytes        => 'scalar',
@@ -273,26 +274,26 @@ my %_TEST_OPTIONS_PARAMS = (
    save_output      => 'scalar',
    send_cookies     => 'scalar',
    show_html        => 'scalar',
-   show_cookies     => 'scalar', 
-   terse            => 'scalar', 
+   show_cookies     => 'scalar',
+   terse            => 'scalar',
    text_forbid      => 'list',
    text_require     => 'list',
 );
 #
 # Allowed values for Boolean input parameters/arguments
-my %_YES_NO = ( 
-   yes => 'arbitrary_value', 
-   no  => 'arbitrary_value', 
+my %_YES_NO = (
+   yes => 'arbitrary_value',
+   no  => 'arbitrary_value',
 );
 #
 # Allowed types for web_tests parameters/arguments (test block parameters)
-my %_WEB_TEST_PARAMS = ( 
+my %_WEB_TEST_PARAMS = (
    accept_cookies   => 'scalar',
    auth             => 'list',   # Two-element list
    cookie           => 'list',   # Arrayref of arrayrefs
    file_path        => 'list',   # Two-element list
-   ignore_error_log => 'scalar', 
-   ignore_case      => 'scalar', 
+   ignore_error_log => 'scalar',
+   ignore_case      => 'scalar',
    max_bytes        => 'scalar',
    max_rtime        => 'scalar',
    method           => 'scalar',
@@ -300,23 +301,23 @@ my %_WEB_TEST_PARAMS = (
    min_rtime        => 'scalar',
    params           => 'list',   # With an even number of elements
    pauth            => 'list',   # Two-element list
-   regex_forbid     => 'list',   
-   regex_require    => 'list',   
+   regex_forbid     => 'list',
+   regex_require    => 'list',
    send_cookies     => 'scalar',
    show_html        => 'scalar',
    test_name        => 'scalar',
    text_forbid      => 'list',
    text_require     => 'list',
-   url              => 'scalar', 
+   url              => 'scalar',
 );
 
 #####################################
 # Class (package) private variables #
 #####################################
 
-my ( 
+my (
    $_web_test_tmp,   # Anonymous hashref, temp cache for test block parameters
-   $_fh_out          # Filehandle for output (test report) 
+   $_fh_out          # Filehandle for output (test report)
 );
 
 ######################################
@@ -326,7 +327,7 @@ my (
 my $_copy_file = sub {
 #
 # Description:
-# Copy a file to a root directory concatenated with a relative pathname, 
+# Copy a file to a root directory concatenated with a relative pathname,
 # creating directories as needed.  The basename of the file is preserved.
 #
 # Synopsis: $_copy_file->($file, $root_dir, $rel_path, \$target_file);
@@ -334,7 +335,7 @@ my $_copy_file = sub {
 # Input arguments:
 # $file - File to copy.
 # $root_dir - Absolute pathname of root directory.  This directory must exist.
-# $rel_path - Relative pathname that is appended to $root_dir.  These 
+# $rel_path - Relative pathname that is appended to $root_dir.  These
 #            subdirectories will be created if they don't exist.
 #
 # Output arguments:
@@ -351,7 +352,7 @@ my $_copy_file = sub {
          warn "ERROR: directory $root_dir not found";
          return 0;
       }
-      @subdirs = split /\//, $rel_path; 
+      @subdirs = split /\//, $rel_path;
       $current_dir = $root_dir;
       foreach (@subdirs) {
 	 next if $_ eq '.';
@@ -374,8 +375,8 @@ my $_copy_file = sub {
 
 my $_count_error_log = sub {
 #
-# Description: 
-# On the first call, counts the number of lines in the Apache error log.  On 
+# Description:
+# On the first call, counts the number of lines in the Apache error log.  On
 # the second call, counts the number of lines and adds a line to the report
 # stating whether the number of lines increased (FAIL) or stayed the same
 # (SUCCEED).
@@ -393,7 +394,7 @@ my $_count_error_log = sub {
 # \$report - Test report, error log test results will be appended.
 # $terse - Option to show only failed tests on the report
 #          = 'failed_only' -> Show only tests that failed.
-#          Otherwise, show all tests. 
+#          Otherwise, show all tests.
 # \$num_fail - Running sum of test failures.
 # \$num_succeed - Running sum of test successes.
 #
@@ -404,7 +405,7 @@ my $_count_error_log = sub {
    my ($error_log, $nlines_before, $terse, $report, $num_fail, $num_succeed)
       = @_;
    my ($nlines_after, $line);
-   unless (open(ERRLOG, "< $error_log")) { 
+   unless (open(ERRLOG, "< $error_log")) {
       warn "Can't open file $error_log: $!";
       $$nlines_before = -1;
       return 0;
@@ -412,7 +413,7 @@ my $_count_error_log = sub {
    unless (defined($report)) {
       $$nlines_before = 0;
       ++$$nlines_before while <ERRLOG>;
-   } elsif ($$nlines_before >= 0) { 
+   } elsif ($$nlines_before >= 0) {
       $nlines_after = 0;
       my @errors;
       while (defined($line = <ERRLOG>)) {
@@ -442,10 +443,10 @@ my $_count_error_log = sub {
 
 my $_check_nbytes = sub {
 #
-# Description: 
+# Description:
 # Compares the number of bytes to the specified maximum and minimum numbers,
 # appends a line to the report stating the results, and increments the
-# failure and success counts. 
+# failure and success counts.
 #
 # Synopsis: $_check_nbytes->($nbytes, $max_bytes, $min_bytes, $terse, \$report,
 #                            \$num_fail, \$num_succeed);
@@ -453,10 +454,10 @@ my $_check_nbytes = sub {
 # Input arguments:
 # $nbytes - Number of bytes in returned page
 # $max_bytes - Maximum number of bytes allowed
-# $min_bytes - Minimum number of bytes allowed 
+# $min_bytes - Minimum number of bytes allowed
 # $terse - Option to show only failed tests on the report
 #          = 'failed_only' -> Show only tests that failed.
-#          Otherwise, show all tests. 
+#          Otherwise, show all tests.
 #
 # Input/output arguments:
 # \$report - Test report, results of max/min tests will be appended.
@@ -545,10 +546,10 @@ my $_check_nbytes = sub {
 
 my $_check_response_time = sub {
 #
-# Description: 
+# Description:
 # Compares the response time to the specified maximum and minimum numbers,
 # appends a line to the report stating the results, and increments the
-# failure and success counts. 
+# failure and success counts.
 #
 # Synopsis: $_check_response_time->($rtime, $max_rtime, $min_rtime, $terse,
 #                                   \$report, \$num_fail, \$num_succeed);
@@ -556,10 +557,10 @@ my $_check_response_time = sub {
 # Input arguments:
 # $rtime - response time for the returned page, in seconds
 # $max_rtime - Maximum response time allowed
-# $min_rtime - Minimum response time allowed 
+# $min_rtime - Minimum response time allowed
 # $terse - Option to show only failed tests on the report
 #          = 'failed_only' -> Show only tests that failed.
-#          Otherwise, show all tests. 
+#          Otherwise, show all tests.
 #
 # Input/output arguments:
 # \$report - Test report, results of max/min tests will be appended.
@@ -648,7 +649,7 @@ my $_check_response_time = sub {
 
 sub get_response {
 #
-# Description: 
+# Description:
 # Create an HTTP GET or POST request and get the response from the web server.
 # Optionally passes parameters and userid/password.  Optionally passes cookies
 # with the request and receives returned cookies.  If the server response code
@@ -656,7 +657,7 @@ sub get_response {
 #
 # (Conceptually a private method, but syntacticly public.)
 #
-# Synopsis: 
+# Synopsis:
 # $response = get_response($url, $user_agent, \%test, $cookie_jar, \$rtime);
 #
 # Input arguments:
@@ -677,7 +678,7 @@ sub get_response {
 # lwpcook, HTTP::Response, HTTP::Cookies, HTTP::Headers, URI::URL
 #
    my ($url, $user_agent, $test, $cookie_jar, $rtime) = @_;
-   my ($request, $response, $uri); 
+   my ($request, $response, $uri);
 
    if (uc($test->{method}) eq 'POST') {
       $request = POST($url, [ %{$test->{params}} ]);
@@ -698,8 +699,8 @@ sub get_response {
    if (ref($test->{pauth}) eq 'ARRAY') {
       $request->proxy_authorization_basic($test->{pauth}->[0],
          $test->{pauth}->[1]);
-   }   
-   local $cookie_jar->{send_cookies} = not (defined($test->{send_cookies}) 
+   }
+   local $cookie_jar->{send_cookies} = not (defined($test->{send_cookies})
                                        and $test->{send_cookies} eq 'no');
    local $cookie_jar->{accept_cookies} = not (defined($test->{accept_cookies})
                                          and $test->{accept_cookies} eq 'no');
@@ -710,25 +711,6 @@ sub get_response {
    $response = $user_agent->request($request);
    $$rtime = gettimeofday - $$rtime;
    return $response;
-}
- 
-my $_get_unique_object_id;   
-{ 
-   my $unique_object_id = 0; 
-   $_get_unique_object_id = sub { 
-#
-# Description:
-# Returns a unique object ID, which is used to build the name of the temporary
-# directory.  Uses a closure so that no one else can modify $unique_object_id.
-#
-# Synopsis: $_get_unique_object_id->();
-#
-# Return value:
-# An object ID that is unique to this process and this call to the subroutine.
-#
-      ++$unique_object_id; 
-      return "${$}_$unique_object_id"; 
-   }; 
 }
 
 my $_mail_report = sub {
@@ -750,13 +732,13 @@ my $_mail_report = sub {
 # $num_fail - Total number of tests that failed.
 #
 # Return values:
-# 1 -> O.K. 
+# 1 -> O.K.
 # 0 -> Invalid input arguments, no mail sent
 #
    my ($report, $mail, $mail_server, $mail_addresses, $num_fail) = @_;
 
    return 1 unless (defined($mail) and ($mail eq 'all' or $mail eq 'errors'));
-   return 1 if ($mail eq 'errors' and 0 == $num_fail); 
+   return 1 if ($mail eq 'errors' and 0 == $num_fail);
    unless (defined($mail_server) and length($mail_server) > 0) {
       warn "Invalid value of mail_server ( = null )";
       return 0;
@@ -786,7 +768,7 @@ my $_mail_report = sub {
 my $_parse_line = sub {
 #
 # Description:
-# Parse a parameter name and/or value from a line of text.  Looks for 
+# Parse a parameter name and/or value from a line of text.  Looks for
 # parenthesis indicating beginning or end of a list.
 #
 # Synopsis: $_parse_line->($line, \$param, \$value);
@@ -811,7 +793,7 @@ my $_parse_line = sub {
 # Restrictions / bugs:
 # $line must contain at least one non-whitespace character.  See the section
 # titled "Parameter file format" in the POD documentation below for the
-# restrictions on parameter parsing.  
+# restrictions on parameter parsing.
 #
    my ($line, $param, $value) = @_;
    my $rest;
@@ -839,8 +821,8 @@ my $_parse_line = sub {
          }
       } elsif ( $rest =~ /^\s*(\S.*\S|\S)/ ) {  # Then I have a value
 #
-# Parse a line containing a parameter name and a scalar value 
-         $$value = $1; 
+# Parse a line containing a parameter name and a scalar value
+         $$value = $1;
          return 'param';
       } else {                             # Then I have only a parameter name
          return 'param';
@@ -851,13 +833,13 @@ my $_parse_line = sub {
 
       if ( $line =~ /^\s*\(/ ) {    # Then I have a beginning of list delimiter
          if ( $line =~ /^\s*\(\s*(\S.*\S|\S)\s*\)\s*$/ ) {  # Then have a value
-            $$value = $1;                       
+            $$value = $1;
             return 'list begin_end';
          } else {                         # Then I have an empty list
             return 'error';
          }
       } elsif ( $line =~ /\s*(\S.*\S|\S)\s*\)\s*$/ ) {   # Then I have a value
-         $$value = $1; 
+         $$value = $1;
          return 'list end';
       } else {                     # Then I have only an end of list delimiter
          return 'list end';
@@ -867,15 +849,15 @@ my $_parse_line = sub {
 # Parse a line containing a beginning of list delimiter and no parameter name
 
       if ( $line =~ /\(\s*(\S.*\S|\S)/ ) { # Then I have the first list element
-         $$value = $1; 
+         $$value = $1;
          return 'list begin';
       } else {               # Then I have only a beginning of list delimiter
          return 'list begin';
       }
    } elsif ( $line =~ /(\S.*\S|\S)/ ) {        # Then I have a scalar value
 #
-# Parse a line containing only a scalar value 
-      $$value = $1; 
+# Parse a line containing only a scalar value
+      $$value = $1;
       return 'scalar';
    } else {                                  # Then I have a blank line
       return 'error';
@@ -899,19 +881,19 @@ my $_parse_list_delimiter = sub {
 #
    my ($element, $new_element) = @_;
    my ($match1, $match2);
-   if ($element =~ /'(.*)'/) { 
+   if ($element =~ /'(.*)'/) {
       $match1 = $1;
       if ($element =~ /'(.*?)'\s*=>\s*'(.*)'/) {
 	 push @{$new_element}, ($1, $2);
       } else {
 	 push @{$new_element}, $match1;
       }
-   } else { 
+   } else {
       if ($element =~ /(.*?)\s*=>\s*(.*)/) {
 	 $match1 = $1;
-	 if ($match1 =~ /'(.*)'/) { $match1 = $1; } 
+	 if ($match1 =~ /'(.*)'/) { $match1 = $1; }
 	 $match2 = $2;
-	 if ($match2 =~ /'(.*)'/) { $match2 = $1; } 
+	 if ($match2 =~ /'(.*)'/) { $match2 = $1; }
 	 push @{$new_element}, ($match1, $match2);
       } else {
 	 push @{$new_element}, $element;
@@ -919,13 +901,13 @@ my $_parse_list_delimiter = sub {
    }
    return 1;
 };
-   
+
 my $_redirect_to_file = sub {
 #
 # Description:
 # Redirects the program output to a file.  The routine constructs the file
-# name by taking the name of the input parameter file, removing the file 
-# extension if it exists and appending ".out".  
+# name by taking the name of the input parameter file, removing the file
+# extension if it exists and appending ".out".
 #
 # Synopsis: $_redirect_to_file->($self, $save_output);
 #
@@ -939,7 +921,7 @@ my $_redirect_to_file = sub {
 # Return values:
 # 1 -> Parameter save_output processed successfully
 # 0 -> Error
-# 
+#
    my ($self, $save_output) = @_;
    return 1 if (lc($save_output) eq 'no' or $_fh_out !~ /STDOUT$/);
    my ($base, $dir, $ext) = fileparse($self->{param_file}, '\..*?');
@@ -954,7 +936,7 @@ my $_redirect_to_file = sub {
          "save_output = 'yes' to overwrite\n";
       return 0;
    }
-   unless (open OUTPUT, ">$output_file") { 
+   unless (open OUTPUT, ">$output_file") {
       warn "Can't open file $output_file: $!";
       return 0;
    }
@@ -964,12 +946,12 @@ my $_redirect_to_file = sub {
 
 my $_test_regexes = sub {
 #
-# Description: 
+# Description:
 # Test for the presence and/or absence of regular expressions in the web
 # page and appends results to the report.
 #
 # Synopsis:
-# $_test_regexes->($web_page, $regex_require, $regex_forbid, $terse, \$report, 
+# $_test_regexes->($web_page, $regex_require, $regex_forbid, $terse, \$report,
 #                  \$num_fail, \$num_succeed);
 #
 # Input arguments:
@@ -980,7 +962,7 @@ my $_test_regexes = sub {
 #                 exist on the web page
 # $terse - Option to show only failed tests on the report
 #          = 'failed_only' -> Show only tests that failed.
-#          Otherwise, show all tests. 
+#          Otherwise, show all tests.
 #
 # Input/output arguments:
 # \$report - Test report, results of max/min tests will be appended.
@@ -990,7 +972,7 @@ my $_test_regexes = sub {
 # Return value:  Always 1.
 #
    my ($web_page, $regex_require, $regex_forbid, $terse, $report, $num_fail,
-       $num_succeed) = @_; 
+       $num_succeed) = @_;
    my ($regex, $result);
    format WRITE_REGEX =
               @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<
@@ -1010,8 +992,8 @@ my $_test_regexes = sub {
             $result = "FAIL";
             ++$$num_fail;
          }
-         unless (defined($terse) and $terse eq 'failed_only' 
-                 and $result eq "SUCCEED") 
+         unless (defined($terse) and $terse eq 'failed_only'
+                 and $result eq "SUCCEED")
          {
             pipe READ_REGEX, WRITE_REGEX;
             write WRITE_REGEX;
@@ -1035,18 +1017,18 @@ my $_test_regexes = sub {
             $result = "SUCCEED";
             ++$$num_succeed;
          }
-         unless (defined($terse) and $terse eq 'failed_only' 
-                 and $result eq "SUCCEED") 
+         unless (defined($terse) and $terse eq 'failed_only'
+                 and $result eq "SUCCEED")
          {
             pipe (READ_REGEX, WRITE_REGEX);
-            write WRITE_REGEX; 
+            write WRITE_REGEX;
             close WRITE_REGEX;
             local $/ = undef;
             $$report .= <READ_REGEX>;
             close READ_REGEX;
          }
       }
-   } 
+   }
    return 1;
 };
 
@@ -1070,7 +1052,7 @@ my $_validate_value = sub {
    if (defined($value) and not defined($valid_value->{$value})) {
       if (defined($test_name)) {
          warn "Found error in test named: $test_name\n",
-            "ERROR: invalid value for $name ( = $value )\n"; 
+            "ERROR: invalid value for $name ( = $value )\n";
       } else {
          warn "ERROR: invalid value for $name ( = $value )\n";
       }
@@ -1103,12 +1085,12 @@ my $_validate_value_type = sub {
 #
    my ($values, $valid_types, $test_name) = @_;
    my ($param, $type);
-   my $found_error = '';   
+   my $found_error = '';
    foreach $param (keys %{$valid_types}) {
       next unless exists($values->{$param});
       if (ref($values->{$param})) {
          $type = 'list';
-      } else { 
+      } else {
          $type = 'scalar';
       }
       if ($valid_types->{$param} ne $type) {
@@ -1133,8 +1115,8 @@ my $_validate_value_type = sub {
 
 my $_fetch_url = sub {
 #
-# Description: 
-# Fetches a web page using a GET or POST request.  Returns the web page 
+# Description:
+# Fetches a web page using a GET or POST request.  Returns the web page
 # contents and number of bytes in the contents.  Appends the HTTP status line
 # to the report.
 #
@@ -1165,15 +1147,15 @@ my $_fetch_url = sub {
 #
    my ($test, $user_agent, $show_cookies, $send_cookies, $cookie_jar, $report,
        $web_page, $nbytes, $rtime) = @_;
-   my ($request, $response, $cookies); 
+   my ($request, $response, $cookies);
 
    $$report .= "\n   Test Name: " . $test->{test_name} . "\n";
    $$report .= "         URL: " . $test->{url} . "\n";
 #
 # Add the cookies to the cookie jar
    if (ref($test->{cookies}) eq 'ARRAY') {
-      unless (defined($test->{send_cookies}) 
-              and $test->{send_cookies} eq 'no') 
+      unless (defined($test->{send_cookies})
+              and $test->{send_cookies} eq 'no')
       {
          foreach (@{$test->{cookies}}) {
             $cookie_jar->set_cookie($_->[0], $_->[1], $_->[2], $_->[3],
@@ -1184,7 +1166,7 @@ my $_fetch_url = sub {
    }
 #
 # Fetch the URL
-   $response = get_response($test->{url}, $user_agent, $test, $cookie_jar, 
+   $response = get_response($test->{url}, $user_agent, $test, $cookie_jar,
                             $rtime);
    if (not defined($response)) {
       $$nbytes = 0;
@@ -1230,11 +1212,11 @@ my $_fetch_url = sub {
    return 1 if $response->is_success();
    return 0;
 };
- 
+
 my $_load_other_param = sub {
 #
 # Description:
-# Loads an apache parameter or a test_options parameter to the object.  
+# Loads an apache parameter or a test_options parameter to the object.
 # If the parameter is the debug or save_output parameter, it's effect is
 # immediately enabled.
 #
@@ -1247,7 +1229,7 @@ my $_load_other_param = sub {
 #
 # Input/output arguments:
 # $self - a HTTP::WebTest object
-# 
+#
 # Return values:
 # 1 -> $value is an allowed value for $param
 # 0 -> $value is NOT an allowed value for $param
@@ -1271,7 +1253,7 @@ my $_load_other_param = sub {
       if (lc($value) ne 'no') {
          $_redirect_to_file->($self, $value) or return 0;
       }
-   } else {      
+   } else {
       if ($_APACHE_PARAMS{$param}) {
 #
 # This is an Apache parameter
@@ -1305,7 +1287,7 @@ my $_load_other_param = sub {
 
 my $_parse_delimiters = sub {
 #
-# Description: 
+# Description:
 # Parses the delimiters ' and => from a scalar or list.
 #
 # Synopsis:
@@ -1333,7 +1315,7 @@ my $_parse_delimiters = sub {
 #
 # Parse delimiters
    if ($type eq 'scalar') {
-      if ($value =~ /'(.*)'/) { $value = $1; } 
+      if ($value =~ /'(.*)'/) { $value = $1; }
       return $value;
    } elsif ($type eq 'list') {
       $new_value = [ ];
@@ -1357,7 +1339,7 @@ my $_parse_delimiters = sub {
 
 my $_test_strings = sub {
 #
-# Description: 
+# Description:
 # Test for the presence and/or absence of regular expressions in the web
 # page and appends results to the report.
 #
@@ -1376,7 +1358,7 @@ my $_test_strings = sub {
 #                Otherwise -> Case-sensitive string matching.
 # $terse - Option to show only failed tests on the report
 #          = 'failed_only' -> Show only tests that failed.
-#          Otherwise, show all tests. 
+#          Otherwise, show all tests.
 #
 # Input/output arguments:
 # \$report - Test report, results of max/min tests will be appended.
@@ -1386,16 +1368,16 @@ my $_test_strings = sub {
 # Return value:  Always 1.
 #
    my ($web_page, $text_require, $text_forbid, $ignore_case, $terse, $report,
-       $num_fail, $num_succeed) = @_; 
+       $num_fail, $num_succeed) = @_;
    my ($text, $result, @string_require, @string_forbid, $string);
    format WRITE_TEXT =
               @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<
               $text,                                                   $result
 .
-   my $_match_string = sub {  
+   my $_match_string = sub {
 #
-# Description: 
-# Checks for the occurence of the shorter string at any position in the 
+# Description:
+# Checks for the occurence of the shorter string at any position in the
 # longer string.  (Embedded subroutine because of scope conflict with format
 # statement.  Bug in Perl?)
 #
@@ -1452,8 +1434,8 @@ my $_test_strings = sub {
             $result = "FAIL";
             ++$$num_fail;
          }
-         unless (defined($terse) and $terse eq 'failed_only' 
-                 and $result eq "SUCCEED") 
+         unless (defined($terse) and $terse eq 'failed_only'
+                 and $result eq "SUCCEED")
          {
             pipe READ_TEXT, WRITE_TEXT;
             write WRITE_TEXT;
@@ -1478,18 +1460,18 @@ my $_test_strings = sub {
             $result = "SUCCEED";
             ++$$num_succeed;
          }
-         unless (defined($terse) and $terse eq 'failed_only' 
-                 and $result eq "SUCCEED") 
+         unless (defined($terse) and $terse eq 'failed_only'
+                 and $result eq "SUCCEED")
          {
             pipe (READ_TEXT, WRITE_TEXT);
-            write WRITE_TEXT; 
+            write WRITE_TEXT;
             close WRITE_TEXT;
             local $/ = undef;
             $$report .= <READ_TEXT>;
             close READ_TEXT;
          }
       }
-   } 
+   }
    return 1;
 };
 
@@ -1500,11 +1482,11 @@ my $_test_strings = sub {
 my $_load_param = sub {
 #
 # Description:
-# Loads a parameter value to the object.  Apache and test_options parameter 
-# values are loaded directly to the object.  Individual test parameters are 
-# loaded to the web_tests hashref, which is copied to the object when the 
+# Loads a parameter value to the object.  Apache and test_options parameter
+# values are loaded directly to the object.  Individual test parameters are
+# loaded to the web_tests hashref, which is copied to the object when the
 # "end_test" directive is processed.  Verifies that the parameter name is
-# valid in the current context. 
+# valid in the current context.
 #
 # Synopsis: $_load_param->($param, $value, $line_num, $self);
 #
@@ -1521,7 +1503,7 @@ my $_load_param = sub {
 # 0 -> Invalid value for $param or $value (or invalid sequencing in input file)
 #
    my ($param, $value, $line_num, $self) = @_;
-   if ($param eq 'end_test') {    
+   if ($param eq 'end_test') {
 #
 # Then this is end of an individual test block
       unless (defined($_web_test_tmp->{test_name})) {
@@ -1553,17 +1535,17 @@ my $_load_param = sub {
                "Syntax error in file $self->{param_file} at line $line_num\n";
             return 0;
          }
-         if ($param eq 'test_name') {   
+         if ($param eq 'test_name') {
 #
-# Then this is the beginning of new test specification 
+# Then this is the beginning of new test specification
             if (ref($value)) {
                warn "ERROR: parameter test_name value must be scalar\nSyntax ",
                   "error in file $self->{param_file} at line $line_num\n";
                return 0;
             }
-            $_web_test_tmp = { }; 
+            $_web_test_tmp = { };
             $_web_test_tmp->{cookies} = [ ];
-         }  
+         }
 #
 # Save individual test parameter in the web_tests hashref
          if ($_WEB_TEST_PARAMS{$param}) {
@@ -1602,7 +1584,7 @@ my $_prompt_for_auth = sub {
 # Input/output argument:
 # \@auth - Arrayref containing auth parameter, either
 #    ( 'prompt', 'userid_password' ) -> Prompt for both userid and password
-#    ( 'prompt', 'password' )        -> Prompt for password, use process userid 
+#    ( 'prompt', 'password' )        -> Prompt for password, use process userid
 #    ( 'some_userid', '' )           -> Prompt for password
 #    ( 'some_userid' )               -> Prompt for password
 #    If $auth contains some other input, routine returns without prompting.
@@ -1611,7 +1593,7 @@ my $_prompt_for_auth = sub {
 # Input arguments:
 # $mode - Flag indicating if this is user or proxy authorization
 #               = 'auth'  -> user authorization
-#               = 'pauth' -> proxy authorization     
+#               = 'pauth' -> proxy authorization
 # $test_name - (Optional) Name of test associated with this auth parameter.
 #
 # Return values:
@@ -1629,11 +1611,11 @@ my $_prompt_for_auth = sub {
       return 0;
    }
    return 1 unless ( @{$auth} < 2
-                     or length($auth->[1]) < 1 
-                     or ( $auth->[0] eq 'prompt' 
+                     or length($auth->[1]) < 1
+                     or ( $auth->[0] eq 'prompt'
                           and $auth->[1] eq 'password'
                         )
-                     or ( $auth->[0] eq 'prompt' 
+                     or ( $auth->[0] eq 'prompt'
                           and $auth->[1] eq 'userid_password'
                         )
                    );
@@ -1714,19 +1696,19 @@ my $_prompt_for_auth = sub {
 my $_read_params = sub {
 #
 # Description:
-# Reads input parameters from file and store values in the object.  
+# Reads input parameters from file and store values in the object.
 #
-# Synopsis: $_read_params->($self);      
+# Synopsis: $_read_params->($self);
 #
 # Input/output arguments:
 # $self - a HTTP::WebTest object
 #
 # Return values:
 # 1 -> No error
-# 0 -> Error opening file or syntax error in file 
+# 0 -> Error opening file or syntax error in file
 #
    my $self = shift;
-   my ($value, $line, $line_type, $param, $parameter, @values, $line_num, 
+   my ($value, $line, $line_type, $param, $parameter, @values, $line_num,
       $found_error);
    $line_num = $found_error = '';
    my $input_mode = 'want a parameter';
@@ -1737,7 +1719,7 @@ my $_read_params = sub {
    for (;;) {                          # Loop until end of file
       $line = <PARAMS>;
       ++$line_num;
-      unless (defined($line)) {             
+      unless (defined($line)) {
          if ($input_mode eq 'want a parameter') {
             if (defined($_web_test_tmp)) {
                warn "Missing end_test directive for test ",
@@ -1755,13 +1737,13 @@ my $_read_params = sub {
       }
       next if ($line =~ /^\s*#|^\s*$/);   # Skip comments and blank lines
 #
-# Parse line, look for parameter name, value, list delimiter, end_test directive 
+# Parse line, look for parameter name, value, list delimiter, end_test directive
       if ($input_mode eq 'want a parameter' and $line =~ /^\s*end_test\s*$/) {
          $param = 'end_test';
          $value = undef;
          $line_type = 'param';
       } else {
-         $line_type = $_parse_line->($line, \$param, \$value); 
+         $line_type = $_parse_line->($line, \$param, \$value);
       }
       if ($input_mode eq 'want a parameter') {
 #
@@ -1775,7 +1757,7 @@ my $_read_params = sub {
          }
          $parameter = lc $param;
          if ($line_type eq 'param') {
-            if (defined($value) or $parameter eq 'end_test') { 
+            if (defined($value) or $parameter eq 'end_test') {
                $_load_param->($parameter, $value, $line_num, $self)
                   or $found_error = 'yes';
             } else {
@@ -1822,12 +1804,12 @@ my $_read_params = sub {
             warn "I was looking for 'value' or ( 'value' or ( 'value' ) or (\n",
                "Syntax error in file $self->{param_file} at line $line_num\n";
             $found_error = 'yes';
-         } 
+         }
       } elsif ($input_mode eq 'want a list') {
 #
 # We are looking for a list value or an end of list delimiter
          if ($line_type eq 'scalar') {
-            push @values, $value; 
+            push @values, $value;
          } elsif ($line_type eq 'list end') {
             if (defined($value)) { push @values, $value; }
             $_load_param->($parameter, [ @values ], $line_num, $self)
@@ -1843,7 +1825,7 @@ my $_read_params = sub {
                "I was looking for 'value' or 'value' ) or )\n",
                "Syntax error in file $self->{param_file} at line $line_num\n";
             $found_error = 'yes';
-         } 
+         }
       }
    }
    close PARAMS;
@@ -1855,14 +1837,14 @@ my $_transform_web_tests = sub {
 #
 # Description:
 # Copy test parameters in @web_tests.  Transform cookies to formats needed
-# by Perl library module.  Get default values of test parameters from 
+# by Perl library module.  Get default values of test parameters from
 # test_options.
 #
 # Synopsis:
-# $mod_web_tests = $_transform_web_tests->(\%test_options, \@web_tests); 
+# $mod_web_tests = $_transform_web_tests->(\%test_options, \@web_tests);
 #
 # Input arguments:
-# \%test_options - Hashref containing test options. 
+# \%test_options - Hashref containing test options.
 # \@web_tests - Arrayref of hashrefs containing web test specifications.
 #
 # Return value:
@@ -1880,7 +1862,7 @@ my $_transform_web_tests = sub {
       if (exists($test->{auth})) {
          $mod_test->{auth} = [ @{$test->{auth}} ];
       }
-#           
+#
 # Transform cookies into format needed by HTTP::Cookies set_cookie method
       $mod_cookies = [ ];
       foreach $cookie (@{$test->{cookies}}) {
@@ -1890,7 +1872,7 @@ my $_transform_web_tests = sub {
             }
             push @$mod_cookies, $cookie;
             next;
-         }        
+         }
          $new_cookie = [ ];
          for ($i = 0; $i < NCOOKIE_REFORMAT; ++$i) {
             if (length($cookie->[$i]) > 0) {
@@ -1914,7 +1896,7 @@ my $_transform_web_tests = sub {
             %$mod_params = @{$test->{params}};
          } else {
             %$mod_params = %{$test->{params}};
-         } 
+         }
          $mod_test->{params} = $mod_params;
       }
       if (exists($test->{regex_forbid})) {
@@ -1935,8 +1917,8 @@ my $_transform_web_tests = sub {
       if (exists($test->{text_require})) {
          $mod_test->{text_require} = [ @{$test->{text_require}} ];
       }
-      if (defined($mod_test->{url}) and $mod_test->{url} =~ /^www\./) { 
-         $mod_test->{url} = 'http://' . $mod_test->{url}; 
+      if (defined($mod_test->{url}) and $mod_test->{url} =~ /^www\./) {
+         $mod_test->{url} = 'http://' . $mod_test->{url};
       }
       foreach (keys %_WEB_TEST_PARAMS) {
 #
@@ -1949,21 +1931,21 @@ my $_transform_web_tests = sub {
             }
          }
       }
-      if (defined($mod_test->{ignore_error_log}) 
-              and $mod_test->{ignore_error_log} eq 'yes') 
+      if (defined($mod_test->{ignore_error_log})
+              and $mod_test->{ignore_error_log} eq 'yes')
       {
          $mod_test->{error_log} = undef;
       }
       push @{$mod_web_tests}, $mod_test;
-   } 
+   }
    return $mod_web_tests;
 };
 
 my $_validate_apache_params = sub {
 #
-# Description: Validates Apache parameters.  
+# Description: Validates Apache parameters.
 #
-# Synopsis: $_validate_apache_params->($self, $need_apache);  
+# Synopsis: $_validate_apache_params->($self, $need_apache);
 #
 # Input arguments:
 # $self - a HTTP::WebTest object
@@ -1976,7 +1958,7 @@ my $_validate_apache_params = sub {
 #
    my ($self, $need_apache) = @_;
    my $i;
-   my $found_error = ''; 
+   my $found_error = '';
 #
 # Verify that each parameter is of correct type (scalar or list)
    $_validate_value_type->($self, \%_APACHE_PARAMS) or $found_error = 'yes';
@@ -1996,8 +1978,8 @@ my $_validate_apache_params = sub {
             $found_error = 'yes';
             last APACHE_DIR;
          }
-         unless (-r 
-            "$self->{apache_dir}/htdocs/webtest/is_apache_responding.html") 
+         unless (-r
+            "$self->{apache_dir}/htdocs/webtest/is_apache_responding.html")
          {
             warn "ERROR: parameter apache_dir ( = $self->{apache_dir} ) not ",
                "valid; does not have readable file ",
@@ -2023,9 +2005,9 @@ my $_validate_apache_params = sub {
          $found_error = 'yes';
       }
    }
-   $_validate_value->($self->{apache_loglevel}, 'apache_loglevel', \%_LOGLEVEL) 
+   $_validate_value->($self->{apache_loglevel}, 'apache_loglevel', \%_LOGLEVEL)
       or $found_error = 'yes';
-   if (defined($self->{apache_options}) 
+   if (defined($self->{apache_options})
       and $self->{apache_options} !~ /^\s*-/)
    {
       warn "ERROR: parameter apache_options ( = $self->{apache_options} ) ",
@@ -2034,11 +2016,11 @@ my $_validate_apache_params = sub {
    }
    if (defined($self->{apache_max_wait})) {
       unless ($self->{apache_max_wait} >= MIN_APACHE_WAIT_SECONDS
-              and $self->{apache_max_wait} <= MAX_APACHE_WAIT_SECONDS) 
+              and $self->{apache_max_wait} <= MAX_APACHE_WAIT_SECONDS)
       {
          warn "ERROR: parameter apache_max_wait ( = $self->{apache_max_wait} ",
-            ") must be >= ", MIN_APACHE_WAIT_SECONDS, 
-            " and <= ", MAX_APACHE_WAIT_SECONDS, "\n"; 
+            ") must be >= ", MIN_APACHE_WAIT_SECONDS,
+            " and <= ", MAX_APACHE_WAIT_SECONDS, "\n";
          $found_error = 'yes';
       }
    }
@@ -2076,16 +2058,16 @@ my $_validate_apache_params = sub {
 my $_validate_web_tests = sub {
 #
 # Description:
-# Validates input file parameters / subroutine arguments that specify 
-# individual web tests.  
+# Validates input file parameters / subroutine arguments that specify
+# individual web tests.
 #
 # Synopsis:
-# $_validate_web_tests->($web_tests, \$need_apache);  
-# $_validate_web_tests->($web_tests);  
+# $_validate_web_tests->($web_tests, \$need_apache);
+# $_validate_web_tests->($web_tests);
 #
 # Input/output arguments:
 # $web_tests - Arrayref of hashrefs containing the input web_tests parameters.
-#              If the test_name key is not defined, a value is provided 
+#              If the test_name key is not defined, a value is provided
 #
 # Output arguments:
 # \$need_apache (optional) - Flag indicating if a local instance of Apache
@@ -2098,10 +2080,10 @@ my $_validate_web_tests = sub {
 # 0 -> Error, invalid parameter
 #
    my ($web_tests, $need_apache) = @_;
-   my $found_error = ''; 
+   my $found_error = '';
    my $test_count = 1;
 
-   $$need_apache = '' if (ref($need_apache) eq 'SCALAR'); 
+   $$need_apache = '' if (ref($need_apache) eq 'SCALAR');
    unless (@{$web_tests}) {
       warn "ERROR: no web tests specified - quitting!\n";
       $found_error = 'yes';
@@ -2121,8 +2103,8 @@ my $_validate_web_tests = sub {
 #
 # Verify that each boolean web_test parameter has an allowed value
       foreach (keys %_BOOLEAN) {
-         $_validate_value->($web_test->{$_}, $_, \%_YES_NO) 
-            or $found_error = 'yes'; 
+         $_validate_value->($web_test->{$_}, $_, \%_YES_NO)
+            or $found_error = 'yes';
       }
 #
 # Verify other web_test parameters
@@ -2149,10 +2131,10 @@ my $_validate_web_tests = sub {
                "ERROR: first element of parameter pauth cannot be null\n";
             $found_error = 'yes';
          }
-      }  
-      foreach my $cookie (@{$web_test->{cookies}}) {   
+      }
+      foreach my $cookie (@{$web_test->{cookies}}) {
          if (scalar(@{$cookie}) > NCOOKIE_REFORMAT
-             and scalar(@{$cookie}) % 2 != 0) 
+             and scalar(@{$cookie}) % 2 != 0)
          {
             warn "Found error in test named: $test_name\n",
                "ERROR: cookie parameter must have even # of ",
@@ -2167,8 +2149,8 @@ my $_validate_web_tests = sub {
          }
          if (length($cookie->[0]) > 0 and length($cookie->[1]) > 0
                  and length($cookie->[2]) > 0 and length($cookie->[3]) > 0
-                 and length($cookie->[4]) > 0) 
-         { 
+                 and length($cookie->[4]) > 0)
+         {
             if ($cookie->[1] =~ /^\$/) {
                warn "Found error in test named: $test_name\n",
                   "ERROR: name element of cookie cannot begin with a \$\n";
@@ -2231,8 +2213,8 @@ my $_validate_web_tests = sub {
                $found_error = 'yes';
             }
          }
-         unless (defined($web_test->{url}) 
-                 xor ref($web_test->{file_path}) eq 'ARRAY') 
+         unless (defined($web_test->{url})
+                 xor ref($web_test->{file_path}) eq 'ARRAY')
          {
             warn "Found error in test named: $test_name\n",
                "ERROR: must specify either url or file (not both)\n";
@@ -2251,14 +2233,14 @@ my $_validate_web_tests = sub {
             $found_error = 'yes';
          }
          if (defined($web_test->{min_bytes})
-             and $web_test->{max_bytes} < $web_test->{min_bytes} ) 
+             and $web_test->{max_bytes} < $web_test->{min_bytes} )
          {
             warn "Found error in test named: $test_name\n",
                "ERROR: max_bytes ( = $web_test->{max_bytes} ) must ",
                "NOT be < min_bytes ( = $web_test->{min_bytes} )\n";
             $found_error = 'yes';
          }
-      } 
+      }
       if (defined($web_test->{max_rtime})) {
          if ($web_test->{max_rtime} <= 0) {
             warn "Found error in test named: $test_name\n",
@@ -2267,14 +2249,14 @@ my $_validate_web_tests = sub {
             $found_error = 'yes';
          }
          if (defined($web_test->{min_rtime})
-             and $web_test->{max_rtime} < $web_test->{min_rtime} ) 
+             and $web_test->{max_rtime} < $web_test->{min_rtime} )
          {
             warn "Found error in test named: $test_name\n",
                "ERROR: max_rtime ( = $web_test->{max_rtime} ) must ",
                "NOT be < min_rtime ( = $web_test->{min_rtime} )\n";
             $found_error = 'yes';
          }
-      } 
+      }
       if (defined($web_test->{method})) {
          if (uc($web_test->{method}) !~ /^GET$|^POST$/) {
             warn "Found error in test named: $test_name\n",
@@ -2282,7 +2264,7 @@ my $_validate_web_tests = sub {
                "'get' or 'post'\n";
             $found_error = 'yes';
          }
-      } 
+      }
       if (exists($web_test->{params})) {
          if (ref($web_test->{params}) eq 'ARRAY') {
             if (scalar(@{$web_test->{params}}) % 2 != 0) {
@@ -2307,10 +2289,10 @@ my $_validate_test_options = sub {
 #
 # Description: Validates test_options hashref.
 #
-# Synopsis: $_validate_test_options->(\%test_options);  
+# Synopsis: $_validate_test_options->(\%test_options);
 #
 # Input arguments:
-# \%test_options - Hashref containing test options. 
+# \%test_options - Hashref containing test options.
 #
 # Return values:
 # 1 -> O.K., test_options was validated successfully.
@@ -2319,7 +2301,7 @@ my $_validate_test_options = sub {
    my $test_options = shift;
    return 1 unless defined($test_options);
    return 0 unless (ref($test_options) eq 'HASH');
-   my $found_error = ''; 
+   my $found_error = '';
 #
 # Verify that each parameter/argument is type 'scalar' or 'list'
    $_validate_value_type->($test_options, \%_TEST_OPTIONS_PARAMS)
@@ -2327,8 +2309,8 @@ my $_validate_test_options = sub {
 #
 # Verify that Boolean parameters/arguments are either 'yes' or 'no'
    foreach (keys %_BOOLEAN) {
-      $_validate_value->($test_options->{$_}, $_, \%_YES_NO) 
-         or $found_error = 'yes'; 
+      $_validate_value->($test_options->{$_}, $_, \%_YES_NO)
+         or $found_error = 'yes';
    }
 #
 # Verify values of other parameters/arguments
@@ -2366,14 +2348,14 @@ my $_validate_test_options = sub {
          $found_error = 'yes';
       }
    }
-   $_validate_value->($test_options->{mail}, 'mail', \%_MAIL) 
+   $_validate_value->($test_options->{mail}, 'mail', \%_MAIL)
       or $found_error = 'yes';
-   if (defined($test_options->{mail}) 
-       and $test_options->{mail} ne 'no') 
+   if (defined($test_options->{mail})
+       and $test_options->{mail} ne 'no')
    {
-      unless (defined($test_options->{mail_addresses}) 
+      unless (defined($test_options->{mail_addresses})
               and defined($test_options->{mail_server})
-              and @{$test_options->{mail_addresses}}) 
+              and @{$test_options->{mail_addresses}})
       {
          warn "ERROR: if mail = 'all' or 'errors', you must specify ",
             "mail_addresses and mail_server\n";
@@ -2387,13 +2369,13 @@ my $_validate_test_options = sub {
          $found_error = 'yes';
       }
       if (defined($test_options->{min_bytes})
-          and $test_options->{max_bytes} < $test_options->{min_bytes} ) 
+          and $test_options->{max_bytes} < $test_options->{min_bytes} )
       {
          warn "ERROR: max_bytes ( = $test_options->{max_bytes} ) must ",
             "NOT be < min_bytes ( = $test_options->{min_bytes} )\n";
          $found_error = 'yes';
       }
-   } 
+   }
    if (defined($test_options->{max_rtime})) {
       if ($test_options->{max_rtime} < 0) {
          warn "ERROR: max_rtime ( = $test_options->{max_rtime} ) must ",
@@ -2401,13 +2383,13 @@ my $_validate_test_options = sub {
          $found_error = 'yes';
       }
       if (defined($test_options->{min_rtime})
-          and $test_options->{max_rtime} < $test_options->{min_rtime} ) 
+          and $test_options->{max_rtime} < $test_options->{min_rtime} )
       {
          warn "ERROR: max_rtime ( = $test_options->{max_rtime} ) must ",
             "NOT be < min_rtime ( = $test_options->{min_rtime} )\n";
          $found_error = 'yes';
       }
-   } 
+   }
    if (exists($test_options->{proxies})) {
       if (ref($test_options->{proxies}) eq 'ARRAY') {
 	 if (scalar(@{$test_options->{proxies}}) % 2 != 0) {
@@ -2421,7 +2403,7 @@ my $_validate_test_options = sub {
 	 }
       }
    }
-   $_validate_value->($test_options->{terse}, 'terse', \%_TERSE) 
+   $_validate_value->($test_options->{terse}, 'terse', \%_TERSE)
       or $found_error = 'yes';
    return 0 if $found_error;
    return 1;
@@ -2434,7 +2416,7 @@ my $_validate_test_options = sub {
 my $_init_web_test = sub {
 #
 # Description:
-# Initialize object, read input parameters, validate input parameters and set 
+# Initialize object, read input parameters, validate input parameters and set
 # default values.
 #
 # Synopsis: $_init_web_test->($param_file, $save_output, $self);
@@ -2455,7 +2437,7 @@ my $_init_web_test = sub {
 #
    my ($param_file, $save_output, $self) = @_;
 #
-# Initialize object, preserving Apache attributes from previous call 
+# Initialize object, preserving Apache attributes from previous call
    my @keys = keys %$self;
    foreach (@keys) {
       delete $self->{$_} unless /^apache_pid$|^base_url$|^temp_dir$/;
@@ -2488,42 +2470,42 @@ my $_init_web_test = sub {
       }
    }
 #
-# Read input parameters 
-   $_read_params->($self) or return 0;      
+# Read input parameters
+   $_read_params->($self) or return 0;
 #
-# Validate input parameters 
+# Validate input parameters
    my $found_error = '';
    $_validate_test_options->($self->{test_options}) or $found_error = 'yes';
    my $need_apache;
-   $_validate_web_tests->($self->{web_tests}, \$need_apache) 
+   $_validate_web_tests->($self->{web_tests}, \$need_apache)
       or $found_error = 'yes';
    $_validate_apache_params->($self, $need_apache) or $found_error = 'yes';
-   if ($found_error) { 
+   if ($found_error) {
       warn "ERROR: parameters in file $self->{param_file} are incorrect\n";
       return 0;
    }
    print $_fh_out "Parameters in file $self->{param_file} validated ",
       "successfully\n" if $Debug;
 #
-# If necessary, prompt user for userid/password for auth and pauth parameter(s) 
-   $_prompt_for_auth->($self->{test_options}->{auth}, 'auth') 
-      or return 0; 
-   $_prompt_for_auth->($self->{test_options}->{pauth}, 'pauth') 
-      or return 0; 
+# If necessary, prompt user for userid/password for auth and pauth parameter(s)
+   $_prompt_for_auth->($self->{test_options}->{auth}, 'auth')
+      or return 0;
+   $_prompt_for_auth->($self->{test_options}->{pauth}, 'pauth')
+      or return 0;
    foreach (@{$self->{web_tests}}) {
       $_prompt_for_auth->($_->{auth}, $_->{test_name}, 'auth')
-         or return 0; 
+         or return 0;
       $_prompt_for_auth->($_->{pauth}, $_->{test_name}, 'pauth')
-         or return 0; 
+         or return 0;
    }
 #
 # Set input parameter defaults
-   $self->{apache_dir} = '/usr/local/etc/http-webtest' 
-      unless defined($self->{apache_dir}); 
-   $self->{apache_loglevel} = 'warn' unless defined($self->{apache_loglevel}); 
+   $self->{apache_dir} = '/usr/local/etc/http-webtest'
+      unless defined($self->{apache_dir});
+   $self->{apache_loglevel} = 'warn' unless defined($self->{apache_loglevel});
    $self->{apache_max_wait} = DEFAULT_MAX_APACHE_WAIT_SECONDS
-      unless defined($self->{apache_max_wait}); 
-   $self->{apache_options} = '-X' unless defined($self->{apache_options}); 
+      unless defined($self->{apache_max_wait});
+   $self->{apache_options} = '-X' unless defined($self->{apache_options});
    $self->{test_options}->{fh_out} = $_fh_out;
    return 1;
 };
@@ -2531,8 +2513,8 @@ my $_init_web_test = sub {
 my $_make_temp_dir = sub {
 #
 # Description:
-# Copies all files and directories in directory $self->{apache_dir} to a 
-# temporary directory.  
+# Copies all files and directories in directory $self->{apache_dir} to a
+# temporary directory.
 #
 # Synopsis:
 # $_make_temp_dir->($apache_dir, $temp_dir);
@@ -2545,34 +2527,13 @@ my $_make_temp_dir = sub {
 #
 # Return values:
 # 1 -> No error
-# 0 -> Error copying file, making directory or chdir to directory 
+# 0 -> Error copying file, making directory or chdir to directory
 #
    my ($apache_dir, $temp_dir) = @_;
    my ($found_error, $cwd);
-   my $temp_dir_prefix = '/tmp/webtest_';
 #
 # Generate unique name for temporary directory using extreme paranoia
-   $$temp_dir = $temp_dir_prefix . $_get_unique_object_id->();
-   if (-e $$temp_dir) {
-      $$temp_dir = $temp_dir_prefix . $_get_unique_object_id->();
-      if (-e $$temp_dir) {
-         $$temp_dir = $temp_dir_prefix . $_get_unique_object_id->();
-         if (-e $$temp_dir) {
-            unlink $$temp_dir or rmtree($$temp_dir);
-            if (-e $$temp_dir) { 
-               warn "Can't create temporary directory in /tmp - directory ",
-                  "name collision";
-               return 0;
-            }
-         }
-      }
-   }
-   print $_fh_out "Creating temporary directory $$temp_dir\n" 
-      if $Debug;
-   unless (mkdir($$temp_dir, DIR_MODE)) {
-      warn "Can't create directory $$temp_dir: $!";
-      return 0;
-   }
+   $$temp_dir = tempdir('webtest_XXXXXX', TMPDIR => 1);
 #
 # Define subroutine that copies a file to a temporary directory tree
    my $copytree = sub {
@@ -2627,8 +2588,8 @@ my $_make_temp_dir = sub {
 my $_start_apache = sub {
 #
 # Description:
-# Forks a child process that starts Apache in on a random private/dynamic 
-# port number.  Verifies that Apache has started by fetching a test page 
+# Forks a child process that starts Apache in on a random private/dynamic
+# port number.  Verifies that Apache has started by fetching a test page
 # and searching the fetched page for a tag line.
 #
 # Synopsis: $_start_apache->($self);
@@ -2638,27 +2599,27 @@ my $_start_apache = sub {
 #
 # Return values:
 # 1 -> No error, Apache was started and is answering requests
-# 0 -> Error opening file or Apache failed to start 
+# 0 -> Error opening file or Apache failed to start
 #
    my $self = shift;
    my ($web_page, $config, $port, $user_agent, $req, $resp, $sleep,
        $started_apache);
 
-   $sleep = INITIAL_APACHE_WAIT_SECONDS;   
+   $sleep = INITIAL_APACHE_WAIT_SECONDS;
    $started_apache = 0; # Set flag to indicate Apache hasn't started yet
 #
 # Loop til Apache starts, chance of port collision on each iteration is 0.00006
    for (;;) {
 #
 # Insert random private/dynamic port number into Apache configuration file
-      $port = int(MIN_PRIVATE_PORT 
+      $port = int(MIN_PRIVATE_PORT
                   + rand(MAX_PRIVATE_PORT - MIN_PRIVATE_PORT));
       unless (open(CONFIG, "<$self->{temp_dir}/conf/httpd.conf-dist")) {
-         warn "Can't open file $self->{temp_dir}/conf/httpd.conf-dist: $!"; 
+         warn "Can't open file $self->{temp_dir}/conf/httpd.conf-dist: $!";
          return 0;
       }
-      local $/ = undef;   
-      $config = <CONFIG>;   # Slurp entire file 
+      local $/ = undef;
+      $config = <CONFIG>;   # Slurp entire file
       $/ = "\n";
       close CONFIG;
       $config =~ s/Please_do_not_modify_PORT/$port/g;
@@ -2679,7 +2640,7 @@ my $_start_apache = sub {
          $config =~ s/Please_do_not_modify_PERLSETVAR_MAILERRORSTO//g;
       }
       unless (open(CONF, ">$self->{temp_dir}/conf/httpd.conf")) {
-         warn "Can't open file $self->{temp_dir}/conf/httpd.conf: $!"; 
+         warn "Can't open file $self->{temp_dir}/conf/httpd.conf: $!";
          return 0;
       }
       print CONF $config;
@@ -2691,18 +2652,18 @@ my $_start_apache = sub {
          "$self->{apache_options}\n" if $Debug;
       unless ($self->{apache_pid} = fork) {
          exec "$self->{apache_exec} -f $self->{temp_dir}/conf/httpd.conf "
-              . "$self->{apache_options}"; 
+              . "$self->{apache_options}";
          die "Perl exec statement failed to start Apache: $!\n",
             "The apache_exec parameter may have an incorrect value\n";
-      }           
+      }
       print $_fh_out "Parent PID is $$, Apache PID is ",
          "$self->{apache_pid}, Apache port number is $port\n" if $Debug;
       print $_fh_out "Waiting $sleep seconds for Apache to start ...\n";
-      sleep $sleep;    
+      sleep $sleep;
 #
 # Verify Apache is running by fetching a test page
       $self->{base_url} = "http://$self->{hostname}:$port";
-      print $_fh_out 
+      print $_fh_out
          "Fetching $self->{base_url}/webtest/is_apache_responding.html\n"
          if $Debug;
       $user_agent = LWP::UserAgent->new();
@@ -2751,10 +2712,10 @@ sub new {
 
 =pod
 
- new($proto) 
+ new($proto)
  new()
-    Create new HTTP::WebTest object.  $proto (optional) is 
-    either a reference or a class (package) name.  Returns a new 
+    Create new HTTP::WebTest object.  $proto (optional) is
+    either a reference or a class (package) name.  Returns a new
     HTTP::WebTest object.
 
 =cut
@@ -2762,14 +2723,14 @@ sub new {
    my $proto = shift;
 #
 # Initialize object
-   my $self = { apache_pid    => '', 
+   my $self = { apache_pid    => '',
                 temp_dir      => '',
               };
    my $class = ref($proto) || $proto;
    bless $self, $class;
 #
 # Activate autoflush so standard out and standard error don't get scrambled
-   my $old_fh = select STDERR; 
+   my $old_fh = select STDERR;
    $| = 1;
    select STDOUT;
    $| = 1;
@@ -2791,10 +2752,10 @@ sub web_test {
     a temporary htdocs directory.
 
     Input arguments:
-    $param_file - A relative or absolute pathname to a parameter 
-       file.  See the FILES section for a description of the file.  
+    $param_file - A relative or absolute pathname to a parameter
+       file.  See the FILES section for a description of the file.
     $save_output (optional) - Option to save program output to a file.
-       The routine constructs the file name by taking the value of 
+       The routine constructs the file name by taking the value of
        $param_file, removing the file extension if it exists and
        appending ".out".  Error messages are always sent to standard
        error.
@@ -2809,7 +2770,7 @@ sub web_test {
     Return values:
     1 -> All tests ran successfully with no failures.
     0 -> Syntax error in input parameter file, system runtime error or
-         one or more of the tests failed. 
+         one or more of the tests failed.
 
 =cut
 
@@ -2819,15 +2780,15 @@ sub web_test {
    $$num_succeed = $$num_fail = 0;
 #
 # Read and validate input parameters, initialize object
-   $_init_web_test->($param_file, $save_output, $self) or return 0;  
+   $_init_web_test->($param_file, $save_output, $self) or return 0;
 
    foreach $test (@{$self->{web_tests}}) {
-      if (ref($test->{file_path}) eq 'ARRAY') {  
+      if (ref($test->{file_path}) eq 'ARRAY') {
          if (not $self->{apache_pid} or not kill(0, $self->{apache_pid})
-             or not -d $self->{temp_dir}) 
-         {  
+             or not -d $self->{temp_dir})
+         {
 #
-# Recursive copy of files in apache_dir to temporary Apache directory 
+# Recursive copy of files in apache_dir to temporary Apache directory
             $_make_temp_dir->($self->{apache_dir}, \$self->{temp_dir})
                or return 0;
 #
@@ -2835,8 +2796,8 @@ sub web_test {
             if (ref($self->{include_file_path}) eq 'ARRAY') {
                foreach (@{$self->{include_file_path}}) {
                   foreach ($i = 0; $i < @{$_}; $i = $i + 2) {
-                     $_copy_file->($_->[$i], "$self->{temp_dir}", 
-                                   $_->[$i + 1], \$target_file) 
+                     $_copy_file->($_->[$i], "$self->{temp_dir}",
+                                   $_->[$i + 1], \$target_file)
                         or return 0;
                   }
                }
@@ -2847,7 +2808,7 @@ sub web_test {
          }
          $test->{error_log} = "$self->{temp_dir}/logs/error.log";
 #
-# Copy file to be tested to temporary Apache htdocs directory 
+# Copy file to be tested to temporary Apache htdocs directory
          $_copy_file->($test->{file_path}->[0], "$self->{temp_dir}/htdocs",
                        $test->{file_path}->[1], \$target_file)
             or return 0;
@@ -2857,7 +2818,7 @@ sub web_test {
    }
 #
 # Run the tests!
-   run_web_test($self->{web_tests}, $num_fail, $num_succeed, 
+   run_web_test($self->{web_tests}, $num_fail, $num_succeed,
                 $self->{test_options}, 'validated');
    return 0 if $$num_fail;
    return 1;
@@ -2874,9 +2835,9 @@ sub run_web_test {
     e-mails test results.
 
     Input/output arguments:
-    \@web_tests - An arrayref of hashrefs.  Each hashref defines 
-       tests for one URL.  
- 
+    \@web_tests - An arrayref of hashrefs.  Each hashref defines
+       tests for one URL.
+
        Some of the hash keys can override the value of the
        corresponding $test_options keys.  For example, if the
        max_bytes hash key is defined in $test_options and you want
@@ -2911,12 +2872,12 @@ sub run_web_test {
          *version: Version number of cookie spec to use, usually 0.
          *name: Name of cookie. Cannot begin with a $ character.
          *value: Value of cookie.
-         *path: URL path name for which this cookie applies. Must 
+         *path: URL path name for which this cookie applies. Must
              begin with a / character.  See also path_spec.
-         *domain: Domain for which cookie is valid. Should begin 
+         *domain: Domain for which cookie is valid. Should begin
              with a period.  Must either contain two periods or be
              equal to '.local'.
-          port: List of allowed port numbers that the cookie may be 
+          port: List of allowed port numbers that the cookie may be
              returned to.  If not specified, cookie can be returned
              to any port.  Must be specified using the format N or
              N,N ..., where N is one or more digits.
@@ -2924,13 +2885,13 @@ sub run_web_test {
              ignore the value of path.  Default value is 0.
              = 1 -> Use the value of path.
              = 0 -> Ignore the specified value of path.
-          secure: Option to require secure protocols for cookie 
+          secure: Option to require secure protocols for cookie
              transmission.  Default value is 0.
              = 1 -> Use only secure protocols to transmit cookie.
              = 0 -> Secure protocols not required for transmission.
           maxage: Number of seconds until cookie expires.
           discard: Option to discard cookie when program exits.
-             Default 0.  (The cookie will be discarded regardless 
+             Default 0.  (The cookie will be discarded regardless
              of the value of this element.)
              = 1 -> Discard cookie.
              = 0 -> Don't discard cookie.
@@ -2944,24 +2905,24 @@ sub run_web_test {
                       = 'yes'   -> Ignore case while matching strings.
                       Otherwise -> Do case-sensitive string matching.
        ignore_error_log - Option to ignore messages in Apache error
-          log.  (See the error_log key in test_options argument.) 
+          log.  (See the error_log key in test_options argument.)
           = 'yes' -> Do not check for messages in the error log
                      FOR THIS URL ONLY.
           Otherwise, check messages if error_log key in test_options
           argument is defined.
-       max_bytes - Overrides the value of the corresponding 
+       max_bytes - Overrides the value of the corresponding
           $test_options key FOR THIS URL ONLY.
-       min_bytes - Overrides the value of the corresponding 
+       min_bytes - Overrides the value of the corresponding
           $test_options key FOR THIS URL ONLY.
-       max_rtime - Overrides the value of the corresponding 
+       max_rtime - Overrides the value of the corresponding
           $test_options key FOR THIS URL ONLY.
-       min_rtime - Overrides the value of the corresponding 
+       min_rtime - Overrides the value of the corresponding
           $test_options key FOR THIS URL ONLY.
        method - The type of the HTTP request, either 'get' or 'post'.
           If undefined or key does not exist, 'get' is used.
-       num_fail (Output) - The number of tests that failed.  If the 
-          fetch of the URL fails, one error is counted and the tests 
-          for that URL are skipped.  
+       num_fail (Output) - The number of tests that failed.  If the
+          fetch of the URL fails, one error is counted and the tests
+          for that URL are skipped.
        num_succeed (Output) - The number of tests that succeeded.  The
           successful fetch of the URL is not counted, only successful
           tests.  If the error_log argument is specified, the absence
@@ -2970,11 +2931,11 @@ sub run_web_test {
           be passed as parameters to the URL.  (This element is
           used to test pages that process input from forms.) Unless
           the method key is set to post, these pairs are URI-escaped
-          and appended to the requested URL.  (See 
+          and appended to the requested URL.  (See
           http://www.ietf.org/rfc/rfc2396.txt for URI escapes.)
        pauth - Overrides the value of the corresponding test_options
-          key FOR THIS URL ONLY.    
-       proxies - A hashref or arrayref containing service name 
+          key FOR THIS URL ONLY.
+       proxies - A hashref or arrayref containing service name
           / proxy URL pairs that specify proxy servers to use for
           requests.  For example:
           proxies = ( http => http://http_proxy.mycompany.com
@@ -3004,7 +2965,7 @@ sub run_web_test {
     \%test_options - (Optional) A hashref defining testing options.
        All, some or none of the keys may be defined.  Some of these
        options can also be specified in the web_tests argument.  The
-       allowed hash keys are: 
+       allowed hash keys are:
 
        accept_cookies - Option to accept cookies from the web server.
           = 'no'     -> Do not accept cookies.
@@ -3028,8 +2989,8 @@ sub run_web_test {
           = 'all'     -> Send e-mail containing test results.
           = 'errors'  -> Send e-mail only if one or more tests fails.
           Otherwise   -> Do not send e-mail.
-       mail_server - Fully-qualified name of of the mail server 
-          (e.g., mailhost.mycompany.com). 
+       mail_server - Fully-qualified name of of the mail server
+          (e.g., mailhost.mycompany.com).
        max_bytes - Maximum number of bytes expected in returned
           pages.  If this value is exceeded, an error message is
           displayed.
@@ -3041,7 +3002,7 @@ sub run_web_test {
        min_rtime - Minimum web server response time (seconds) expected.
           If this value is exceeded, an error message is displayed.
        pauth - Arrayref containing a userid and password to be used
-          for proxy access authorization.  
+          for proxy access authorization.
 
        (The regex_forbid and regex_require parameters contain
        one or more Perl regular expressions.  These are compared
@@ -3052,29 +3013,29 @@ sub run_web_test {
        3rd edition, Chapter 5.)
 
        regex_forbid - Arrayref of regular expressions that are
-          forbidden to exist in the returned page.  
+          forbidden to exist in the returned page.
        regex_require - Arrayref of regular expressions that are
-          required to exist in the returned page.  
+          required to exist in the returned page.
        send_cookies - Option to send cookies to web server.  This
           applies to cookies received from the web server or cookies
-          specified using the cookies key of the web_test argument. 
+          specified using the cookies key of the web_test argument.
           = 'no'     -> Do not send cookies to the web server.
           Otherwise  -> Send cookies to the web server.
        show_cookies - Option to display any cookies sent or received.
           = 'yes'    -> Display cookies in report.
           Otherwise  -> Do not display.
-       show_html - Option to include the returned web page in the 
+       show_html - Option to include the returned web page in the
           test report.
           = 'yes'    -> Display the web page in the test report.
           Otherwise  -> Do not display the web page.
        terse - Option to display shorter test report.
           = 'summary'     -> Only a one-line summary for each URL.
-          = 'failed_only' -> Only tests that failed and the summary. 
+          = 'failed_only' -> Only tests that failed and the summary.
           Otherwise       -> Show all tests and the summary.
        text_forbid - Arrayref of text strings that are forbidden to
-          exist in the returned page.  
+          exist in the returned page.
        text_require - Arrayref of text strings that are required to
-          exist in the returned page.  
+          exist in the returned page.
 
     Return values:
     1 -> All tests succeeded.
@@ -3085,7 +3046,7 @@ sub run_web_test {
 
    my ($web_tests, $num_fail, $num_succeed, $test_options, $already_validated)
       = @_;
-   my ($cookies, $nlines_before, $nbytes, $rtime, $web_page, $test, 
+   my ($cookies, $nlines_before, $nbytes, $rtime, $web_page, $test,
        $final_report, $fetch_ok);
    $$num_fail = $$num_succeed = 0;
    my $report = '';
@@ -3097,9 +3058,9 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
 .
 
    if (ref($web_tests) eq 'ARRAY') {
-      foreach (@{$web_tests}) { 
+      foreach (@{$web_tests}) {
          next unless (ref($_) eq 'HASH');
-         $_->{num_fail} = $_->{num_succeed} = 0; 
+         $_->{num_fail} = $_->{num_succeed} = 0;
       }
    }
 #
@@ -3110,9 +3071,9 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       $_validate_web_tests->($web_tests) or $found_error = 'yes';
       return 0 if $found_error;
    }
-   $test_options = { } unless (ref($test_options) eq 'HASH'); 
+   $test_options = { } unless (ref($test_options) eq 'HASH');
 #
-# Modify/transform test parameters 
+# Modify/transform test parameters
    my $mod_web_tests = $_transform_web_tests->($test_options, $web_tests);
 #
 # Initialize the HTTP user agent and cookie jar
@@ -3124,9 +3085,9 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       }
    } elsif (ref($test_options->{proxies}) eq 'ARRAY') {
       for (my $i = 0; $i < @{$test_options->{proxies}}; $i = $i + 2) {
-         $user_agent->proxy( $test_options->{proxies}->[$i] 
+         $user_agent->proxy( $test_options->{proxies}->[$i]
                              => $test_options->{proxies}->[$i+1]);
-      } 
+      }
    }
    my $cookie_jar = HTTP::WebTest::Cookies->new();
 
@@ -3137,36 +3098,36 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
          $_count_error_log->($test->{error_log}, \$nlines_before);
       }
       $fetch_ok = $_fetch_url->($test, $user_agent,
-         $test_options->{show_cookies}, $test->{send_cookies}, 
+         $test_options->{show_cookies}, $test->{send_cookies},
          $cookie_jar, \$report, \$web_page, \$nbytes, \$rtime);
 #
 # If the number of error log messages increased, report an error
       if (defined($test->{error_log})) {
-         $_count_error_log->($test->{error_log}, \$nlines_before, 
-            $test_options->{terse}, \$report, \$test->{num_fail}, 
+         $_count_error_log->($test->{error_log}, \$nlines_before,
+            $test_options->{terse}, \$report, \$test->{num_fail},
             \$test->{num_succeed});
       }
 #
 # If the response time returned violates bounds, report an error
       $_check_response_time->($rtime, $test->{max_rtime},
-         $test->{min_rtime}, $test_options->{terse}, \$report, 
+         $test->{min_rtime}, $test_options->{terse}, \$report,
          \$test->{num_fail}, \$test->{num_succeed});
       if ($fetch_ok) {
 #
 # If the number of bytes returned violates bounds, report an error
          $_check_nbytes->($nbytes, $test->{max_bytes}, $test->{min_bytes},
             $test_options->{terse}, \$report, \$test->{num_fail},
-            \$test->{num_succeed});   
+            \$test->{num_succeed});
 #
 # Test web page for the presence/absence of specified regular expressions
          $_test_regexes->($web_page, $test->{regex_require},
-            $test->{regex_forbid}, $test_options->{terse}, \$report, 
-            \$test->{num_fail}, \$test->{num_succeed});   
+            $test->{regex_forbid}, $test_options->{terse}, \$report,
+            \$test->{num_fail}, \$test->{num_succeed});
 #
 # Test web page for the presence/absence of specified text strings
          $_test_strings->($web_page, $test->{text_require},
             $test->{text_forbid}, $test->{ignore_case}, $test_options->{terse},
-            \$report, \$test->{num_fail}, \$test->{num_succeed});   
+            \$report, \$test->{num_fail}, \$test->{num_succeed});
       }
       $$num_fail += $test->{num_fail};
       $$num_succeed += $test->{num_succeed};
@@ -3174,7 +3135,7 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       $web_tests->[$itest]->{num_succeed} = $test->{num_succeed};
       ++$itest;
 #
-# Add a line to the report summarizing the test results for this URL 
+# Add a line to the report summarizing the test results for this URL
       pipe READ_SUMMARY, WRITE_SUMMARY;
       write WRITE_SUMMARY;
       close WRITE_SUMMARY;
@@ -3184,7 +3145,7 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
    }
 #
 # Write the test report to standard output or a file
-   if (defined($test_options->{terse}) and $test_options->{terse} eq 'summary') 
+   if (defined($test_options->{terse}) and $test_options->{terse} eq 'summary')
    {
       $final_report = "$summary\n";
    } else {
@@ -3199,7 +3160,7 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       print $final_report;
    }
    $_mail_report->($final_report, $test_options->{mail},
-      $test_options->{mail_server}, $test_options->{mail_addresses}, 
+      $test_options->{mail_server}, $test_options->{mail_addresses},
       $$num_fail);
    return 0 if $$num_fail;
    return 1;
@@ -3209,29 +3170,29 @@ sub DESTROY {
 
 =pod
 
- DESTROY() 
-    Kills Apache (if started), deletes temporary directories (if 
-    created).  Returns 1 if clean up tasks were successful, 0 
+ DESTROY()
+    Kills Apache (if started), deletes temporary directories (if
+    created).  Returns 1 if clean up tasks were successful, 0
     otherwise.
 
 =cut
 
    my $self = shift;
-   my $found_error = '';   
+   my $found_error = '';
 #
-# Restore the normal terminal state 
+# Restore the normal terminal state
    ReadMode('normal');
-   if ($self->{apache_pid} and kill(0, $self->{apache_pid})) { 
+   if ($self->{apache_pid} and kill(0, $self->{apache_pid})) {
 #
 # Kill Apache
-      unless (kill('SIGTERM', $self->{apache_pid})) { 
+      unless (kill('SIGTERM', $self->{apache_pid})) {
          warn "Can't kill Apache, process ID: $self->{apache_pid}";
          $found_error = 'yes';
       }
    }
    if ($Debug ne $_DEBUG{preserve} and -d $self->{temp_dir}) {
 #
-# Delete temporary directory 
+# Delete temporary directory
       sleep 1;              # Wait for Apache to stop to avoid error messages
       if ($Debug) {
          print $_fh_out "Deleting temporary directory ",
@@ -3278,10 +3239,10 @@ sub add_cookie_header {
  APACHE DIRECTORY AND FILES section below.
 
  The run_web_test method does not require a parameter file.
- 
+
 
  PARAMETER FILE
- 
+
  If the input parameters are specified in a text file, you must pass
  the name of the file as an argument to the web_test() method.
  If you are running dozens of tests, you may want to divide them
@@ -3319,13 +3280,13 @@ sub add_cookie_header {
 
  Parameters - Short descriptions
  ===============================
- Parameters that are always required are marked with an asterisk.  
+ Parameters that are always required are marked with an asterisk.
  Parameters that are usually required are marked with a plus sign.
 
   accept_cookies: Option to accept cookies sent by web server.
   apache_dir: Name of directory containing Apache files.
  +apache_exec: Path name of Apache executable.
-  apache_loglevel: Apache logging level. 
+  apache_loglevel: Apache logging level.
   apache_max_wait: Maximum seconds to wait for Apache to start.
   apache_options: Additional Apache command line options.
   auth: Two-element list containing userid and password to be passed
@@ -3338,7 +3299,7 @@ sub add_cookie_header {
   ignore_case: Option to do case-insensitive matching with text_forbid
      and text_require parameters.
   ignore_error_log: Option to ignore errors found in Apache error log.
-  include_file_path: List containing files to copy and subdirectory 
+  include_file_path: List containing files to copy and subdirectory
      path relative to the Apache ServerRoot directory to copy them to.
   mail: Option to send e-mail containing results of tests.
   mail_addresses: List of e-mail addresses to send reports to.
@@ -3349,7 +3310,7 @@ sub add_cookie_header {
   max_rtime: Maximum web server response time (seconds) expected.
   min_rtime: Minimum web server response time (seconds) expected.
   pauth: Two-element list containing userid and password to be passed
-     to web server for proxy authorization.  
+     to web server for proxy authorization.
   params: List of parameter name/value pairs to be passed to server.
   proxies: List of service name / proxy URL pairs to use for requests.
   regex_forbid: List of strings/regexs that must NOT occur in page.
@@ -3372,7 +3333,7 @@ sub add_cookie_header {
     * lines beginning with white space (blanks or tabs) followed by
       a number sign
 
- The order of the parameters in the parameter file is arbitrary, 
+ The order of the parameters in the parameter file is arbitrary,
  with the following exceptions:
     * Test block parameters MUST occur between a test_name parameter
       and an end_test directive.
@@ -3382,46 +3343,46 @@ sub add_cookie_header {
     * The parameter save_output, if specified, should be the first
       parameter in the file.  (This is not required.)
 
- Parameters are either scalar (single-valued) or lists (single or 
- multi-valued).  
+ Parameters are either scalar (single-valued) or lists (single or
+ multi-valued).
 
- You can specify scalar parameters using forms such as: 
- name = value 
+ You can specify scalar parameters using forms such as:
+ name = value
  name =
         value
- name = 'value' 
+ name = 'value'
 
  You can specify list parameters using forms such as:
- name = ( first value  
+ name = ( first value
           second value )
  name = ( first value => second value
           third value => fourth value
         )
  name = ( first value => second value )
- name = ( 
+ name = (
           'first value'
           'second value' )
- name = ( 
+ name = (
           first value
-          second value 
+          second value
           third value => 'fourth value'
         )
- name = 
+ name =
     ( first value
       'second value' )
- name = ( 
+ name = (
           'first value'
-          'second value' 
+          'second value'
         )
- (The equals sign must be followed by a space, tab or newline; all 
+ (The equals sign must be followed by a space, tab or newline; all
  other spaces are optional.)
 
  PARAMETER VALUES BEGINNING AND ENDING WITH A SINGLE QUOTE WILL HAVE
  THE SINGLE QUOTES REMOVED.  For example, 'foobar' is parsed as a
- value of foobar and ''foobar'' is parsed as a value of 'foobar'.  
+ value of foobar and ''foobar'' is parsed as a value of 'foobar'.
  To specify a null (placeholder) value, use ''.
 
- You MUST enclose the parameter value in single quotes if you want 
+ You MUST enclose the parameter value in single quotes if you want
  to specify:
     * A value beginning with a left parenthesis
     * A value ending with a right parenthesis
@@ -3432,14 +3393,14 @@ sub add_cookie_header {
  Examples of parameter files
  ===========================
  The parameters below specify tests of a local file and a remote
- URL.  The tests specified by the text_forbid parameter apply to 
- both the "RayCosoft home page" and the "Yahoo home page" tests.  
+ URL.  The tests specified by the text_forbid parameter apply to
+ both the "RayCosoft home page" and the "Yahoo home page" tests.
  Hence, if either returned page contains one of the case-
- insensitive strings in text_forbid, the test fails.  If any test 
- fails or the fetch of the URL fails,, an e-mail will be sent to 
+ insensitive strings in text_forbid, the test fails.  If any test
+ fails or the fetch of the URL fails,, an e-mail will be sent to
  tester@unixscripts.com.
 
- apache_exec = /usr/sbin/apache 
+ apache_exec = /usr/sbin/apache
  ignore_case = yes
  mail = errors
  mail_addresses = ( tester@unixscripts.com )
@@ -3447,15 +3408,15 @@ sub add_cookie_header {
  text_forbid = ( Premature end of script headers
                  an error occurred while processing this directive
                )
- 
- test_name = 'RayCosoft home page (static)' 
+
+ test_name = 'RayCosoft home page (static)'
     file_path = ( raycosoft_home.html => . )
-    text_require = (     
+    text_require = (
        <a href="/dept/peopledev/new_employee/"><font color="#0033cc">
        <a href="https://www.raycosoft.com/"><font color=
                    )
  end_test
- 
+
  test_name = Yahoo home page
     url = www.yahoo.com
     text_require = ( <a href=r/qt>Quotations</a>...<br> )
@@ -3472,9 +3433,9 @@ sub add_cookie_header {
 
  apache_exec = /usr/sbin/apache
  ignore_case = yes
- include_file_path = ( footer.inc => htdocs/apps/myapp/inc 
-                       header.inc => htdocs/apps/myapp/inc 
-                       head.inc   => htdocs/apps/myapp/inc 
+ include_file_path = ( footer.inc => htdocs/apps/myapp/inc
+                       header.inc => htdocs/apps/myapp/inc
+                       head.inc   => htdocs/apps/myapp/inc
                        go.script  => htdocs/shared/includes
                        go.include => htdocs/shared/includes
                        ../utils/DBconn.pm  => lib/perl/utils
@@ -3490,10 +3451,10 @@ sub add_cookie_header {
                       an error occurred while processing this directive
                     )
  end_test
- 
+
  Parameters - Detailed descriptions
  ==================================
- PARAMETER: accept_cookies TYPE: global and/or test block parameter  
+ PARAMETER: accept_cookies TYPE: global and/or test block parameter
  DEFAULT: yes  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
  DESCRIPTION: Option to accept and save cookies sent by the web
  server.  These cookies exist only while the program is executing
@@ -3507,27 +3468,27 @@ sub add_cookie_header {
  the send_cookies parameter.
 
  PARAMETER: apache_dir  TYPE: global parameter
- DEFAULT: /usr/local/etc/http-webtest  
+ DEFAULT: /usr/local/etc/http-webtest
  DESCRIPTION: Absolute or relative path name of directory containing
  Apache files.  See the APACHE DIRECTORY AND FILES section below.
  This parameter is ignored unless the file_path parameter is specified.
 
- PARAMETER: apache_exec  TYPE: global parameter  
+ PARAMETER: apache_exec  TYPE: global parameter
  NO DEFAULT.  REQUIRED if the file_path parameter is specified.
  DESCRIPTION: Path name of Apache executable.  This command must be
  in your $PATH or the path name must start with '/'.  This parameter
  is ignored unless the file_path parameter is specified.
 
- PARAMETER: apache_loglevel  TYPE: global parameter  
+ PARAMETER: apache_loglevel  TYPE: global parameter
  DEFAULT: warn  OPTIONAL PARAMETER.
- ALLOWED VALUES: debug info notice warn error crit alert emerg 
+ ALLOWED VALUES: debug info notice warn error crit alert emerg
  DESCRIPTION: Apache logging level.  If you use a level less than
  warn (i.e., debug, info, or notice), the program may generate
  irrelevant errors.  This parameter is ignored unless the file_path
  parameter is specified.  See also the ignore_error_log parameter.
 
  PARAMETER: apache_max_wait  TYPE: global parameter
- DEFAULT: 64  ALLOWED VALUES: Any integer > 9 and < 601  OPTIONAL 
+ DEFAULT: 64  ALLOWED VALUES: Any integer > 9 and < 601  OPTIONAL
  PARAMETER.
  DESCRIPTION: Maximum number of seconds to wait for Apache to start.
  The program starts Apache, waits 4 seconds and fetches a test page.
@@ -3537,7 +3498,7 @@ sub add_cookie_header {
  greater than apache_max_wait.  This parameter is ignored unless
  the file_path parameter is specified.
 
- PARAMETER: apache_options  TYPE: global parameter 
+ PARAMETER: apache_options  TYPE: global parameter
  DEFAULT: -X  ALLOWED VALUES: See Apache man page.  OPTIONAL PARAMETER.
  DESCRIPTION: Additional Apache command line options.  Many of the
  options cause Apache to exit immediately after starting, so the
@@ -3562,11 +3523,11 @@ sub add_cookie_header {
  If you specify it as both a global and a test block parameter,
  the value in the test block applies only to that test block.
 
- PARAMETER: cookie  TYPE: test block parameter  
+ PARAMETER: cookie  TYPE: test block parameter
  NO DEFAULT.  ALLOWED VALUES: A list with at least 5 elements.  If
- there are more than 10 elements, there must be an even number of 
- elements.  The cookie parameter is ignored if the send_cookies 
- parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie 
+ there are more than 10 elements, there must be an even number of
+ elements.  The cookie parameter is ignored if the send_cookies
+ parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie
  parameters may be specified.
  DESCRIPTION: List that specifies a cookie to send to the web server.
  See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
@@ -3574,16 +3535,16 @@ sub add_cookie_header {
  specifying multiple instances of the cookie parameter.  The cookie
  parameter has the form:
 
- ( version 
-   name 
-   value 
-   path 
-   domain 
-   port 
-   path_spec 
-   secure 
-   maxage 
-   discard 
+ ( version
+   name
+   value
+   path
+   domain
+   port
+   path_spec
+   secure
+   maxage
+   discard
    name1
    value1
    name2
@@ -3591,55 +3552,55 @@ sub add_cookie_header {
    ...
  )
 
- Any element not marked below as REQUIRED may be defaulted by 
- specifying a null value of ''  
+ Any element not marked below as REQUIRED may be defaulted by
+ specifying a null value of ''
 
  version: Version number of cookie spec to use, usually 0. (REQUIRED)
  name: Name of cookie. (REQUIRED)  Cannot begin with a $ character.
  value: Value of cookie. (REQUIRED)
- path: URL path name for which this cookie applies. (REQUIRED)  Must 
-    begin with a / character.  See also path_spec. 
- domain: Domain for which cookie is valid. (REQUIRED)  Should begin 
+ path: URL path name for which this cookie applies. (REQUIRED)  Must
+    begin with a / character.  See also path_spec.
+ domain: Domain for which cookie is valid. (REQUIRED)  Should begin
     with a period.  Must either contain two periods or be equal
     to .local
- port: List of allowed port numbers that the cookie may be returned 
-    to.  If not specified, cookie can be returned to any port.  
-    Must be specified using the format N or N,N ..., where N is one 
-    or more digits. 
+ port: List of allowed port numbers that the cookie may be returned
+    to.  If not specified, cookie can be returned to any port.
+    Must be specified using the format N or N,N ..., where N is one
+    or more digits.
  path_spec: Ignored if version is less than 1.  Option to ignore the
     value of path.  Default value is 0.
     = 1 -> Use the value of path.
     = 0 -> Ignore the specified value of path.
  secure: Option to require secure protocols for cookie transmission.
     Default value is 0.
-    = 1 -> Use only secure protocols to transmit this cookie. 
+    = 1 -> Use only secure protocols to transmit this cookie.
     = 0 -> Secure protocols are not required for transmission.
  maxage: Number of seconds until cookie expires.
- discard: Option to discard cookie when the program finishes.  
+ discard: Option to discard cookie when the program finishes.
     Default 0.  (The cookie will be discarded regardless of the value
     of this element.)
     = 1 -> Discard cookie when the program finishes.
     = 0 -> Don't discard cookie.
  name/value: Zero, one or several name/value pairs may be specified.
-    The name parameters are words such as Comment or 
-    CommentURL and the value parameters are strings that 
-    may contain embedded blanks. 
+    The name parameters are words such as Comment or
+    CommentURL and the value parameters are strings that
+    may contain embedded blanks.
 
  See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
 
  An example cookie would look like:
- ( 0 
-   WebTest cookie #1 
-   expires&2592000&type&consumer 
+ ( 0
+   WebTest cookie #1
+   expires&2592000&type&consumer
    /
-   .unixscripts.com  
+   .unixscripts.com
    ''
-   0 
-   0 
-   200 
-   1 
+   0
+   0
+   200
+   1
  )
- 
+
  PARAMETER: debug  TYPE: global parameter
  DEFAULT: no  ALLOWED VALUES: no yes preserve  OPTIONAL PARAMETER.
  DESCRIPTION: This parameter is primarily for use by programmers
@@ -3648,9 +3609,9 @@ sub add_cookie_header {
  diagnostics on the parameter processing, this parameter should
  preceed all other parameters.)  The "preserve" value makes the
  program display verbose diagnostic messages and prevents the
- program from deleting the temporary Apache directory, which is 
+ program from deleting the temporary Apache directory, which is
  named "/tmp/webtest_x_y", where x and y are arbitrary positive
- integers. 
+ integers.
 
  DIRECTIVE: end_test  TYPE: test block directive
  NO VALUE (i.e. specify end_test with no equals sign or value).
@@ -3658,7 +3619,7 @@ sub add_cookie_header {
  Directive is REQUIRED.
  DESCRIPTION: Signifies the end of a test block.
 
- PARAMETER: file_path  TYPE: test block parameter 
+ PARAMETER: file_path  TYPE: test block parameter
  NO DEFAULT.  ALLOWED VALUES: Second list element cannot begin with
  '../' or contain '/../'.  You MUST specify file_path or url, but
  not both, in each test block.
@@ -3668,7 +3629,7 @@ sub add_cookie_header {
  copy the file to.  The copied file will have the same basename as
  the first element and the relative pathname of the second element.
  To copy the file directly to the htdocs directory, use a pathname of
- . or './.'.  
+ . or './.'.
 
  For example:
  file_path = ( /home/tester/testfile.html => mydepartment/myproject )
@@ -3680,7 +3641,7 @@ sub add_cookie_header {
  and text_require parameters.  This does not affect the regex_forbid
  or regex_require parameters.
 
- PARAMETER: ignore_error_log  TYPE: global and/or test block 
+ PARAMETER: ignore_error_log  TYPE: global and/or test block
  parameter  DEFAULT: no  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
  DESCRIPTION: Option to ignore any errors found in the Apache error
  log.  The default behavior is to flag an error if the fetch causes
@@ -3690,7 +3651,7 @@ sub add_cookie_header {
  See also the Restrictions / Bugs section.
 
  PARAMETER: include_file_path  TYPE: global parameter
- NO DEFAULT.  ALLOWED VALUES: Even-numbered list elements cannot 
+ NO DEFAULT.  ALLOWED VALUES: Even-numbered list elements cannot
  begin with '../' or contain '/../'.  OPTIONAL PARAMETER.  You can
  specify more than one instance of this paramter.
  DESCRIPTION: List with an even number of elements.  Odd-numbered
@@ -3711,15 +3672,15 @@ sub add_cookie_header {
  This parameter is also useful for adding Perl modules that are
  needed by the web page specified by the file_path parameter.  For
  example:
- include_file_path = ( ../apps/myapp/DBconn.pm => lib/perl/apps ) 
- will copy the Perl module DBconn.pm to a directory that is in the 
+ include_file_path = ( ../apps/myapp/DBconn.pm => lib/perl/apps )
+ will copy the Perl module DBconn.pm to a directory that is in the
  Perl @INC array.
 
  An alternative to using the include_file_path parameter is to
  manually copy the files into the desired subdirectory in the
  directory specified by the apache_dir parameter.
 
- PARAMETER: mail  TYPE: global parameter  
+ PARAMETER: mail  TYPE: global parameter
  DEFAULT: no  ALLOWED VALUES: no errors all  OPTIONAL PARAMETER.
  DESCRIPTION: Option to e-mail reports to the addresses in
  the mail_addresses parameter using the server specified by the
@@ -3730,7 +3691,7 @@ sub add_cookie_header {
  results of all tests in the parameter file, regardless of success
  or failure.
 
- PARAMETER: mail_addresses  TYPE: global parameter  
+ PARAMETER: mail_addresses  TYPE: global parameter
  NO DEFAULT.  REQUIRED unless mail = no.
  DESCRIPTION: List of e-mail addresses to send mail to.  This
  parameter has two uses.  If the mail parameter is set to "errors"
@@ -3741,44 +3702,44 @@ sub add_cookie_header {
  scripts will be e-mailed to the first address in the mail_addresses
  list.
 
- PARAMETER: mail_server  TYPE: global parameter  
+ PARAMETER: mail_server  TYPE: global parameter
  NO DEFAULT.  REQUIRED unless mail = no.
- DESCRIPTION: Name of mail server.  
+ DESCRIPTION: Name of mail server.
 
  PARAMETER: method  TYPE: test block parameter
  DEFAULT: get  ALLOWED VALUES: get post  OPTIONAL PARAMETER.
- DESCRIPTION: HTTP method for the request(s).  See RFC 2616 
+ DESCRIPTION: HTTP method for the request(s).  See RFC 2616
  (HTTP/1.1 protocol).
 
  PARAMETER: max_bytes  TYPE: global and/or test block parameter
  NO DEFAULT   ALLOWED VALUES: Any integer greater that zero and
  greater than min_bytes (if min_bytes is specified).  OPTIONAL
  PARAMETER.
- DESCRIPTION: Maximum number of bytes expected in returned page.  
+ DESCRIPTION: Maximum number of bytes expected in returned page.
  If this value is exceeded, an error message is displayed.
 
  PARAMETER: min_bytes  TYPE: global and/or test block parameter
- NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if 
+ NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if
  max_bytes is specified).  OPTIONAL PARAMETER.
- DESCRIPTION: Minimum number of bytes expected in returned page.  
- If the number of returned bytes is less than this value, an error 
+ DESCRIPTION: Minimum number of bytes expected in returned page.
+ If the number of returned bytes is less than this value, an error
  message is displayed.
 
  PARAMETER: max_rtime  TYPE: global and/or test block parameter
  NO DEFAULT   ALLOWED VALUES: Any number greater that zero and
  greater than min_rtime (if min_rtime is specified).  OPTIONAL
  PARAMETER.
- DESCRIPTION: Maximum web server response time expected.  If this 
+ DESCRIPTION: Maximum web server response time expected.  If this
  value is exceeded, an error message is displayed.
 
  PARAMETER: min_rtime  TYPE: global and/or test block parameter
- NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if 
+ NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if
  max_rtime is specified).  OPTIONAL PARAMETER.
- DESCRIPTION: Minimum web server response time expected.  If this 
+ DESCRIPTION: Minimum web server response time expected.  If this
  value is exceeded, an error message is displayed.
 
  PARAMETER: params  TYPE: test block parameter
- NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
+ NO DEFAULT.  ALLOWED VALUES: A list with an even number of
  elements.  OPTIONAL PARAMETER.
  DESCRIPTION: A set of parameter name/value pairs to be passed
  with the request.  (This parameter is used to test pages that
@@ -3786,14 +3747,14 @@ sub add_cookie_header {
  these pairs are URI-escaped and appended to the requested URL.
  For example,
  url = http://www.hotmail.com/cgi-bin/hmhome
- params = ( curmbox 
-            F001 A005 
+ params = ( curmbox
+            F001 A005
             from
-            HotMail ) 
+            HotMail )
  generates the request:
  http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
  The names and values will be URI-escaped as defined by RFC 2396.
- (See http://www.ietf.org/rfc/rfc2396.txt.) 
+ (See http://www.ietf.org/rfc/rfc2396.txt.)
 
  PARAMETER: pauth  TYPE: global and/or test block parameter
  No default.  ALLOWED VALUES: A one or two element list.  OPTIONAL
@@ -3810,10 +3771,10 @@ sub add_cookie_header {
  userid and web page userid are the same.)
 
  PARAMETER: proxies  TYPE: global parameter
- NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
+ NO DEFAULT.  ALLOWED VALUES: A list with an even number of
  elements.  OPTIONAL PARAMETER.
  DESCRIPTION: A set of service name / proxy URL pairs that specify
- proxy servers to use for requests.  For example: 
+ proxy servers to use for requests.  For example:
  proxies = ( http => http://http_proxy.mycompany.com
              ftp  => http://ftp_proxy.mycompany.com )
 
@@ -3829,14 +3790,14 @@ sub add_cookie_header {
 
  You can specify these parameters globally or within a test block.
  If you specify one as both a global and a test block parameter, the
- value in the test block applies only to that test block.  
+ value in the test block applies only to that test block.
 
- PARAMETER: regex_forbid  TYPE: global and/or test block parameter  
- NO DEFAULT.  OPTIONAL PARAMETER.  
+ PARAMETER: regex_forbid  TYPE: global and/or test block parameter
+ NO DEFAULT.  OPTIONAL PARAMETER.
  DESCRIPTION: List of one or more regular expressions that must
  NOT exist on the web page.  See also the text_forbid parameter.
 
- PARAMETER: regex_require  TYPE: global and/or test block parameter  
+ PARAMETER: regex_require  TYPE: global and/or test block parameter
  NO DEFAULT.  OPTIONAL PARAMETER.
  DESCRIPTION: List of one or more regular expressions that MUST
  exist on the web page.  See also the text_require parameter.
@@ -3855,7 +3816,7 @@ sub add_cookie_header {
  This parameter should precede all other parameters in the parameter
  file. (This order is not required.)
 
- PARAMETER: send_cookies TYPE: global and/or test block parameter  
+ PARAMETER: send_cookies TYPE: global and/or test block parameter
  DEFAULT: yes  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
  DESCRIPTION: Option to send cookies to the web server.  This applies
  to cookies passed by the web server(s) during the test session and
@@ -3870,25 +3831,25 @@ sub add_cookie_header {
  value in the test block applies only to that test block.  See also
  the accept_cookies parameter.
 
- PARAMETER: show_cookies TYPE: global parameter  
+ PARAMETER: show_cookies TYPE: global parameter
  DEFAULT: no  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
  DESCRIPTION: Option to list cookies sent to or received from the web
  server.  Each cookie will be preceded with the string "Set-Cookie3:"
  and the cookie elements will be separated by semicolons.
 
- PARAMETER: show_html  TYPE: global parameter  
+ PARAMETER: show_html  TYPE: global parameter
  DEFAULT: no  ALLOWED VALUES: no yes  OPTIONAL PARAMETER.
  DESCRIPTION: Option to display the HTML source with the output.
  You can specify this parameter globally or within a test block.
  If you specify it as both a global and a test block parameter,
  the value in the test block applies only to that test block.
- 
+
  If, and only if, you specify the file_path parameter, the program
  starts a local instance of Apache, copies the file to its htdocs
  directory, fetches the file from Apache and runs the specified
  tests.
 
- PARAMETER: terse  TYPE: global parameter  
+ PARAMETER: terse  TYPE: global parameter
  DEFAULT: no  ALLOWED VALUES: no failed_only summary  OPTIONAL
  PARAMETER.
  DESCRIPTION: Option to display short test report.  If you set
@@ -3898,7 +3859,7 @@ sub add_cookie_header {
  the summary.  If you set terse to 'no', the program displays all
  the test results and the summary.
 
- PARAMETER: test_name  TYPE: test block parameter  
+ PARAMETER: test_name  TYPE: test block parameter
  NO DEFAULT.  Parameter is REQUIRED.
  DESCRIPTION: Name of this test, usually just the URL.  Only the
  first 56 characters are used.  This MUST be the first parameter
@@ -3906,19 +3867,19 @@ sub add_cookie_header {
  within a parameter file.  There MUST be one end_test directive
  for each test_name parameter.
 
- PARAMETER: text_forbid  TYPE: global and/or test block parameter  
- NO DEFAULT.  OPTIONAL PARAMETER.  
+ PARAMETER: text_forbid  TYPE: global and/or test block parameter
+ NO DEFAULT.  OPTIONAL PARAMETER.
  DESCRIPTION: List of one or more text strings that must NOT exist
- on the web page.  See also the ignore_case and regex_forbid 
+ on the web page.  See also the ignore_case and regex_forbid
  parameters.
 
- PARAMETER: text_require  TYPE: global and/or test block parameter  
+ PARAMETER: text_require  TYPE: global and/or test block parameter
  NO DEFAULT.  OPTIONAL PARAMETER.
  DESCRIPTION: List of one or more text strings that MUST exist on
  the web page.  See also the ignore_case and regex_require
- parameters. 
+ parameters.
 
- PARAMETER: url  TYPE: test block parameter  
+ PARAMETER: url  TYPE: test block parameter
  NO DEFAULT.  You MUST specify file_path or url, but not both, in
  each test block.
  DESCRIPTION: URL to test, if value starts with "www.", "http://"
@@ -3927,7 +3888,7 @@ sub add_cookie_header {
 
 
  APACHE DIRECTORY AND FILES
- 
+
  The apache_dir parameter must be set to the name of a directory
  that contains the subdirectories "conf", "logs" and "htdocs".
  The conf subdirectory must contain a file named "httpd.conf-dist".
@@ -3972,8 +3933,8 @@ sub add_cookie_header {
  VirtualHost block for the PerlHandler Apache::ASP.  At runtime
  these tags are replaced with the the directive PerlSetVar followed
  by the name of the parameter (Global, MailHost, MailErrorsTo)
- and a parameter value derived from other input parameters.  See 
- the Apache::ASP documentation for details 
+ and a parameter value derived from other input parameters.  See
+ the Apache::ASP documentation for details
  (http://www.apache-asp.org/config.html).
 
  The subdirectory htdocs must contain a subdirectory named webtest
@@ -3984,15 +3945,15 @@ sub add_cookie_header {
 
 =head1 PREREQUISITES
 
- Perl version 5.000 or higher is required. The following Perl modules
- are also required.  (These are all part of the base distribution of
- version 5.005_03 and higher.)
+Perl version 5.005 or higher is required. The following Perl modules
+are also required.  (Some of them are part of the base distribution.)
 
  Cwd
  File::Basename
  File::Copy
  File::Find
  File::Path
+ File::Temp
  HTTP::Cookies
  HTTP::Request::Common
  HTTP::Response
@@ -4001,134 +3962,42 @@ sub add_cookie_header {
  Net::SMTP
  Sys::Hostname
  Term::ReadKey
- Time::HiRes 
- URI::URL 
+ Time::HiRes
+ URI::URL
 
 =head1 RESTRICTIONS / BUGS
 
-This module only works on Unix (e.g., Solaris, Linux, AIX, etc.).
+This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
+etc.) but it should work on Win32 systems.
+
+Local file tests don't work on Win32 systems.
+
 The module's HTTP requests time out after 3 minutes (the default
 value for LWP::UserAgent).  If the file_path parameter is specified,
 Apache must be installed.  If the file_path parameter is specified,
 the directory /tmp cannot be NFS-mounted, since Apache's lockfile
-and the SSL mutex file must be stored on a local disk.  
-
-=head1 VERSION
-
-This document describes version 1.02, release date 14 June 2001
-
-=head1 CHANGES
-
- 1.04  Mon Jul 16 2001
-
-   * Added PREREQ_PM entry into Makefile.PL.  (Thanks Britton
-     <fsblk@aurora.uaf.edu> for suggesting this.)
-
-   * Fixed bug: test parameters accept_cookies and send_cookies did not
-     affected transmission and receipt of cookies at all.
-
- 1.03  Wed Jul  4 2001
-
-   * First release by new maintainer.
-
-   * Fixed bug with passing form params with POST requests.
-
- 1.02  Tue Jun 26 2001
-
-   * OWNERSHIP OF HTTP:WebTest HAS BEEN TRANSFERRED FROM Richard
-     Anderson <Richard.Anderson@raycosoft.com> TO Ilya Martynov
-     <ilya@martynov.org>.  PLEASE DIRECT ALL QUESTIONS AND COMMENTS 
-     TO Ilya Martynov.  So long, and thanks for all the fish.
-
-   * Change succeed/fail count so that a successful fetch of a 
-     page counts as a successful test.  (An unsuccessful fetch
-     still counts as a failed test.)
-
-   * Removed extraneous call to extract_cookies from get_response.
-
- 1.01  Wed Jun 14 2001
-
-   * Modified cookies parameter to allow less than 10 elements.  
-     (Thanks to Thomas Ayles <tayles@arsdigita.com> for suggesting
-     this.)
-
-   * Fixed bug that caused get_response() to fail to capture all 
-     cookies returned by the webserver during redirects.  Added
-     subclass HTTP::WebTest::Cookies (a modified HTTP::Cookies
-     class).  (Thanks to Ilya Martynov <ilya@martynov.org> for
-     this fix.)
-
-   * Modified web server response time measurement to be more 
-     accurate.
-
-   * Exported run_web_test method so it can be called directly.
-
- 1.00  Wed Jun 06 2001
-
-   * Added max_rtime and min_rtime parameters to test web server 
-     response time.  The perl module Time::HiRes is now a
-     prerequisite to install HTTP::WebTest.  (This code was
-     a collaborative effort by the author and Michael Blakeley 
-     <mike@blakeley.com>.)
-
-   * Added pauth parameter for proxy authorization.  (This code 
-     was a collaborative effort by the author and Darren Fulton 
-     <Darren.Fulton@team.telstra.com>.)
-
-   * Changed max_bytes and min_bytes paramters from test block 
-     parameters to global and/or test block parameters.
-
-   * Made format of output report more robust for max_bytes and 
-     min_bytes parameters.
-
- 0.30  Mon Mar 05 2001
-
-   * Fixed ./t/*.t files so that "make test" runs correctly on 
-     Solaris.  (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; 
-     export WEBTEST_LIB.)  (Thanks to M. Simon Cavalletto 
-     <simonm@evolution.com> for reporting this bug.)
-
-   * Improved clarity of documentation and program output.
-
- 0.20  Mon Feb 26 2001
-
-   * Fixed bug that caused module to abort when a HTTP-Redirect 
-     (302) is sent back with a relative URL.  Thanks to Andre 
-     Machowiak <ama@ision.net> for this fix.
-
-   * Set Content-type to 'application/x-www-form-urlencoded' 
-     for POST.  Thanks to Andre Machowiak <ama@ision.net> for
-     this fix.
-
-   * Modified Makefile.PL to get path of perl using the which 
-     command and create the wt script with this path in the 
-     she-bang line (#!).  (Thanks to Britton <fsblk@aurora.uaf.edu>
-     for reporting this bug.)
-
-   * Modified "make test" tests to write output to files in the 
-     t subdirectory.
-
- 0.01  Sat Dec  9 10:14:53 2000
-	- original version; created by h2xs 1.19
-        First release to CPAN by Richard Anderson 
-        <Richard.Anderson@raycosoft.com>.
+and the SSL mutex file must be stored on a local disk.
 
 =head1 TODO
 
-Add option to validate HTML syntax using HTML::Validator.  
-Add option to check links using HTML::LinkExtor.   
+Add option to validate HTML syntax using HTML::Validator.
+Add option to check links using HTML::LinkExtor.
 Add single-URL timeout block parameter to pass to LWP::UserAgent.
 Move test_regexes into a plugin.
 
 =head1 AUTHOR
 
- Richard Anderson <Richard.Anderson@unixscripts.com>
+Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
+HTTP::WebTest.
+
+Ilya Martynov <ilya@martynov.org> maintains HTTP::WebTest now. Please
+email him bug reports, suggestions, questions, etc.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved. This 
-module is free software.  It may be used, redistributed and/or modified 
-under the terms of the Perl Artistic License. 
+Copyright (c) 2000-2001 Richard Anderson. All rights reserved. This
+module is free software.  It may be used, redistributed and/or modified
+under the terms of the Perl Artistic License.
 
 =head1 SEE ALSO
 

@@ -1,8 +1,8 @@
 #
-# This is the Apache configuration file used with the automated web testing 
-# Perl module PNAP::WWW:WebTest.  DO NOT CHANGE any strings in this file 
-# that contain "Please_do_not_modify", as the WebTest module substitutes for 
-# these strings at runtime.
+# This is the Apache configuration file used with the automated web
+# testing Perl module WWW::WebTest. DO NOT CHANGE any strings in this
+# file that contain "Please_do_not_modify", as the WebTest module
+# substitutes for these strings at runtime.
 #
 # This is the main server configuration file. See URL http://www.apache.org/
 # for instructions.
@@ -64,6 +64,9 @@ MaxSpareServers  1
 StartServers 1
 MaxClients 2
 MaxRequestsPerChild 20
+
+AccessConfig /dev/null
+ResourceConfig /dev/null
 
 SSLPassPhraseDialog  builtin
 SSLSessionCache         dbm:Please_do_not_modify_SERVER_ROOT/ssl_scache
