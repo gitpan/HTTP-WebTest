@@ -1,5 +1,10 @@
 Revision history for Perl extension HTTP::WebTest.
 
+ 1.06  Sat Aug 11 2001
+
+   * Some files required for local web files testing mode were missing
+     in last HTTP-WebTest distributions.
+
  1.05  Wed Aug  8 2001
 
    * Installation of http-webtest directory is optional now for Unix
