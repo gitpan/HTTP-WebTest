@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.5 2002/04/08 21:51:58 m_ilya Exp $
+# $Id: Makefile.PL,v 1.6 2002/05/12 14:40:37 m_ilya Exp $
 
 use 5.005;
 
@@ -10,8 +10,6 @@ use File::Spec;
 
 my %CONFIG = ();
 
-# list of programs we install
-my @PROGRAMS = qw(wt);
 # what do we need to delete on realclean?
 my $REALCLEAN = '.config';
 # list of authors
@@ -33,8 +31,7 @@ WriteMakefile( NAME         => 'HTTP::WebTest',
 				 'Time::HiRes'       => 0,
 				 'URI'               => 0 },
 	       realclean    => { FILES => $REALCLEAN },
-	       PL_FILES     => { map +("bin/$_.PL" => "bin/$_"), @PROGRAMS },
-	       EXE_FILES    => [ map {"bin/$_"} @PROGRAMS ],
+	       EXE_FILES    => [ File::Spec->catfile(qw(bin wt)) ],
 	       AUTHOR       => $AUTHOR,
 	       ABSTRACT     => 'Run tests on remote URLs or local web files');
 

@@ -1,4 +1,4 @@
-# $Id: Plugins.pod,v 1.3 2002/02/16 23:48:54 m_ilya Exp $
+# $Id: Plugins.pod,v 1.4 2002/05/12 13:35:35 m_ilya Exp $
 
 =head1 NAME
 
@@ -16,16 +16,16 @@ L<HTTP::WebTest|HTTP::WebTest> functionality with external plugins.
 =head1 ABOUT PLUGINS
 
 Plugin can be used to add new test types and add new report
-types. Plugin is just a Perl package which defines class with a number
+types.  Plugin is just a Perl package which defines class with a number
 of methods which if present are called by
 L<HTTP::WebTest|HTTP::WebTest> at various stages of test.
 
 Each plugin package should subclass
-L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>. Report plugins can
+L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>.  Report plugins can
 subclass L<HTTP::WebTest::ReportPlugin|HTTP::WebTest::ReportPlugin>
 which is subclass of L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>
 instead of
-it. L<HTTP::WebTest::ReportPlugin|HTTP::WebTest::ReportPlugin> defines
+it.  L<HTTP::WebTest::ReportPlugin|HTTP::WebTest::ReportPlugin> defines
 some helper methods useful in report plugin and handles some test
 parameters common for report plugins.
 
@@ -45,11 +45,11 @@ String has following format:
     PARAM1 TYPE1 PARAM2 TYPE2 PARAM3 TYPE3 ... PARAMN TYPEN
 
 PARAM is a name of test parameter and TYPE is it's type
-specification. It should be separated by any whitespace character.
+specification.  It should be separated by any whitespace character.
 
 Each test parameter type is defined by method in
-L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>. Type C<foobar> is
-defined as method C<check_foobar> in this package. See its
+L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>.  Type C<foobar> is
+defined as method C<check_foobar> in this package.  See its
 documentation for list of all C<check_****> methods which define all
 known test types.
 
@@ -66,7 +66,7 @@ known test types.
 This is from
 L<HTTP::WebTest::Plugin::TextMatchTest|HTTP::WebTest::Plugin::TextMatchTest>.
 It defines following test parameters: C<ignore_case>, C<text_forbid>,
-C<text_require>, C<regex_forbid>, C<regex_require>. C<yesno> and
+C<text_require>, C<regex_forbid>, C<regex_require>.  C<yesno> and
 C<list> are test parameter types.
 
 =head1 OPTIONAL METHODS
@@ -75,30 +75,30 @@ Each plugin package may provide following methods:
 
 =head2 start_tests ()
 
-Called before runing test sequence. You can put here some
-initalization. Report plugins can use this hook to create header of
+Called before runing test sequence.  You can put here some
+initalization.  Report plugins can use this hook to create header of
 report.
 
 =head2 end_tests ()
 
-Called when test sequence is finished. You can put here some
-finialization code. Report plugins can use this hook to finish
+Called when test sequence is finished.  You can put here some
+finialization code.  Report plugins can use this hook to finish
 creation of report.
 
 =head2 prepare_request ()
 
 Called before L<HTTP::WebTest|HTTP::WebTest> does HTTP
-request. Various properties of request here can be set here.
+request.  Various properties of request here can be set here.
 
 =head2 check_response ()
 
 Called once L<HTTP::WebTest|HTTP::WebTest> did HTTP request and have
-got HTTP response. Test checks should be placed here.
+got HTTP response.  Test checks should be placed here.
 
 =head2 report_test ()
 
 Called when L<HTTP::WebTest|HTTP::WebTest> got HTTP response after
-<check_response> hooks. Normally used by report plugins to generate
+<check_response> hooks.  Normally used by report plugins to generate
 piece of report about test step just done.
 
 =head3 Returns
@@ -112,7 +112,7 @@ form:
     ];
 
 C<TEST_GROUP_NAME> is a string which describes a group of test checks
-and their results. It is used during generation of test report.
+and their results.  It is used during generation of test report.
 
 C<TEST_RESULT> is an
 L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> object.
@@ -136,14 +136,14 @@ Very simple plugin which defines only C<check_response> hook.
 
 =item L<HTTP::WebTest::Plugin::DefaultReport|HTTP::WebTest::Plugin::DefaultReport>
 
-Example of report plugin. Uses C<start_tests>, C<report_test> and
+Example of report plugin.  Uses C<start_tests>, C<report_test> and
 C<end_tests> hooks.
 
 =back
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

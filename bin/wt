@@ -1,22 +1,6 @@
-# these bits are stolen from libwww
-use Config;
-use File::Basename qw(basename dirname);
-chdir(dirname($0));
-($file = basename($0)) =~ s/\.PL$//;
-$file =~ s/\.pl$//
-    if ($Config{'osname'} eq 'VMS' or
-	$Config{'osname'} eq 'OS2');  # "case-forgiving"
-open OUT,">$file" or die "Can't create $file: $!";
-chmod(0755, $file);
-print "Extracting $file (with variable substitutions)\n";
+#!perl -w
 
-print OUT <<"!GROK!THIS!";
-$Config{'startperl'} -w
-
-!GROK!THIS!
-
-print OUT <<'!NO!SUBS!';
-# $Id: wt.PL,v 1.2 2002/01/28 10:43:45 m_ilya Exp $
+# $Id: wt,v 1.1 2002/05/12 14:40:37 m_ilya Exp $
 
 =head1 NAME
 
@@ -61,7 +45,7 @@ containing Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
 report.
 
 This program expects given input file(s) to be in format of wtscript
-file. If no files are given then it expects test specification to be
+file.  If no files are given then it expects test specification to be
 passed via standard input.
 
 See docs mentioned in section L<SEE ALSO|SEE ALSO> for full
@@ -84,9 +68,9 @@ parameter file, or there was a system runtime error.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.
@@ -102,7 +86,7 @@ L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>
 use strict;
 
 use Pod::Usage;
-use Getopt::Long;
+use Getopt::Long qw(:config gnu_getopt);
 use HTTP::WebTest 1.96;
 
 my $VERSION = '1.00';
@@ -118,10 +102,10 @@ pod2usage(-verbose => 2) if $man;
 if($version) {
     my $version = HTTP::WebTest->VERSION;
     print <<TEXT;
-wt version $VERSION. This program uses version $version of HTTP::WebTest.
+wt version $VERSION.  This program uses version $version of HTTP::WebTest.
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 TEXT
     exit 0;
 }
@@ -139,4 +123,3 @@ foreach my $file (@ARGV) {
 }
 
 exit $exit_status;
-!NO!SUBS!

@@ -1,4 +1,4 @@
-# $Id: Hooks.pm,v 1.4 2002/02/16 00:44:14 m_ilya Exp $
+# $Id: Hooks.pm,v 1.5 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Hooks;
 
@@ -31,7 +31,7 @@ HTTP::WebTest::Plugin::Hooks - Provides callbacks called during test run
 =head1 DESCRIPTION
 
 This plugin module adds test parameters which values are evaluated at
-specific time of L<HTTP::WebTest> test run. It can be used to do some
+specific time of L<HTTP::WebTest> test run.  It can be used to do some
 initialization before doing test request, to do some finalization when
 test response is received or to implement user defined tests without
 need to write separate plugin module.
@@ -47,14 +47,14 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head2 on_request
 
-Value of this test parameter is ignored. However it is evaluted before
-L<HTTP::WebTest> does a request to web page so it is useful to do some
-initalization before the request.
+Value of this test parameter is ignored.  However it is evaluted
+before L<HTTP::WebTest> does a request to web page so it is useful to
+do some initalization before the request.
 
 =head2 on_response
 
-This is list parameter which is treated as test result. It is evaluted
-when L<HTTP::WebTest> gets a response for the test request.
+This is list parameter which is treated as test result.  It is
+evaluted when L<HTTP::WebTest> gets a response for the test request.
 
 It can be useful to define custom tests without writting new plugins
 and/or it can be useful to run some code when L<HTTP::WebTest> got
@@ -67,8 +67,8 @@ some a response for the test request.
       ....
       YESNON, COMMENTN )
 
-Here C<YESNO>, C<COMMENT> - is a test result. C<YESNO> - is either
-C<yes> if test is successful or C<no> if it is not. C<COMMENT> is a
+Here C<YESNO>, C<COMMENT> - is a test result.  C<YESNO> - is either
+C<yes> if test is successful or C<no> if it is not.  C<COMMENT> is a
 text of comment associated with this test.
 
 =head3 Example
@@ -133,7 +133,7 @@ sub check_response {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

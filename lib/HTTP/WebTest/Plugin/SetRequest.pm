@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.6 2002/02/12 13:09:18 m_ilya Exp $
+# $Id: SetRequest.pm,v 1.8 2002/05/12 13:36:34 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -27,7 +27,7 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head2 url
 
-URL to test. If schema part of URL is omitted (i.e. URL doesn't start
+URL to test.  If schema part of URL is omitted (i.e. URL doesn't start
 with C<http://>, C<ftp://>, etc) then C<http://> is implied.
 
 =head2 method
@@ -44,14 +44,25 @@ C<GET>, C<PUT>
 
 C<GET>
 
+=head2 http_headers
+
+A list of HTTP header/value pairs.  Can be used to override default
+HTTP headers or to add additional HTTP headers.
+
+=head3 Example
+
+    http_headers = ( Accept => text/plain, text/html )
+
 =head2 params
 
-A list of name/value pairs to be passed as parameters to the
-URL. (This element is used to test pages that process input from
-forms.) Unless the method key is set to C<POST>, these pairs are
-URI-escaped and appended to the requested URL.
+A list of name/value pairs to be passed as parameters to the URL.
+(This element is used to test pages that process input from forms.)
+Unless the method key is set to C<POST>, these pairs are URI-escaped
+and appended to the requested URL.
 
-For example,
+The names and values will be URI-escaped as defined by RFC 2396.
+
+=head3 Example
 
     url = http://www.hotmail.com/cgi-bin/hmhome
     params = ( curmbox
@@ -63,8 +74,6 @@ generates the HTTP request:
 
     http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
 
-The names and values will be URI-escaped as defined by RFC 2396.
-
 =head2 auth
 
 A list which contains two elements: userid/password pair to be used
@@ -75,7 +84,7 @@ for web page access authorization.
 A list of service name/proxy URL pairs that specify proxy servers to
 use for requests.
 
-For example (C<wtscript> usage):
+=head3 Example
 
     proxies = ( http => http://http_proxy.mycompany.com
                 ftp  => http://ftp_proxy.mycompany.com )
@@ -99,13 +108,14 @@ where C<NN> is version number of HTTP-WebTest.
 =cut
 
 sub param_types {
-    return q(url        uri
-	     method     scalar('^(?:GET|POST)$')
- 	     params     hashlist
-	     auth       list('scalar','scalar')
-	     proxies    hashlist
-	     pauth      list('scalar','scalar')
-             user_agent scalar);
+    return q(url          uri
+	     method       scalar('^(?:GET|POST)$')
+ 	     params       hashlist
+	     auth         list('scalar','scalar')
+	     proxies      hashlist
+	     pauth        list('scalar','scalar')
+	     http_headers hashlist
+             user_agent   scalar);
 }
 
 sub prepare_request {
@@ -119,7 +129,7 @@ sub prepare_request {
 
     $self->validate_params(qw(url method params
                               auth proxies pauth
-                              user_agent));
+                              http_headers user_agent));
 
     # get various params we handle
     my $url     = $self->test_param('url');
@@ -128,6 +138,7 @@ sub prepare_request {
     my $auth    = $self->test_param('auth');
     my $proxies = $self->test_param('proxies');
     my $pauth   = $self->test_param('pauth');
+    my $headers = $self->test_param('http_headers');
     my $ua_name = $self->test_param('user_agent');
 
     # fix broken url
@@ -142,6 +153,9 @@ sub prepare_request {
     if(defined $method) {
 	if($method =~ /^POST$/i) {
 	    $request->method('POST');
+	    # ensure correct default value for content-type header
+	    $request->header(Content_Type =>
+			     'application/x-www-form-urlencoded');
 	} else {
 	    $request->method('GET');
 	}
@@ -183,6 +197,11 @@ sub prepare_request {
 	$request->proxy_authorization_basic(@$pauth);
     }
 
+    # set http headers
+    if(defined $headers) {
+	$request->header(@$headers);
+    }
+
     # set user agent name
     $ua_name = 'HTTP-WebTest/' . HTTP::WebTest->VERSION
 	unless defined $ua_name;
@@ -191,9 +210,9 @@ sub prepare_request {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

@@ -1,4 +1,4 @@
-# $Id: Utils.pm,v 1.1.1.1 2002/01/24 12:26:28 m_ilya Exp $
+# $Id: Utils.pm,v 1.2 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Utils;
 
@@ -49,7 +49,7 @@ use vars qw(@EXPORT_OK);
 =head2 make_access_method($field, $optional_default_value)
 
 Creates anonymouse subroutine which can be used as accessor
-method. Such method can be used together with objects which are based
+method.  Such method can be used together with objects which are based
 on blessed hashes.
 
 Typical usage is
@@ -67,7 +67,7 @@ A hash field used for created accessor method.
 =item * $optional_default_value
 
 If C<$optional_default_value> is a code reference uses values returned
-by its execution as default for created accessor method. Otherwise
+by its execution as default for created accessor method.  Otherwise
 uses C<$optional_default_value> as name of method which returns
 default value for created accessor method.
 
@@ -197,7 +197,7 @@ sub load_package {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

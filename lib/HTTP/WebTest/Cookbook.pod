@@ -57,7 +57,7 @@ Same test in form of Perl script:
 
 =head2 Check Login Form
 
-This wtscripts tests login form on http://fsck.com/rt2/:
+This wtscript tests login form on http://fsck.com/rt2/:
 
     test_name = Login page
         url = http://fsck.com/rt2/
@@ -76,6 +76,52 @@ This wtscripts tests login form on http://fsck.com/rt2/:
 
     test_name = Submit correct username & password
         url = http://fsck.com/rt2/
+        params = ( user => guest
+                   pass => guest )
+        regex_require = ( Signed in as.*?guest.*?\. )
+    end_test
+
+=head2 Using link and button names instead of URLs in tests
+
+This wtscript tests couple of static pages on my website.  It is
+similar to example in section L<Check Static Website> but it uses test
+parameter C<click_link> to specify link to be followed on next test
+request instead of hardcoded URI:
+
+    # load HTTP::WebTest::Plugin::Click module which provides test
+    # parameter 'click_link'
+    plugins = ( ::Click )
+
+    test_name = First page
+        url = http://martynov.org/
+        text_require = ( Ilya Martynov's Web Site )
+    end_test
+
+    test_name = Mail-CheckUser page
+        click_link = Mail-CheckUser
+        text_require = ( Mail-CheckUser
+                         Download )
+        regex_require = ( Mail-CheckUser-[\d\.]+\.tar\.gz )
+    end_test
+
+This wtscript tests login form on http://fsck.com/rt2/.  It is simular
+to example in section L<Check Login Form> but avoids using hardcoded
+URL for page where form is submitted to by using test parameter
+C<click_button>:
+
+    # load HTTP::WebTest::Plugin::Click module which provides test
+    # parameter 'click_button'
+    plugins = ( ::Click )
+
+    test_name = Login page
+        url = http://fsck.com/rt2/
+        text_require = ( Login
+                         Username:
+                         Password:)
+    end_test
+
+    test_name = Submit correct username & password
+        click_button = Login
         params = ( user => guest
                    pass => guest )
         regex_require = ( Signed in as.*?guest.*?\. )
@@ -100,11 +146,11 @@ generates L<Test::Harness|Test::Harness> compatible output:
 =head2 User-Defined Checks
 
 It is possible to define new checks without writting new plugin
-module. Here fragment of wtscript file which checks if a new record
+module.  Here fragment of wtscript file which checks if a new record
 have been inserted into a database as result of test request.
 
     # load HTTP::WebTest::Plugin::Hooks module which provides test
-    # parameter on_response
+    # parameter 'on_response'
     plugins = ( ::Hooks )
 
     ....
@@ -131,12 +177,12 @@ have been inserted into a database as result of test request.
 =head2 Dynamic Tests
 
 Sometimes it is needed to feed the results of a previous test into the
-next test. For example, C<Add Record> creates a database record, emits
-HTML containing the new record id, and C<Delete Record> deletes the
-database record using the record id generated in C<Add Record>.
+next test.  For example, C<Add Record> creates a database record,
+emits HTML containing the new record id, and C<Delete Record> deletes
+the database record using the record id generated in C<Add Record>.
 
 It is possible to use L<HTTP::WebTest|HTTP::WebTest> to write such
-tests. Here incomplete example of wtscript which implements it.
+tests.  Here incomplete example of wtscript which implements it.
 
     # load HTTP::WebTest::Plugin::Hooks module which provides test
     # parameter on_response
@@ -173,7 +219,7 @@ tests. Here incomplete example of wtscript which implements it.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

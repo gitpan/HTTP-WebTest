@@ -1,4 +1,4 @@
-# $Id: DefaultReport.pm,v 1.4 2002/02/12 12:47:10 m_ilya Exp $
+# $Id: DefaultReport.pm,v 1.5 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::DefaultReport;
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin is default test report plugin. Builds simple plain text
+This plugin is default test report plugin.  Builds simple plain text
 report.
 
 =cut
@@ -31,12 +31,12 @@ use HTTP::WebTest::Utils qw(make_access_method);
 I<GLOBAL PARAMETER>
 
 This parameter defines if default report plugin should be used for
-test report creation. Value C<yes> means that default report plugin
-should be used, value C<no> means that it should not. It can be useful
-if it is desired to use another non-default report for creation of
-test report. It can be used to disable any output at all also (i.e. if
-this parameter has value C<no> and no other report plugins are
-loaded).
+test report creation.  Value C<yes> means that default report plugin
+should be used, value C<no> means that it should not.  It can be
+useful if it is desired to use another non-default report for creation
+of test report.  It can be used to disable any output at all also
+(i.e. if this parameter has value C<no> and no other report plugins
+are loaded).
 
 =head3 Allowed values
 
@@ -314,9 +314,9 @@ sub fprint {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

@@ -1,4 +1,4 @@
-# $Id: ContentSizeTest.pm,v 1.4 2002/02/15 23:37:38 m_ilya Exp $
+# $Id: ContentSizeTest.pm,v 1.5 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ContentSizeTest;
 
@@ -95,9 +95,9 @@ sub check_response {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

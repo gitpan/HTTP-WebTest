@@ -1,6 +1,6 @@
-# $Id: API.pm,v 1.9 2002/03/24 11:01:36 m_ilya Exp $
+# $Id: API.pm,v 1.10 2002/05/12 13:35:35 m_ilya Exp $
 
-# note that it is not package HTTP::WebTest::API. That's right
+# note that it is not package HTTP::WebTest::API.  That's right
 package HTTP::WebTest;
 
 =head1 NAME
@@ -247,8 +247,8 @@ Scalar which contains test specification in wtscript format.
 
 =head3 Returns
 
-A list of two elements. First element is a reference on array which
-contains test objects. Second element is a reference on hash which
+A list of two elements.  First element is a reference on array which
+contains test objects.  Second element is a reference on hash which
 contains optional global parameters for test.
 
 It can be passed directly to C<run_tests>.
@@ -273,7 +273,7 @@ sub parse {
 =head1 LOW-LEVEL API METHODS
 
 Most users don't need to use this part of C<HTTP::WebTest> API
-directly. It could be useful for users who want to:
+directly.  It could be useful for users who want to:
 
 =over 4
 
@@ -302,7 +302,7 @@ A reference on array which contains test objects.
 =head2 user_agent ($optional_user_agent)
 
 Can switch user agent used by C<HTTP::WebTest> object if
-C<$optional_user_agent> is a user agent object. If
+C<$optional_user_agent> is a user agent object.  If
 $optional_user_agent is passed as undef, the HTTP::WebTest object is
 reset to use default user agent.
 
@@ -317,12 +317,12 @@ An user agent object used by C<HTTP::WebTest> object.
 =head2 plugins ($optional_plugins)
 
 Can set plugins to be used during tests if C<$optional_plugins> is a
-reference on array which contains plugin objects. If it is passed as
+reference on array which contains plugin objects.  If it is passed as
 undef resets C<HTTP::WebTest> object to use default set of plugins.
 
 =head3 Returns
 
-A reference on array which contains plugin objects. Note that if you
+A reference on array which contains plugin objects.  Note that if you
 add or remove plugin objects to this array it will change set of
 plugins used by C<HTTP::WebTest> object during tests.
 
@@ -592,7 +592,7 @@ sub convert_tests {
 =head1 BACKWARD COMPATIBILITY
 
 C<HTTP::WebTest 2.xx> offers more rich API than its predecessor
-C<HTTP::WebTest 1.xx>. However while old API is deprecated it is still
+C<HTTP::WebTest 1.xx>.  However while old API is deprecated it is still
 supported.
 
 It is not recommended to use it in new applications.
@@ -649,7 +649,7 @@ sub web_test {
 
 =head2 run_web_test ($tests, $num_fail_ref, $num_succeed_ref, $optional_options)
 
-This is not a method. It is subroutine which creates a
+This is not a method.  It is subroutine which creates a
 C<HTTP::WebTest> object and runs test sequence using it.
 
 You need either import C<run_web_test> into you namespace with
@@ -704,9 +704,9 @@ sub run_web_test {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

@@ -1,4 +1,4 @@
-$Id: TODO,v 1.9 2002/02/17 10:48:51 m_ilya Exp $
+$Id: TODO,v 1.11 2002/05/12 14:17:39 m_ilya Exp $
 
 My current TODO:
 
@@ -21,8 +21,6 @@ My current TODO:
 * automated tests for mail sending
 
 * plugin for page validation with HTML::Validator
-
-* simple navigation using link names and button names (with HTML::Form ?)
 
 * Generator of both Perl and wtscript code from test objects
 

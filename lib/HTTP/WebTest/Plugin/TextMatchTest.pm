@@ -1,4 +1,4 @@
-# $Id: TextMatchTest.pm,v 1.3 2002/02/15 23:59:44 m_ilya Exp $
+# $Id: TextMatchTest.pm,v 1.4 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::TextMatchTest;
 
@@ -13,7 +13,7 @@ Not Applicable
 =head1 DESCRIPTION
 
 This plugin provides test parameters which allow to check response
-body. It supports regexps and literal string searches.
+body.  It supports regexps and literal string searches.
 
 =cut
 
@@ -145,9 +145,9 @@ sub check_response {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

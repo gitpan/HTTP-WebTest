@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.1.1.1 2002/01/24 12:26:24 m_ilya Exp $
+# $Id: Cookies.pm,v 1.2 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Cookies;
 
@@ -61,8 +61,8 @@ True if transmission of cookies is enabled; false otherwise.
 
 =head2 extract_cookies (...)
 
-Overloaded method. Passes all arguments to C<SUPER::extract_cookies>
-if receipt of cookies is enabled. Does nothing otherwise.
+Overloaded method.  Passes all arguments to C<SUPER::extract_cookies>
+if receipt of cookies is enabled.  Does nothing otherwise.
 
 =cut
 
@@ -73,8 +73,8 @@ sub extract_cookies {
 
 =head2 add_cookie_header (...)
 
-Overloaded method. Passes all arguments to C<SUPER::add_cookie_header>
-if transmission of cookies is enabled. Does nothing otherwise.
+Overloaded method.  Passes all arguments to C<SUPER::add_cookie_header>
+if transmission of cookies is enabled.  Does nothing otherwise.
 
 =cut
 
@@ -85,9 +85,9 @@ sub add_cookie_header {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

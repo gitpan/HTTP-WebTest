@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.7 2002/02/16 00:36:35 m_ilya Exp $
+# $Id: 02-generic.t,v 1.9 2002/05/12 13:36:59 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -17,7 +17,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 22 }
+BEGIN { plan tests => 24 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -426,6 +426,37 @@ my $WEBTEST = HTTP::WebTest->new;
     ok($webtest eq $WEBTEST);
 }
 
+# 23: test if we are setting content type header correctly for POST
+# requests
+{
+    my $tests = [ { url => abs_url($URL, '/show-headers'),
+		    method => 'post',
+		    text_require => [ 'Content-Type: ' .
+				      'application/x-www-form-urlencoded' ] },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/content-type');
+}
+
+# 24: test 'http_headers' param
+{
+    my $tests = [ { url => abs_url($URL, '/show-headers'),
+		    http_headers => [ Accept => 'text/plain, text/html' ],
+		    text_require => [ 'Accept: text/plain, text/html' ] },
+		  { url => abs_url($URL, '/show-headers'),
+		    http_headers => [ User_Agent => 'Override User-Agent' ],
+		    text_require => [ 'User-Agent: Override User-Agent' ] },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/http-headers');
+}
+
 # try to stop server even we have been crashed
 END { stop_webserver($PID) if defined $PID }
 
@@ -500,6 +531,16 @@ sub server_sub {
 		$content .= "<$name>=<$value>\n";
 	    }
 	}
+
+	# create response object
+	my $response = new HTTP::Response(RC_OK);
+	$response->header(Content_Type => 'text/plain');
+	$response->content($content);
+
+	# send it to browser
+	$connect->send_response($response);
+    } elsif($path eq '/show-headers') {
+	my $content = $request->headers_as_string;
 
 	# create response object
 	my $response = new HTTP::Response(RC_OK);

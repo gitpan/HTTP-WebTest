@@ -1,4 +1,4 @@
-# $Id: HarnessReport.pm,v 1.4 2002/04/08 06:50:26 m_ilya Exp $
+# $Id: HarnessReport.pm,v 1.5 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::HarnessReport;
 
@@ -14,12 +14,12 @@ HTTP::WebTest::Plugin::HarnessReport - Test::Harness compatible reports
 =head1 DESCRIPTION
 
 This plugin creates L<Test::Harness|Test::Harness> compatible test
-reports. This plugin is not loaded by default by
-L<HTTP::WebTest|HTTP::WebTest>. To load it use global test parameter
+reports.  This plugin is not loaded by default by
+L<HTTP::WebTest|HTTP::WebTest>.  To load it use global test parameter
 C<plugins>.
 
 Unless you want to get mix of outputs from default and this report
-plugins default report plugin should disabled. See parameter
+plugins default report plugin should disabled.  See parameter
 C<default_report> (value C<no>).
 
 Test parameters C<plugins> and C<default_report> are documented in
@@ -89,7 +89,7 @@ sub report_test {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

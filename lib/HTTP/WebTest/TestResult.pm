@@ -1,4 +1,4 @@
-# $Id: TestResult.pm,v 1.1.1.1 2002/01/24 12:26:24 m_ilya Exp $
+# $Id: TestResult.pm,v 1.2 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::TestResult;
 
@@ -21,7 +21,7 @@ HTTP::WebTest::TestResult - Test results class
 
 =head1 DESCRIPTION
 
-Objects of this class represent test results. Test results are
+Objects of this class represent test results.  Test results are
 basicaly C<ok>/C<not ok> and some attached commentary.
 
 This class overloads C<bool> operation so it can be directly used in
@@ -68,7 +68,7 @@ Defines if test is successful or not if C<$optional_ok> is passed.
 
 =head3 Returns
 
-True if test is successful. False otherwise.
+True if test is successful.  False otherwise.
 
 =cut
 
@@ -86,7 +86,7 @@ A test result comment.
 
 *comment = make_access_method('COMMENT');
 
-# this method is used to overload 'bool' operation. 'ok' can't be used
+# this method is used to overload 'bool' operation.  'ok' can't be used
 # directly because method which is overloads operation is called with
 # some additional arguments which doesn't play nice with accessor
 # method like 'ok'
@@ -94,7 +94,7 @@ sub _bool { shift->ok }
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

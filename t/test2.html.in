@@ -5,8 +5,7 @@
     <base href="<<SERVER_URL>>dir/" />
   </head>
 
-    <a href="alttest1.txt">Text File</a>
-
   <body>
+    <a href="alttest1.txt">Text File</a>
   </body>
 </html>

@@ -1,4 +1,4 @@
-# $Id: Test.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
+# $Id: Test.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Test;
 
@@ -30,7 +30,7 @@ HTTP::WebTest::Test - Test object class
 
 =head1 DESCRIPTION
 
-Objects of this class represent tests. They store both test params and
+Objects of this class represent tests.  They store both test params and
 test results.
 
 =head1 CLASS METHODS
@@ -155,7 +155,7 @@ A response time.
 =head2 convert ($test)
 
 Tries to convert test definition in some form into
-C<HTTP::WebTest::Test> object. Currenlty supports test defintion in
+C<HTTP::WebTest::Test> object.  Currenlty supports test defintion in
 form of C<HTTP::WebTest::Test> object (it is just passed throw) or in
 form of hash reference:
 
@@ -195,7 +195,7 @@ sub reset {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

@@ -25,7 +25,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_05';
+$VERSION = '1.99_06';
 # workaround for warning caused by underscore char in $VERSION
 $VERSION = eval $VERSION;
 
@@ -52,39 +52,39 @@ HTTP::WebTest - Test remote URLs or local web files
 
 =head2 Beta software warning
 
-THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS PROBABLY NOT
-AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be downloaded at
-http://search.cpan.org/search?dist=HTTP-WebTest-1.07
+THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS
+PROBABLY NOT AS WELL DEBUGGED AS VERSION 1.07.  Version 1.07 can be
+downloaded at http://search.cpan.org/search?dist=HTTP-WebTest-1.07
 
 =head2 Introduction
 
 This module runs tests on remote URLs or local web files containing
-Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
-report. This module can be used "as-is" or its functionality can be
-extended using plugins. Plugins can define test types and provide
-additional report capabilities. This module comes with a set of
-default plugins but can be easily extended with third party plugins.
+Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.
+This module can be used "as-is" or its functionality can be extended
+using plugins.  Plugins can define test types and provide additional
+report capabilities.  This module comes with a set of default plugins
+but can be easily extended with third party plugins.
 
 The L<wt|wt> script is provided for running C<HTTP::WebTest> from the
 command line.
 
 The test specifications can be read from a parameter file in wtscript
-format or input as method arguments. If you are testing a local file,
+format or input as method arguments.  If you are testing a local file,
 Apache is started on a private/dynamic port with a configuration file
 in a temporary directory.
 
 The test results can be displayed on the terminal, directed to a file,
-stored in a scalar variable. The test results can also be emailed.
+stored in a scalar variable.  The test results can also be emailed.
 The report can be modified and extended using report plugins.
 
 Each URL/web file is tested by fetching it from the web server using a
-local instance of an HTTP user agent. The basic test is simply whether
-or not the fetch was successful. You may also test using literal
-strings or regular expressions that are either required to exist or
-forbidden to exist in the fetched page. You may also specify tests for
-the minimum and maximum number of bytes in the returned page. You may
-also specify tests for the minimum and maximum web server response
-time.
+local instance of an HTTP user agent.  The basic test is simply
+whether or not the fetch was successful.  You may also test using
+literal strings or regular expressions that are either required to
+exist or forbidden to exist in the fetched page.  You may also specify
+tests for the minimum and maximum number of bytes in the returned
+page.  You may also specify tests for the minimum and maximum web
+server response time.
 
 Data flow for C<HTTP::WebTest> using a remote URL:
 
@@ -135,10 +135,10 @@ Data flow diagram for C<HTTP::WebTest> using a local web file:
 =head2 Getting Started
 
 This module has complex functionality, but using it to run simple
-tests is simple. Create a file of test parameters in the
+tests is simple.  Create a file of test parameters in the
 L<wtscript format|Running HTTP::WebTest using a parameter file> and use the
 L<wt|wt> program to process the file using the command C<wt
-filename>. The only required parameters are C<test_name> and C<url>.
+filename>.  The only required parameters are C<test_name> and C<url>.
 
 This document describes:
 
@@ -146,13 +146,13 @@ This document describes:
 
 =item *
 
-How tests can be specified. See section L<TEST SPECIFICATION|TEST
-SPECIFICATION>.
+How tests can be specified.  See section
+L<TEST SPECIFICATION|TEST SPECIFICATION>.
 
 =item *
 
 All test parameters supported by core C<HTTP::WebTest>
-plugins. See section L<TEST PARAMETERS|TEST PARAMETERS>.
+plugins.  See section L<TEST PARAMETERS|TEST PARAMETERS>.
 
 =back
 
@@ -201,22 +201,22 @@ run either using Perl API of C<HTTP::WebTest>
 or by using program L<wt|wt> supplied with this module.
 
 If you are running dozens of tests, you may want to divide them into
-several parameter files. This will organize the tests and reduce the
-size of the output and e-mail messages. However, cookies passed to or
+several parameter files.  This will organize the tests and reduce the
+size of the output and e-mail messages.  However, cookies passed to or
 received from the web server(s) are not shared between tests in
 different parameter files.
 
 =head3 File format
 
-The wtscript file is a text file containing global parameters and 
-test blocks containing test block parameters.  A test block begins with
-a test_name parameter and ends with an end_test directive.  The order of
+The wtscript file is a text file containing global parameters and test
+blocks containing test block parameters.  A test block begins with a
+test_name parameter and ends with an end_test directive.  The order of
 the parameters and test blocks is arbitrary.
 
 Test block parameters MUST occur between a test_name parameter and an
-end_test directive. (Test block parameters affect only an individual
+end_test directive.  (Test block parameters affect only an individual
 test.) Global parameters must NOT occur between a test_name parameter
-and an end_test directive. (This requirement does not apply to
+and an end_test directive.  (This requirement does not apply to
 certain parameters that are both global and test block parameters.)
 
 The following lines are ignored:
@@ -279,13 +279,13 @@ is backslash-n rather than a newline character.  Double quotes mean that
 Perl metasymbols are interpreted: "\n\t" is a newline and a tab.
 
 Also it is possible to specify Perl code instead of scalar, instead of
-list parameter value or instead of element of list paramater. Curly
+list parameter value or instead of element of list paramater.  Curly
 brackets are used to denote Perl code inside wtscript files.  This
 code will be evaluated during test run.
 
 C<HTTP::WebTest> compiles this Perl code as anonymous subroutines
 which are called during test run when value of corresponding test
-parameters are required. When these subroutines are called
+parameters are required.  When these subroutines are called
 C<HTTP::WebTest> object is passed to them.
 
 Some examples of syntax:
@@ -309,9 +309,9 @@ Some examples of syntax:
 
 The parameters below specify tests of a local file and a remote URL.
 The tests specified by the C<text_forbid> parameter apply to both the
-"RayCosoft home page" and the "Yahoo home page" tests. Hence, if
+"RayCosoft home page" and the "Yahoo home page" tests.  Hence, if
 either returned page contains one of the case-insensitive strings in
-text_forbid, the test fails. If any test fails or the fetch of the URL
+text_forbid, the test fails.  If any test fails or the fetch of the URL
 fails, an e-mail will be sent to tester@unixscripts.com.
 
 
@@ -342,7 +342,7 @@ fails, an e-mail will be sent to tester@unixscripts.com.
     end_test
 
 The parameters below specify a test of a local file containing Perl
-code using the L<Apache::ASP|Apache::ASP> module. The C<includes.htm>
+code using the L<Apache::ASP|Apache::ASP> module.  The C<includes.htm>
 file requires five include files and two Perl modules, which are
 copied using the C<include_file_path> parameter.
 
@@ -372,14 +372,14 @@ copied using the C<include_file_path> parameter.
 If you are using Perl API of C<HTTP::WebTest> then the test parameters
 can be defined in form of array of hashes.
 
-Each hash in array defines tests for one URL or local web file. Keys
+Each hash in array defines tests for one URL or local web file.  Keys
 in hashes are test parameter names and values in hashes are values of
-test parameters. Additionally, optional global test parameters can be
+test parameters.  Additionally, optional global test parameters can be
 passed in a hash passed as the second argument.
 
 Instead of test parameter values subroutine references can be
-specified. Referenced subroutines are called during test run when
-values of corresponding test parameters are required. When called
+specified.  Referenced subroutines are called during test run when
+values of corresponding test parameters are required.  When called
 these subroutines get C<HTTP::WebTest> object passed to them.
 
 Tests can be run as
@@ -477,10 +477,15 @@ summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
 =head2 Other Plugin Modules Bundled With HTTP::WebTest
 
 Following plugin modules come with HTTP::WebTest but they are not
-loaded by default. They should be loaded using global test parameter
+loaded by default.  They should be loaded using global test parameter
 C<plugins> when needed.
 
 =over 4
+
+=item L<HTTP::WebTest::Plugin::Click>
+
+This plugin allows to use names of links and button on HTML pages to
+build test requests.
 
 =item L<HTTP::WebTest::Plugin::HarnessReport>
 
@@ -490,7 +495,7 @@ compatible test reports.
 =item L<HTTP::WebTest::Plugin::Hooks>
 
 This plugin allows to define callback test parameters which are
-evaluated at specific time of L<HTTP::WebTest> test run. These test
+evaluated at specific time of L<HTTP::WebTest> test run.  These test
 parameters can define user-defined checks.
 
 =back
@@ -506,8 +511,8 @@ developers.
 =head1 TEST PARAMETERS
 
 Most parameters can be used both as global and as test block
-parameters. If you specify such parameter as global its value applies
-to all test blocks. Value of parameter specified as global can be
+parameters.  If you specify such parameter as global its value applies
+to all test blocks.  Value of parameter specified as global can be
 overriden individually in each test block by specifying this parameter
 with different values in test blocks.
 
@@ -519,8 +524,8 @@ and it cannot be overriden in test blocks.
 Option to accept cookies from the web server.
 
 These cookies exist only while the program is executing and do not
-affect subsequent runs. These cookies do not affect your browser or
-any software other than the test program. These cookies are only
+affect subsequent runs.  These cookies do not affect your browser or
+any software other than the test program.  These cookies are only
 accessible to other tests executed during test sequence execution.
 
 See also the <send_cookies> parameter.
@@ -537,10 +542,10 @@ C<yes>
 
 I<GLOBAL PARAMETER>
 
-Absolute or relative path name of directory containing
-Apache files. See the
-L<APACHE DIRECTORY AND FILES|/"APACHE DIRECTORY AND FILES"> section.
-This parameter is ignored unless the C<file_path> parameter is specified.
+Absolute or relative path name of directory containing Apache files.
+See the L<APACHE DIRECTORY AND FILES|/"APACHE DIRECTORY AND FILES">
+section.  This parameter is ignored unless the C<file_path> parameter
+is specified.
 
 =head3 Default value
 
@@ -550,9 +555,9 @@ C</usr/local/etc/http-webtest>
 
 I<GLOBAL PARAMETER>
 
-Absolute or relative path name of Apache executable. This command can
-be in your C<$PATH>. This parameter is ignored unless the C<file_path>
-parameter is specified.
+Absolute or relative path name of Apache executable.  This command can
+be in your C<$PATH>.  This parameter is ignored unless the
+C<file_path> parameter is specified.
 
 =head3 Default value
 
@@ -562,10 +567,10 @@ C</usr/sbin/apache>
 
 I<GLOBAL PARAMETER>
 
-Apache logging level. If you use a level less than C<warn> (i.e.,
+Apache logging level.  If you use a level less than C<warn> (i.e.,
 C<debug>, C<info>, or C<notice>), the program may generate irrelevant
-errors. This parameter is ignored unless the C<file_path> parameter is
-specified. See also the C<ignore_error_log> parameter.
+errors.  This parameter is ignored unless the C<file_path> parameter
+is specified.  See also the C<ignore_error_log> parameter.
 
 =head3 Allowed values
 
@@ -580,7 +585,7 @@ C<warn>
 
 I<GLOBAL PARAMETER>
 
-Maximum number of seconds to wait for Apache to start. This parameter
+Maximum number of seconds to wait for Apache to start.  This parameter
 is ignored unless the C<file_path> parameter is specified.
 
 =head3 Default value
@@ -591,10 +596,10 @@ C<60>
 
 I<GLOBAL PARAMETER>
 
-Additional Apache command line options. Many of the options cause
+Additional Apache command line options.  Many of the options cause
 Apache to exit immediately after starting, so the web page tests will
-not run. This parameter is ignored unless the C<file_path> parameter is
-specified.
+not run.  This parameter is ignored unless the C<file_path> parameter
+is specified.
 
 =head3 Allowed values
 
@@ -604,11 +609,6 @@ See Apache documentation
 
 A list which contains two elements: userid/password pair to be used
 for web page access authorization.
-
-=head2 click_button
-
-=head2 click_link
-
 
 =head2 cookie
 
@@ -649,7 +649,7 @@ Version number of cookie spec to use, usually 0.
 
 =item * name (REQUIRED)
 
-Name of cookie. Cannot begin with a $ character.
+Name of cookie.  Cannot begin with a $ character.
 
 =item * value (REQUIRED)
 
@@ -657,12 +657,12 @@ Value of cookie.
 
 =item * path (REQUIRED)
 
-URL path name for which this cookie applies. Must begin with a /
+URL path name for which this cookie applies.  Must begin with a /
 character.  See also path_spec.
 
 =item * domain (REQUIRED)
 
-Domain for which cookie is valid. (REQUIRED). Should begin with a
+Domain for which cookie is valid.  (REQUIRED).  Should begin with a
 period.  Must either contain two periods or be equal to C<.local>.
 
 =item * port
@@ -712,8 +712,9 @@ Number of seconds until cookie expires.
 
 =item * discard
 
-Option to discard cookie when the program finishes.  Default 0. (The
-cookie will be discarded regardless of the value of this element.)
+Option to discard cookie when the program finishes.  Default is 0.
+(The cookie will be discarded regardless of the value of this
+element.)
 
 =over 4
 
@@ -729,7 +730,7 @@ Don't discard cookie.
 
 =item * name/value
 
-Zero, one or several name/value pairs may be specified. The name
+Zero, one or several name/value pairs may be specified.  The name
 parameters are words such as Comment or CommentURL and the value
 parameters are strings that may contain embedded blanks.
 
@@ -770,12 +771,12 @@ over 10 it must have an even number of elements.
 I<GLOBAL PARAMETER>
 
 This parameter defines if default report plugin should be used for
-test report creation. Value C<yes> means that default report plugin
-should be used, value C<no> means that it should not. It can be useful
-if it is desired to use another non-default report for creation of
-test report. It can be used to disable any output at all also (i.e. if
-this parameter has value C<no> and no other report plugins are
-loaded).
+test report creation.  Value C<yes> means that default report plugin
+should be used, value C<no> means that it should not.  It can be
+useful if it is desired to use another non-default report for creation
+of test report.  It can be used to disable any output at all also
+(i.e. if this parameter has value C<no> and no other report plugins
+are loaded).
 
 =head3 Allowed values
 
@@ -794,21 +795,21 @@ It marks end of test block.
 
 I<GLOBAL PARAMETER>
 
-The pathname of a local web server error log. The module counts the
-number of lines in the error log before and after each request. If the
-number of lines increases, an error is counted and the additional
-lines are listed in the report. This argument should be used only when
-the local web server is running in single-process mode. Otherwise,
-requests generated by other processes/users may add lines to the error
-log that are not related to the requests generated by this module. See
-also parameter C<ignore_error_log>.
+The pathname of a local web server error log.  The module counts the
+number of lines in the error log before and after each request.  If
+the number of lines increases, an error is counted and the additional
+lines are listed in the report.  This argument should be used only
+when the local web server is running in single-process mode.
+Otherwise, requests generated by other processes/users may add lines
+to the error log that are not related to the requests generated by
+this module.  See also parameter C<ignore_error_log>.
 
 =head2 fh_out
 
 I<GLOBAL PARAMETER>
 
 A filehandle (or anything else that supports C<print>) to use for test
-report output. This parameter is ignored if test parameter
+report output.  This parameter is ignored if test parameter
 C<output_ref> is specified also.
 
 This parameter can be used only when passing the test parameters
@@ -817,18 +818,27 @@ as arguments from a calling Perl script.
 =head2 file_path
 
 If L<HTTP::WebTest|HTTP::WebTest> encounters parameter C<file_path> it
-switches in local web file test mode. In local web file test mode it
+switches in local web file test mode.  In local web file test mode it
 launches an instance of Apache daemon, copies local test file(s) under
 DocumentRoot of this Apache and performs test checks against it.
 
 =head3 Allowed values
 
-Two-element list. First element is the file to test, either an
-absolute or a relative pathname. Second element is the subdirectory
+Two-element list.  First element is the file to test, either an
+absolute or a relative pathname.  Second element is the subdirectory
 pathname, relative to the Apache htdocs directory, to copy the file
-to. The copied file will have the same basename as the first element
-and the relative pathname of the second element. To copy the file
+to.  The copied file will have the same basename as the first element
+and the relative pathname of the second element.  To copy the file
 directly to the htdocs directory, use a pathname of C<.> or C<./.>.
+
+=head2 http_headers
+
+A list of HTTP header/value pairs.  Can be used to override default
+HTTP headers or to add additional HTTP headers.
+
+=head3 Example
+
+    http_headers = ( Accept => text/plain, text/html )
 
 =head2 ignore_case
 
@@ -845,11 +855,11 @@ C<no>
 
 =head2 ignore_error_log
 
-Option to ignore any errors found in the Apache error log. The default
-behavior is to flag an error if the fetch causes any errors to be
-added to the error log and echo the errors to the program output. This
-check is available only if C<error_log> parameter is specified. See also
-the C<apache_loglevel> parameter.
+Option to ignore any errors found in the Apache error log.  The
+default behavior is to flag an error if the fetch causes any errors to
+be added to the error log and echo the errors to the program output.
+This check is available only if C<error_log> parameter is specified.
+See also the C<apache_loglevel> parameter.
 
 =head3 Allowed values
 
@@ -861,12 +871,12 @@ C<no>
 
 =head2 include_file_path
 
-List with an even number of elements. Odd-numbered elements are files
+List with an even number of elements.  Odd-numbered elements are files
 to copy to the the temporary Apache directory before running the
-tests. These files can be specified using either an absolute or a
-relative pathname. Even-numbered elements are the subdirectory
+tests.  These files can be specified using either an absolute or a
+relative pathname.  Even-numbered elements are the subdirectory
 pathname, relative to the Apache ServerRoot directory, to copy the
-corresponding file to. The copied file will have the same basename as
+corresponding file to.  The copied file will have the same basename as
 the odd-numbered element and the relative pathname of the
 corresponding even-numbered element.  To copy the file directly to the
 ServerRoot directory, use a pathname of C<.> or C<./.>.
@@ -877,9 +887,8 @@ For example:
 
 will copy the file to htdocs/includes/header.inc.
 
-This parameter is also useful for adding Perl modules that are
-needed by the web page specified by the file_path parameter. For
-example:
+This parameter is also useful for adding Perl modules that are needed
+by the web page specified by the file_path parameter.  For example:
 
     include_file_path = ( ../apps/myapp/DBconn.pm => lib/perl/apps )
 
@@ -996,7 +1005,7 @@ Any number less than C<max_rtime> (if C<max_rtime> is specified).
 
 I<GLOBAL PARAMETER>
 
-A reference on scalar which accumulates text of test report. If this
+A reference on scalar which accumulates text of test report.  If this
 test parameter is specified then value of test parameter C<fh_out> is
 ignore.
 
@@ -1005,12 +1014,14 @@ as arguments from a calling Perl script.
 
 =head2 params
 
-A list of name/value pairs to be passed as parameters to the
-URL. (This element is used to test pages that process input from
-forms.) Unless the method key is set to C<POST>, these pairs are
-URI-escaped and appended to the requested URL.
+A list of name/value pairs to be passed as parameters to the URL.
+(This element is used to test pages that process input from forms.)
+Unless the method key is set to C<POST>, these pairs are URI-escaped
+and appended to the requested URL.
 
-For example,
+The names and values will be URI-escaped as defined by RFC 2396.
+
+=head3 Example
 
     url = http://www.hotmail.com/cgi-bin/hmhome
     params = ( curmbox
@@ -1022,8 +1033,6 @@ generates the HTTP request:
 
     http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
 
-The names and values will be URI-escaped as defined by RFC 2396.
-
 =head2 pauth
 
 A list which contains two elements: userid/password pair to be used
@@ -1033,9 +1042,9 @@ for proxy server access authorization.
 
 I<GLOBAL PARAMETER>
 
-A list of module names. Loads these modules and registers them as
-L<HTTP::WebTest|HTTP::WebTest> plugins. If name of plugin starts with
-C<::> prepends it with C<HTTP::WebTest::Plugin>. So
+A list of module names.  Loads these modules and registers them as
+L<HTTP::WebTest|HTTP::WebTest> plugins.  If name of plugin starts with
+C<::> prepends it with C<HTTP::WebTest::Plugin>.  So
 
     plugins = ( ::ValidateHTML )
 
@@ -1049,7 +1058,7 @@ is equal to
 A list of service name/proxy URL pairs that specify proxy servers to
 use for requests.
 
-For example (C<wtscript> usage):
+=head3 Example
 
     proxies = ( http => http://http_proxy.mycompany.com
                 ftp  => http://ftp_proxy.mycompany.com )
@@ -1077,12 +1086,12 @@ See also the C<text_require> and C<ignore_case> parameters.
 
 =head2 send_cookies
 
-Option to send cookies to web server. This applies to cookies received
-from the web server or cookies specified using the C<cookies> test
-parameter.
+Option to send cookies to web server.  This applies to cookies
+received from the web server or cookies specified using the C<cookies>
+test parameter.
 
 This does NOT give the web server(s) access to cookies created with a
-browser or any user agent software other than this program. The
+browser or any user agent software other than this program.  The
 cookies created while this program is running are only accessible to
 other tests in the same test sequence.
 
@@ -1177,7 +1186,7 @@ See also the C<regex_require> and C<ignore_case> parameters.
 
 =head2 url
 
-URL to test. If schema part of URL is omitted (i.e. URL doesn't start
+URL to test.  If schema part of URL is omitted (i.e. URL doesn't start
 with C<http://>, C<ftp://>, etc) then C<http://> is implied.
 
 =head2 user_agent
@@ -1203,16 +1212,16 @@ A tree of directories with templates of Apache config files is
 required to run local web file tests.
 
 The C<apache_dir> parameter must be set to the name of a directory
-that contains the subdirectories C<conf>, C<logs> and C<htdocs>. The
-C<conf> subdirectory must contain a file named C<httpd.conf-dist>. The
-C<htdocs> subdirectory must contain a subdirectory named C<webtest>
-that contains a file named C<is_apache_responding.html>. If your
-installation of Apache has the Perl module L<Apache::ASP|Apache::ASP>
-configured, the C<apache_dir> directory must also contain a
-subdirectory named C<asp_tmp>.
+that contains the subdirectories C<conf>, C<logs> and C<htdocs>.  The
+C<conf> subdirectory must contain a file named C<httpd.conf-dist>.
+The C<htdocs> subdirectory must contain a subdirectory named
+C<webtest> that contains a file named C<is_apache_responding.html>.
+If your installation of Apache has the Perl module
+L<Apache::ASP|Apache::ASP> configured, the C<apache_dir> directory
+must also contain a subdirectory named C<asp_tmp>.
 
 The file C<httpd.conf-dist> is used as template for the Apache config
-file. It contains tags which are replaced with the values needed by
+file.  It contains tags which are replaced with the values needed by
 the Apache server that the program starts at runtime.
 
 =over 4
@@ -1245,14 +1254,14 @@ etc.) but it should work on Win32 systems.
 Local file tests don't work on Win32 systems.
 
 The module's HTTP requests time out after 3 minutes (the default value
-for L<LWP::UserAgent|LWP::UserAgent>). If the C<file_path> parameter is
+for L<LWP::UserAgent|LWP::UserAgent>).  If the C<file_path> parameter is
 specified, Apache must be installed.
 
 =head1 SUPPORT
 
 Please email bug reports, suggestions, questions, etc. to
 C<HTTP::WebTest> maillist
-C<http-webtest-general@lists.sourceforge.net>. You can sign up at
+C<http-webtest-general@lists.sourceforge.net>.  You can sign up at
 http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
 
 =head1 AUTHORS
@@ -1261,18 +1270,18 @@ Richard Anderson <richard@richard-anderson.org> have wrote
 C<HTTP::WebTest 1.xx>.
 
 Ilya Martynov <ilya@martynov.org> made rewrite of
-C<HTTP::WebTest>. New version of C<HTTP::WebTest> have introduced
+C<HTTP::WebTest>.  New version of C<HTTP::WebTest> have introduced
 extended API and plugin based architecture.
 
-Please don't email authors directly. Use C<HTTP::WebTest> maillists.
+Please don't email authors directly.  Use C<HTTP::WebTest> maillists.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
-This module is free software. It may be used, redistributed and/or
+This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.
 
 =head1 SEE ALSO

@@ -1,4 +1,4 @@
-# $Id: Loader.pm,v 1.2 2002/02/02 04:08:19 m_ilya Exp $
+# $Id: Loader.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Loader;
 
@@ -31,9 +31,9 @@ use HTTP::WebTest::Utils qw(load_package);
 
 I<GLOBAL PARAMETER>
 
-A list of module names. Loads these modules and registers them as
-L<HTTP::WebTest|HTTP::WebTest> plugins. If name of plugin starts with
-C<::> prepends it with C<HTTP::WebTest::Plugin>. So
+A list of module names.  Loads these modules and registers them as
+L<HTTP::WebTest|HTTP::WebTest> plugins.  If name of plugin starts with
+C<::> prepends it with C<HTTP::WebTest::Plugin>.  So
 
     plugins = ( ::ValidateHTML )
 
@@ -69,7 +69,7 @@ sub start_tests {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

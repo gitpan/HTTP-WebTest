@@ -1,10 +1,10 @@
 # This is a -*-perl-*- source file
 
-# $Id: WebTest.pm.in,v 1.9 2002/04/08 21:51:57 m_ilya Exp $
+# $Id: WebTest.pm.in,v 1.11 2002/05/12 14:11:34 m_ilya Exp $
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_05';
+$VERSION = '1.99_06';
 # workaround for warning caused by underscore char in $VERSION
 $VERSION = eval $VERSION;
 
@@ -31,39 +31,39 @@ HTTP::WebTest - Test remote URLs or local web files
 
 =head2 Beta software warning
 
-THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS PROBABLY NOT
-AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be downloaded at
-http://search.cpan.org/search?dist=HTTP-WebTest-1.07
+THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS
+PROBABLY NOT AS WELL DEBUGGED AS VERSION 1.07.  Version 1.07 can be
+downloaded at http://search.cpan.org/search?dist=HTTP-WebTest-1.07
 
 =head2 Introduction
 
 This module runs tests on remote URLs or local web files containing
-Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
-report. This module can be used "as-is" or its functionality can be
-extended using plugins. Plugins can define test types and provide
-additional report capabilities. This module comes with a set of
-default plugins but can be easily extended with third party plugins.
+Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.
+This module can be used "as-is" or its functionality can be extended
+using plugins.  Plugins can define test types and provide additional
+report capabilities.  This module comes with a set of default plugins
+but can be easily extended with third party plugins.
 
 The L<wt|wt> script is provided for running C<HTTP::WebTest> from the
 command line.
 
 The test specifications can be read from a parameter file in wtscript
-format or input as method arguments. If you are testing a local file,
+format or input as method arguments.  If you are testing a local file,
 Apache is started on a private/dynamic port with a configuration file
 in a temporary directory.
 
 The test results can be displayed on the terminal, directed to a file,
-stored in a scalar variable. The test results can also be emailed.
+stored in a scalar variable.  The test results can also be emailed.
 The report can be modified and extended using report plugins.
 
 Each URL/web file is tested by fetching it from the web server using a
-local instance of an HTTP user agent. The basic test is simply whether
-or not the fetch was successful. You may also test using literal
-strings or regular expressions that are either required to exist or
-forbidden to exist in the fetched page. You may also specify tests for
-the minimum and maximum number of bytes in the returned page. You may
-also specify tests for the minimum and maximum web server response
-time.
+local instance of an HTTP user agent.  The basic test is simply
+whether or not the fetch was successful.  You may also test using
+literal strings or regular expressions that are either required to
+exist or forbidden to exist in the fetched page.  You may also specify
+tests for the minimum and maximum number of bytes in the returned
+page.  You may also specify tests for the minimum and maximum web
+server response time.
 
 Data flow for C<HTTP::WebTest> using a remote URL:
 
@@ -114,10 +114,10 @@ Data flow diagram for C<HTTP::WebTest> using a local web file:
 =head2 Getting Started
 
 This module has complex functionality, but using it to run simple
-tests is simple. Create a file of test parameters in the
+tests is simple.  Create a file of test parameters in the
 L<wtscript format|Running HTTP::WebTest using a parameter file> and use the
 L<wt|wt> program to process the file using the command C<wt
-filename>. The only required parameters are C<test_name> and C<url>.
+filename>.  The only required parameters are C<test_name> and C<url>.
 
 This document describes:
 
@@ -125,13 +125,13 @@ This document describes:
 
 =item *
 
-How tests can be specified. See section L<TEST SPECIFICATION|TEST
-SPECIFICATION>.
+How tests can be specified.  See section
+L<TEST SPECIFICATION|TEST SPECIFICATION>.
 
 =item *
 
 All test parameters supported by core C<HTTP::WebTest>
-plugins. See section L<TEST PARAMETERS|TEST PARAMETERS>.
+plugins.  See section L<TEST PARAMETERS|TEST PARAMETERS>.
 
 =back
 
@@ -180,22 +180,22 @@ run either using Perl API of C<HTTP::WebTest>
 or by using program L<wt|wt> supplied with this module.
 
 If you are running dozens of tests, you may want to divide them into
-several parameter files. This will organize the tests and reduce the
-size of the output and e-mail messages. However, cookies passed to or
+several parameter files.  This will organize the tests and reduce the
+size of the output and e-mail messages.  However, cookies passed to or
 received from the web server(s) are not shared between tests in
 different parameter files.
 
 =head3 File format
 
-The wtscript file is a text file containing global parameters and 
-test blocks containing test block parameters.  A test block begins with
-a test_name parameter and ends with an end_test directive.  The order of
+The wtscript file is a text file containing global parameters and test
+blocks containing test block parameters.  A test block begins with a
+test_name parameter and ends with an end_test directive.  The order of
 the parameters and test blocks is arbitrary.
 
 Test block parameters MUST occur between a test_name parameter and an
-end_test directive. (Test block parameters affect only an individual
+end_test directive.  (Test block parameters affect only an individual
 test.) Global parameters must NOT occur between a test_name parameter
-and an end_test directive. (This requirement does not apply to
+and an end_test directive.  (This requirement does not apply to
 certain parameters that are both global and test block parameters.)
 
 The following lines are ignored:
@@ -258,13 +258,13 @@ is backslash-n rather than a newline character.  Double quotes mean that
 Perl metasymbols are interpreted: "\n\t" is a newline and a tab.
 
 Also it is possible to specify Perl code instead of scalar, instead of
-list parameter value or instead of element of list paramater. Curly
+list parameter value or instead of element of list paramater.  Curly
 brackets are used to denote Perl code inside wtscript files.  This
 code will be evaluated during test run.
 
 C<HTTP::WebTest> compiles this Perl code as anonymous subroutines
 which are called during test run when value of corresponding test
-parameters are required. When these subroutines are called
+parameters are required.  When these subroutines are called
 C<HTTP::WebTest> object is passed to them.
 
 Some examples of syntax:
@@ -288,9 +288,9 @@ Some examples of syntax:
 
 The parameters below specify tests of a local file and a remote URL.
 The tests specified by the C<text_forbid> parameter apply to both the
-"RayCosoft home page" and the "Yahoo home page" tests. Hence, if
+"RayCosoft home page" and the "Yahoo home page" tests.  Hence, if
 either returned page contains one of the case-insensitive strings in
-text_forbid, the test fails. If any test fails or the fetch of the URL
+text_forbid, the test fails.  If any test fails or the fetch of the URL
 fails, an e-mail will be sent to tester@unixscripts.com.
 
 
@@ -321,7 +321,7 @@ fails, an e-mail will be sent to tester@unixscripts.com.
     end_test
 
 The parameters below specify a test of a local file containing Perl
-code using the L<Apache::ASP|Apache::ASP> module. The C<includes.htm>
+code using the L<Apache::ASP|Apache::ASP> module.  The C<includes.htm>
 file requires five include files and two Perl modules, which are
 copied using the C<include_file_path> parameter.
 
@@ -351,14 +351,14 @@ copied using the C<include_file_path> parameter.
 If you are using Perl API of C<HTTP::WebTest> then the test parameters
 can be defined in form of array of hashes.
 
-Each hash in array defines tests for one URL or local web file. Keys
+Each hash in array defines tests for one URL or local web file.  Keys
 in hashes are test parameter names and values in hashes are values of
-test parameters. Additionally, optional global test parameters can be
+test parameters.  Additionally, optional global test parameters can be
 passed in a hash passed as the second argument.
 
 Instead of test parameter values subroutine references can be
-specified. Referenced subroutines are called during test run when
-values of corresponding test parameters are required. When called
+specified.  Referenced subroutines are called during test run when
+values of corresponding test parameters are required.  When called
 these subroutines get C<HTTP::WebTest> object passed to them.
 
 Tests can be run as
@@ -456,10 +456,15 @@ summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
 =head2 Other Plugin Modules Bundled With HTTP::WebTest
 
 Following plugin modules come with HTTP::WebTest but they are not
-loaded by default. They should be loaded using global test parameter
+loaded by default.  They should be loaded using global test parameter
 C<plugins> when needed.
 
 =over 4
+
+=item L<HTTP::WebTest::Plugin::Click>
+
+This plugin allows to use names of links and button on HTML pages to
+build test requests.
 
 =item L<HTTP::WebTest::Plugin::HarnessReport>
 
@@ -469,7 +474,7 @@ compatible test reports.
 =item L<HTTP::WebTest::Plugin::Hooks>
 
 This plugin allows to define callback test parameters which are
-evaluated at specific time of L<HTTP::WebTest> test run. These test
+evaluated at specific time of L<HTTP::WebTest> test run.  These test
 parameters can define user-defined checks.
 
 =back
@@ -485,8 +490,8 @@ developers.
 =head1 TEST PARAMETERS
 
 Most parameters can be used both as global and as test block
-parameters. If you specify such parameter as global its value applies
-to all test blocks. Value of parameter specified as global can be
+parameters.  If you specify such parameter as global its value applies
+to all test blocks.  Value of parameter specified as global can be
 overriden individually in each test block by specifying this parameter
 with different values in test blocks.
 
@@ -496,7 +501,7 @@ and it cannot be overriden in test blocks.
 =for pod_merge replace params
 
 Content of this section should be autogenerated from POD documentation
-in plugin modules. Everything from this point till next =cut will be
+in plugin modules.  Everything from this point till next =cut will be
 replaced with autogenerated documentation.
 
 =for pod_merge copy params
@@ -512,7 +517,7 @@ It marks end of test block.
 =for pod_merge replace apache
 
 Content of this section should be autogenerated from POD documentation
-in Apache plugin module. Everything from this point till next =cut
+in Apache plugin module.  Everything from this point till next =cut
 will be replaced with autogenerated documentation.
 
 =cut
@@ -525,14 +530,14 @@ etc.) but it should work on Win32 systems.
 Local file tests don't work on Win32 systems.
 
 The module's HTTP requests time out after 3 minutes (the default value
-for L<LWP::UserAgent|LWP::UserAgent>). If the C<file_path> parameter is
+for L<LWP::UserAgent|LWP::UserAgent>).  If the C<file_path> parameter is
 specified, Apache must be installed.
 
 =head1 SUPPORT
 
 Please email bug reports, suggestions, questions, etc. to
 C<HTTP::WebTest> maillist
-C<http-webtest-general@lists.sourceforge.net>. You can sign up at
+C<http-webtest-general@lists.sourceforge.net>.  You can sign up at
 http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
 
 =head1 AUTHORS
@@ -541,18 +546,18 @@ Richard Anderson <richard@richard-anderson.org> have wrote
 C<HTTP::WebTest 1.xx>.
 
 Ilya Martynov <ilya@martynov.org> made rewrite of
-C<HTTP::WebTest>. New version of C<HTTP::WebTest> have introduced
+C<HTTP::WebTest>.  New version of C<HTTP::WebTest> have introduced
 extended API and plugin based architecture.
 
-Please don't email authors directly. Use C<HTTP::WebTest> maillists.
+Please don't email authors directly.  Use C<HTTP::WebTest> maillists.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
-This module is free software. It may be used, redistributed and/or
+This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.
 
 =head1 SEE ALSO

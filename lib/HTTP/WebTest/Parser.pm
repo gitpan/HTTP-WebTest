@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.7 2002/02/12 11:47:20 m_ilya Exp $
+# $Id: Parser.pm,v 1.8 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -102,10 +102,10 @@ my $parser = new Parse::RecDescent (q{
 		 my $delim =  substr $extracted, 0, 1;
 		 # let Perl remove quote chars and handle special
 		 # sequences like \n but don't treat $ and @ as
-		 # special. Note \\\\ in patterns. It is actually just
-		 # *one* backslash. Four chars are because of double
-		 # quoting (one inside parser grammar definition,
-		 # second inside regexp body)
+		 # special.  Note \\\\ in patterns.  It is actually
+		 # just *one* backslash.  Four chars are because of
+		 # double quoting (one inside parser grammar
+		 # definition, second inside regexp body)
                  if($delim eq '"') {
                      $extracted =~ s/(^|[^\\\\])((?:\\\\\\\\)*)(\\\\)(\$|\@)/$1$2$3$3$4/g;
     		     $extracted =~ s/(\$|\@)/\\\\$1/g;
@@ -209,7 +209,7 @@ sub _conv_param {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

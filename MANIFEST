@@ -4,7 +4,7 @@ MANIFEST
 Makefile.PL
 README
 TODO
-bin/wt.PL
+bin/wt
 http-webtest/conf/httpd.conf-dist
 http-webtest/htdocs/webtest/is_apache_responding.html
 http-webtest/logs/.placeholder
@@ -16,6 +16,7 @@ lib/HTTP/WebTest/Cookies.pm
 lib/HTTP/WebTest/Parser.pm
 lib/HTTP/WebTest/Plugin.pm
 lib/HTTP/WebTest/Plugin/Apache.pm
+lib/HTTP/WebTest/Plugin/Click.pm
 lib/HTTP/WebTest/Plugin/ContentSizeTest.pm
 lib/HTTP/WebTest/Plugin/Cookies.pm
 lib/HTTP/WebTest/Plugin/DefaultReport.pm
@@ -43,6 +44,7 @@ t/06-parser.t
 t/07-compat.t
 t/08-plugins.t
 t/09-hooks.t
+t/10-click.t
 t/HTTP/WebTest/Plugin/Counter.pm
 t/HelloWorld.pm
 t/README
@@ -76,10 +78,19 @@ t/test.out/borked5.err
 t/test.out/borked6.err
 t/test.out/borked7.err
 t/test.out/borked8.err
+t/test.out/click_button1
+t/test.out/click_button2
+t/test.out/click_button3
+t/test.out/click_button4
+t/test.out/click_link1
+t/test.out/click_link2
+t/test.out/click_link3
+t/test.out/content-type
 t/test.out/cookie1
 t/test.out/cookie2
 t/test.out/cookie3
 t/test.out/default-report-yes
+t/test.out/http-headers
 t/test.out/on_response
 t/test.out/pauth
 t/test.out/plugin-counter
@@ -115,5 +126,7 @@ t/test1.html
 t/test1.txt
 t/test2.html.in
 t/test2.txt
+t/test3.html
 t/test3.txt
+t/test4.html
 t/utils.pl

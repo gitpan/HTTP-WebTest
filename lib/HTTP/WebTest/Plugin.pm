@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.9 2002/03/24 12:11:18 m_ilya Exp $
+# $Id: Plugin.pm,v 1.10 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -12,8 +12,8 @@ Not applicable.
 
 =head1 DESCRIPTION
 
-L<HTTP::WebTest|HTTP::WebTest> plugin classes can subclass this
-class. It provides some useful helper methods.
+L<HTTP::WebTest|HTTP::WebTest> plugin classes can subclass this class.
+It provides some useful helper methods.
 
 =head1 METHODS
 
@@ -120,7 +120,7 @@ If global test parameter C<$param> is not defined returns
 C<$optional_default> or false if it is not defined also.
 
 If global test parameter C<$param> is defined returns true if latest
-test parameter C<$param> is C<yes>. False otherwise.
+test parameter C<$param> is C<yes>.  False otherwise.
 
 =cut
 
@@ -143,7 +143,7 @@ If latest test parameter C<$param> is not defined returns
 C<$optional_default> or false if it is not defined also.
 
 If latest test parameter C<$param> is defined returns true if latest
-test parameter C<$param> is C<yes>. False otherwise.
+test parameter C<$param> is C<yes>.  False otherwise.
 
 =cut
 
@@ -232,7 +232,7 @@ sub _validate_params {
 
 =head2 validate_params (@params)
 
-Checks test parameters listed in C<@params>. Throws exception if any
+Checks test parameters listed in C<@params>.  Throws exception if any
 of them are invalid.
 
 =cut
@@ -251,7 +251,7 @@ sub validate_params {
 
 =head2 global_validate_params (@params)
 
-Checks global test parameters listed in C<@params>. Throws exception
+Checks global test parameters listed in C<@params>.  Throws exception
 if any of them are invalid.
 
 =cut
@@ -301,8 +301,8 @@ sub validate_value {
 
 =head2 param_types ()
 
-Method which should be redefined in subclasses. Returns information
-about test parameters which are supported by plugin. Used to validate
+Method which should be redefined in subclasses.  Returns information
+about test parameters which are supported by plugin.  Used to validate
 tests.
 
 =head3 Returns
@@ -323,7 +323,7 @@ sub param_types { '' }
 Method which checks test parameter if it is value is of C<anything>
 type.
 
-This is NOOP operation. It always succeed.
+This is NOOP operation.  It always succeed.
 
 =cut
 
@@ -332,10 +332,10 @@ sub check_anything { 1 }
 =head2 check_list ($param, $value, @optional_spec)
 
 Method which checks test parameter if it is value is of C<list>
-type. That is it is a reference on an array.
+type.  That is it is a reference on an array.
 
 Optional list C<@optional_spec> can define specification on allowed
-elements of list. It can be either
+elements of list.  It can be either
 
     ('TYPE_1', 'TYPE_2', ..., 'TYPE_N')
 
@@ -344,7 +344,7 @@ or
     ('TYPE_1', 'TYPE_2', ..., 'TYPE_M', '...')
 
 First specification requires list value of test parameter to contain
-C<N> elements. First element of list should be of should C<TYPE_1>
+C<N> elements.  First element of list should be of should C<TYPE_1>
 type, second element of list should of C<TYPE_2> type, ..., N-th
 element of list should be of C<TYPE_N> type.
 
@@ -400,7 +400,7 @@ sub check_list {
 =head2 check_scalar ($param, $value, $optional_regexp)
 
 Method which checks test parameter if it is value is of C<scalar>
-type. That is it is usual Perl scalar and is not a reference.
+type.  That is it is usual Perl scalar and is not a reference.
 
 If C<$optional_regexp> is specified also checks value of parameter
 using this regual expression.
@@ -429,7 +429,7 @@ sub check_scalar {
 =head2 check_stringref ($param, $value)
 
 Method which checks test parameter if it is value is of C<stringref>
-type. That is it is a reference on scalar.
+type.  That is it is a reference on scalar.
 
 =head3 Exceptions
 
@@ -449,7 +449,7 @@ sub check_stringref {
 =head2 check_uri ($param, $value)
 
 Method which checks test parameter if it is value is of C<uri>
-type. That is it either scalar or L<URI|URI> object.
+type.  That is it either scalar or L<URI|URI> object.
 
 =head3 Exceptions
 
@@ -476,7 +476,7 @@ sub check_uri {
 =head2 check_hashlist ($param, $value)
 
 Method which checks test parameter if it is value is of C<hashlist>
-type. That is it is either a hash reference or an array reference
+type.  That is it is either a hash reference or an array reference
 which points to array containing even number of elements.
 
 =head3 Exceptions
@@ -522,7 +522,7 @@ sub check_yesno {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.

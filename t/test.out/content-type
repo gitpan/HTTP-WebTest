@@ -1,0 +1,13 @@
+Failed  Succeeded  Test Name
+   0          2    *** no name ***
+
+
+URL: http://http.web.test/show-headers
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    Content-Type: application/x-www-form-urlencoded              SUCCEED
+
+
+Total web tests failed: 0  succeeded: 2

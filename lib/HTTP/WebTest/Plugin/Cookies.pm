@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.2 2002/02/02 04:08:19 m_ilya Exp $
+# $Id: Cookies.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Cookies;
 
@@ -32,8 +32,8 @@ use HTTP::Status;
 Option to accept cookies from the web server.
 
 These cookies exist only while the program is executing and do not
-affect subsequent runs. These cookies do not affect your browser or
-any software other than the test program. These cookies are only
+affect subsequent runs.  These cookies do not affect your browser or
+any software other than the test program.  These cookies are only
 accessible to other tests executed during test sequence execution.
 
 See also the <send_cookies> parameter.
@@ -48,12 +48,12 @@ C<yes>
 
 =head2 send_cookies
 
-Option to send cookies to web server. This applies to cookies received
-from the web server or cookies specified using the C<cookies> test
-parameter.
+Option to send cookies to web server.  This applies to cookies
+received from the web server or cookies specified using the C<cookies>
+test parameter.
 
 This does NOT give the web server(s) access to cookies created with a
-browser or any user agent software other than this program. The
+browser or any user agent software other than this program.  The
 cookies created while this program is running are only accessible to
 other tests in the same test sequence.
 
@@ -106,7 +106,7 @@ Version number of cookie spec to use, usually 0.
 
 =item * name (REQUIRED)
 
-Name of cookie. Cannot begin with a $ character.
+Name of cookie.  Cannot begin with a $ character.
 
 =item * value (REQUIRED)
 
@@ -114,12 +114,12 @@ Value of cookie.
 
 =item * path (REQUIRED)
 
-URL path name for which this cookie applies. Must begin with a /
+URL path name for which this cookie applies.  Must begin with a /
 character.  See also path_spec.
 
 =item * domain (REQUIRED)
 
-Domain for which cookie is valid. (REQUIRED). Should begin with a
+Domain for which cookie is valid.  (REQUIRED).  Should begin with a
 period.  Must either contain two periods or be equal to C<.local>.
 
 =item * port
@@ -169,8 +169,9 @@ Number of seconds until cookie expires.
 
 =item * discard
 
-Option to discard cookie when the program finishes.  Default 0. (The
-cookie will be discarded regardless of the value of this element.)
+Option to discard cookie when the program finishes.  Default is 0.
+(The cookie will be discarded regardless of the value of this
+element.)
 
 =over 4
 
@@ -186,7 +187,7 @@ Don't discard cookie.
 
 =item * name/value
 
-Zero, one or several name/value pairs may be specified. The name
+Zero, one or several name/value pairs may be specified.  The name
 parameters are words such as Comment or CommentURL and the value
 parameters are strings that may contain embedded blanks.
 
@@ -300,9 +301,9 @@ sub transform_cookies {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
 
 This module is free software.  It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.
