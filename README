@@ -9,6 +9,7 @@ FILES
 PREREQUISITES
 RESTRICTIONS / BUGS
 VERSION
+CHANGES
 TODO
 AUTHOR
 COPYRIGHT
@@ -23,12 +24,12 @@ SYNOPSIS
 
      TO RUN WEB TESTS DEFINED BY SUBROUTINE ARGUMENTS:
 
-     use HTTP::WebTest;
+     use HTTP::WebTest qw(run_web_test);
      run_web_test(\@web_tests, \$num_fail, \$num_succeed, \%test_options)
 
      or
 
-     use HTTP::WebTest;
+     use HTTP::WebTest qw(run_web_test);
      run_web_test(\@web_tests, \$num_fail, \$num_succeed)
 
      TO RUN WEB TESTS DEFINED BY A PARAMETER FILE:
@@ -56,7 +57,7 @@ SYNOPSIS
      If you are calling the web_test method, use the debug parameter.
      If you are calling the run_web_test method, do this:
 
-     use HTTP::WebTest;
+     use HTTP::WebTest qw(run_web_test);
      $HTTP::WebTest::Debug = 1; # Diagnostic messages
      $HTTP::WebTest::Debug = 2; # Messages and preserve temp Apache dir
      run_web_test(\@web_tests, \$num_fail, \$num_succeed)
@@ -202,13 +203,13 @@ METHODS
            cookies - Arrayref of arrayrefs containing cookies to pass
               with the HTTP request.  See RFC 2965 for details
               (ftp.isi.edu/in-notes/rfc2965.txt).  Each array must have
-              an even number of elements and must contain at least 10
-              elements.  Each array has the form ( version name value
-              path domain port path_spec secure maxage discard name1
-              value1 name2 value2 ... ), with the following definitions.
-              (Required elements are marked with an asterisk; elements
-              that are not required can be specified using the undef
-              value or ''.)
+              at least 5 elements; if the number of elements is over 10
+              it must have an even number of elements.  Each array has
+              the form ( version name value path domain port path_spec
+              secure maxage discard name1 value1 name2 value2 ... ),
+              with the following definitions.  (REQUIRED elements are
+              marked with an ASTERISK; elements that are not required
+              can be specified using the undef value or ''.)
 
              *version: Version number of cookie spec to use, usually 0.
              *name: Name of cookie. Cannot begin with a $ character.
@@ -681,10 +682,11 @@ FILES
      the value in the test block applies only to that test block.
 
      PARAMETER: cookie  TYPE: test block parameter  
-     NO DEFAULT.  ALLOWED VALUES: A list with an even number of elements
-     and at least 10 elements.  The cookie parameter is ignored if the
-     send_cookies parameter is set to no.  OPTIONAL PARAMETER.  Multiple
-     cookie parameters may be specified.
+     NO DEFAULT.  ALLOWED VALUES: A list with at least 5 elements.  If
+     there are more than 10 elements, there must be an even number of 
+     elements.  The cookie parameter is ignored if the send_cookies 
+     parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie 
+     parameters may be specified.
      DESCRIPTION: List that specifies a cookie to send to the web server.
      See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
      You may specify multiple cookies within each test block by
@@ -1127,7 +1129,65 @@ RESTRICTIONS / BUGS
     must be stored on a local disk.
 
 VERSION
-    This document describes version 1.00, release date 06 June 2001
+    This document describes version 1.01, release date 14 June 2001
+
+CHANGES
+     0.01  Sat Dec  9 10:14:53 2000
+            - original version; created by h2xs 1.19
+
+     0.20  Mon Feb 26 2001
+
+       * Fixed bug that caused module to abort when a HTTP-Redirect 
+         (302) is sent back with a relative URL.
+
+       * Set Content-type to 'application/x-www-form-urlencoded' 
+         for POST.
+
+       * Modified Makefile.PL to get path of perl using the which 
+         command and create the wt script with this path in the 
+         she-bang line (#!).
+
+       * Modified "make test" tests to write output to files in the 
+         t subdirectory.
+
+     0.30  Mon Mar 05 2001
+
+       * Fixed ./t/*.t files so that "make test" runs correctly on 
+         Solaris.  (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; 
+         export WEBTEST_LIB.)
+
+       * Improved clarity of documentation and program output.
+
+     1.00  Wed Jun 06 2001
+
+       * Added max_rtime and min_rtime parameters to test web server 
+         response time.  The perl module Time::HiRes is now a
+         prerequisite to install HTTP::WebTest.  (This code was
+         a collaborative effort by the author and Michael Blakeley.)
+
+       * Added pauth parameter for proxy authorization.  (This code 
+         was a collaborative effort by the author and Darren Fulton.)
+
+       * Changed max_bytes and min_bytes paramters from test block 
+         parameters to global and/or test block parameters.
+
+       * Made format of output report more robust for max_bytes and 
+         min_bytes parameters.
+
+     1.01  Wed Jun 14 2001
+
+       * Modified cookies parameter to allow less than 10 elements.  
+         (Thanks to Thomas Ayles for suggesting this.)
+
+       * Fixed bug that caused get_response() to fail to capture all 
+         cookies returned by the webserver during redirects.  Added
+         subclass HTTP::WebTest::Cookies (a modified HTTP::Cookies
+         class).  (Thanks to Ilya Martynov for this fix.)
+
+       * Modified web server response time measurement to be more 
+         accurate.
+
+       * Exported run_web_test method so it can be called directly.
 
 TODO
     Add option to validate HTML syntax using HTML::Validator. Add option to

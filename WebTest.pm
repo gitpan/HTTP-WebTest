@@ -11,12 +11,12 @@ HTTP::WebTest - Test remote URLs or local web files
 
  TO RUN WEB TESTS DEFINED BY SUBROUTINE ARGUMENTS:
 
- use HTTP::WebTest;
+ use HTTP::WebTest qw(run_web_test);
  run_web_test(\@web_tests, \$num_fail, \$num_succeed, \%test_options)
 
  or
 
- use HTTP::WebTest;
+ use HTTP::WebTest qw(run_web_test);
  run_web_test(\@web_tests, \$num_fail, \$num_succeed)
 
  TO RUN WEB TESTS DEFINED BY A PARAMETER FILE:
@@ -44,7 +44,7 @@ HTTP::WebTest - Test remote URLs or local web files
  If you are calling the web_test method, use the debug parameter.
  If you are calling the run_web_test method, do this:
 
- use HTTP::WebTest;
+ use HTTP::WebTest qw(run_web_test);
  $HTTP::WebTest::Debug = 1; # Diagnostic messages
  $HTTP::WebTest::Debug = 2; # Messages and preserve temp Apache dir
  run_web_test(\@web_tests, \$num_fail, \$num_succeed)
@@ -127,6 +127,7 @@ Data flow diagram for WebTest using a local web file:
 =cut
 
 require 5.000;
+require Exporter;
 use strict;
  
 use Cwd qw(cwd);
@@ -134,7 +135,6 @@ use File::Basename qw(fileparse);
 use File::Copy qw(copy);
 use File::Find qw(find);
 use File::Path qw(rmtree);
-use HTTP::Cookies qw(add_cookie_header as_string extract_cookies set_cookie);
 use HTTP::Request::Common qw(GET POST);
 use HTTP::Response qw(code content is_error status_line);
 use LWP::UserAgent qw(agent request);
@@ -149,10 +149,12 @@ use URI::URL;
 # Class (package) globals #
 ###########################
  
-use vars qw($AUTHOR $Debug $VERSION);
+use vars qw($AUTHOR $Debug @EXPORT_OK @ISA $VERSION);
 $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
-$VERSION = 1.00;
+@ISA = qw(Exporter);  
+@EXPORT_OK = qw(run_web_test);
+$VERSION = 1.01;
  
 #############################
 # Constants (magic numbers) #
@@ -174,12 +176,15 @@ sub MIN_APACHE_WAIT_SECONDS () { return 10; };
 sub DIR_MODE () { return 0755; };  
 #
 # Minimum number of cookie arguments
-sub MIN_COOKIE_ARGS () { return 10; }; 
+sub MIN_COOKIE_ARGS () { return 5; }; 
 #
 # Range for private/dynamic ports, see http://www.iana.org/numbers.html
 sub MAX_PRIVATE_PORT () { return 65535; };
 sub MIN_PRIVATE_PORT () { return 49152; };
- 
+#
+# Maximum number of cookie arguments that do not require reformatting cookie
+sub NCOOKIE_REFORMAT () { return 10; }; 
+
 ###################
 # Other constants #
 ###################
@@ -646,10 +651,10 @@ sub get_response {
 # with the request and receives returned cookies.  If the server response code
 # is a redirect, recurses until non-redirect code is returned.
 #
-# (Conceptually a private method, but syntacticly public to allow recursion.)
+# (Conceptually a private method, but syntacticly public.)
 #
 # Synopsis: 
-# $response = get_response($url, $user_agent, \%test, $cookie_jar);
+# $response = get_response($url, $user_agent, \%test, $cookie_jar, \$rtime);
 #
 # Input arguments:
 # $url - URL to get response object for.
@@ -659,13 +664,16 @@ sub get_response {
 # Input/output arguments:
 # $cookie_jar - Cache for sent or returned cookies; an HTTP::Cookies object.
 #
+# Output arguments:
+# \$rtime - Web server response time (seconds)
+#
 # Return value:
 # HTTP::Response object for the URL, after all redirects have been followed.
 #
 # See also:
-# man lwpcook, HTTP::Response, HTTP::Cookies, HTTP::Headers, URI::URL
+# lwpcook, HTTP::Response, HTTP::Cookies, HTTP::Headers, URI::URL
 #
-   my ($url, $user_agent, $test, $cookie_jar) = @_;
+   my ($url, $user_agent, $test, $cookie_jar, $rtime) = @_;
    my ($request, $response, $uri); 
 
    if (uc($test->{method}) eq 'POST') {
@@ -688,24 +696,23 @@ sub get_response {
       $request->proxy_authorization_basic($test->{pauth}->[0],
          $test->{pauth}->[1]);
    }   
-   unless (defined($test->{send_cookies}) and $test->{send_cookies} eq 'no') {
-      $cookie_jar->add_cookie_header($request);
-   }
+   local $cookie_jar->{send_cookies} = not (defined($test->{send_cookies}) 
+                                       and $test->{send_cookies} eq 'no');
+   local $cookie_jar->{accept_cookies} = not (defined($test->{accept_cookies})
+                                         and $test->{accept_cookies} eq 'no');
+   $user_agent->cookie_jar($cookie_jar);
 #
 # Fetch the URL
+   $$rtime = gettimeofday;
    $response = $user_agent->request($request);
-   if (defined($test->{accept_cookies}) and $test->{accept_cookies} ne 'no') {
+   $$rtime = gettimeofday - $$rtime;
+   unless (defined($test->{accept_cookies}) 
+           and $test->{accept_cookies} eq 'no') 
+   {
       $cookie_jar->extract_cookies($response);
    }
-#
-# If server response code is a redirect, follow the redirect using recursion
-   if ($response->is_redirect()) {
-#      $url = $response->header('Location');
-      $url = $uri->abs($response->header('Location'));
-      $response = get_response($url, $user_agent, $test, $cookie_jar);
-   }
    return $response;
-};
+}
  
 my $_get_unique_object_id;   
 { 
@@ -1134,7 +1141,7 @@ my $_fetch_url = sub {
 # to the report.
 #
 # Synopsis: $_fetch_url->(\%test, $user_agent, $show_cookies, $send_cookies,
-#                         $cookie_jar, \$report, \$web_page, \$nbytes);
+#              $cookie_jar, \$report, \$web_page, \$nbytes, \$rtime);
 #
 # Input arguments:
 # \%test - Hashref containing URL, method, params, userid/password, etc.
@@ -1150,6 +1157,7 @@ my $_fetch_url = sub {
 # Output arguments:
 # \$web_page - Returned contents of web page.
 # \$nbytes - Number of bytes in returned page.
+# \$rtime - Web server response time (seconds)
 #
 # Return values:
 # 1 -> Web page fetched O.K.
@@ -1158,7 +1166,7 @@ my $_fetch_url = sub {
 # See also: HTTP::Cookies
 #
    my ($test, $user_agent, $show_cookies, $send_cookies, $cookie_jar, $report,
-       $web_page, $nbytes) = @_;
+       $web_page, $nbytes, $rtime) = @_;
    my ($request, $response, $cookies); 
 
    $$report .= "\n   Test Name: " . $test->{test_name} . "\n";
@@ -1178,7 +1186,8 @@ my $_fetch_url = sub {
    }
 #
 # Fetch the URL
-   $response = get_response($test->{url}, $user_agent, $test, $cookie_jar);
+   $response = get_response($test->{url}, $user_agent, $test, $cookie_jar, 
+                            $rtime);
    if (not defined($response)) {
       $$nbytes = 0;
       $$report .= " Return Code: NONE - Invalid URL or bad HTTP redirect\n";
@@ -1876,9 +1885,15 @@ my $_transform_web_tests = sub {
 # Transform cookies into format needed by HTTP::Cookies set_cookie method
       $mod_cookies = [ ];
       foreach $cookie (@{$test->{cookies}}) {
-         next unless (@$cookie > MIN_COOKIE_ARGS);              
+         unless( @$cookie > NCOOKIE_REFORMAT ) {
+            for (my $i = @$cookie, $i < NCOOKIE_REFORMAT, ++$i) {
+               push @$cookie, undef;
+            }
+            push @$mod_cookies, $cookie;
+            next;
+         }        
          $new_cookie = [ ];
-         for ($i = 0; $i < MIN_COOKIE_ARGS; ++$i) {
+         for ($i = 0; $i < NCOOKIE_REFORMAT; ++$i) {
             if (length($cookie->[$i]) > 0) {
                push @{$new_cookie}, $cookie->[$i];
             } else {
@@ -1886,7 +1901,7 @@ my $_transform_web_tests = sub {
             }
          }
          $extra = { };
-         for ($i = MIN_COOKIE_ARGS; $i < @{$cookie}; $i = $i + 2) {
+         for ($i = NCOOKIE_REFORMAT; $i < @{$cookie}; $i = $i + 2) {
             $extra->{$cookie->[$i]} = $cookie->[$i + 1];
          }
          push @$new_cookie, $extra;
@@ -2137,10 +2152,12 @@ my $_validate_web_tests = sub {
          }
       }  
       foreach my $cookie (@{$web_test->{cookies}}) {   
-         if (scalar(@{$cookie}) % 2 != 0) {
+         if (scalar(@{$cookie}) > NCOOKIE_REFORMAT
+             and scalar(@{$cookie}) % 2 != 0) 
+         {
             warn "Found error in test named: $test_name\n",
-               "ERROR: cookie parameter must have an even number of ",
-               "elements\n";
+               "ERROR: cookie parameter must have even # of ",
+               "elements if # elements > ", NCOOKIE_REFORMAT, "\n";
             $found_error = 'yes';
          }
          if (scalar(@{$cookie}) < MIN_COOKIE_ARGS) {
@@ -2884,13 +2901,13 @@ sub run_web_test {
        cookies - Arrayref of arrayrefs containing cookies to pass
           with the HTTP request.  See RFC 2965 for details
           (ftp.isi.edu/in-notes/rfc2965.txt).  Each array must have
-          an even number of elements and must contain at least 10
-          elements.  Each array has the form ( version name value
-          path domain port path_spec secure maxage discard name1
-          value1 name2 value2 ... ), with the following definitions.
-          (Required elements are marked with an asterisk; elements
-          that are not required can be specified using the undef
-          value or ''.)
+          at least 5 elements; if the number of elements is over 10
+          it must have an even number of elements.  Each array has
+          the form ( version name value path domain port path_spec
+          secure maxage discard name1 value1 name2 value2 ... ),
+          with the following definitions.  (REQUIRED elements are
+          marked with an ASTERISK; elements that are not required
+          can be specified using the undef value or ''.)
 
          *version: Version number of cookie spec to use, usually 0.
          *name: Name of cookie. Cannot begin with a $ character.
@@ -3120,11 +3137,9 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       if (defined($test->{error_log})) {
          $_count_error_log->($test->{error_log}, \$nlines_before);
       }
-      $rtime = gettimeofday;
       $fetch_ok = $_fetch_url->($test, $user_agent,
          $test_options->{show_cookies}, $test->{send_cookies}, 
-         $cookie_jar, \$report, \$web_page, \$nbytes);
-      $rtime = gettimeofday - $rtime;
+         $cookie_jar, \$report, \$web_page, \$nbytes, \$rtime);
 #
 # If the number of error log messages increased, report an error
       if (defined($test->{error_log})) {
@@ -3232,6 +3247,23 @@ sub DESTROY {
    }
    return 0 if $found_error;
    return 1;
+}
+
+package HTTP::WebTest::Cookies;
+use base qw(HTTP::Cookies);
+#
+# Modified HTTP::Cookies class to enable optional transmission and
+# receipt of cookies
+#
+
+sub extract_cookies {
+   my $self = shift;
+   if($self->{accept_cookies}) { $self->SUPER::extract_cookies(@_); }
+}
+
+sub add_cookie_header {
+   my $self = shift;
+   if($self->{send_cookies}) { $self->SUPER::add_cookies_header(@_); }
 }
 
 =head1 ENVIRONMENT VARIABLES
@@ -3530,10 +3562,11 @@ sub DESTROY {
  the value in the test block applies only to that test block.
 
  PARAMETER: cookie  TYPE: test block parameter  
- NO DEFAULT.  ALLOWED VALUES: A list with an even number of elements
- and at least 10 elements.  The cookie parameter is ignored if the
- send_cookies parameter is set to no.  OPTIONAL PARAMETER.  Multiple
- cookie parameters may be specified.
+ NO DEFAULT.  ALLOWED VALUES: A list with at least 5 elements.  If
+ there are more than 10 elements, there must be an even number of 
+ elements.  The cookie parameter is ignored if the send_cookies 
+ parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie 
+ parameters may be specified.
  DESCRIPTION: List that specifies a cookie to send to the web server.
  See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
  You may specify multiple cookies within each test block by
@@ -3980,7 +4013,66 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 1.00, release date 06 June 2001
+This document describes version 1.01, release date 14 June 2001
+
+=head1 CHANGES
+
+ 0.01  Sat Dec  9 10:14:53 2000
+	- original version; created by h2xs 1.19
+
+ 0.20  Mon Feb 26 2001
+
+   * Fixed bug that caused module to abort when a HTTP-Redirect 
+     (302) is sent back with a relative URL.
+
+   * Set Content-type to 'application/x-www-form-urlencoded' 
+     for POST.
+
+   * Modified Makefile.PL to get path of perl using the which 
+     command and create the wt script with this path in the 
+     she-bang line (#!).
+
+   * Modified "make test" tests to write output to files in the 
+     t subdirectory.
+
+ 0.30  Mon Mar 05 2001
+
+   * Fixed ./t/*.t files so that "make test" runs correctly on 
+     Solaris.  (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; 
+     export WEBTEST_LIB.)
+
+   * Improved clarity of documentation and program output.
+
+ 1.00  Wed Jun 06 2001
+
+   * Added max_rtime and min_rtime parameters to test web server 
+     response time.  The perl module Time::HiRes is now a
+     prerequisite to install HTTP::WebTest.  (This code was
+     a collaborative effort by the author and Michael Blakeley.)
+
+   * Added pauth parameter for proxy authorization.  (This code 
+     was a collaborative effort by the author and Darren Fulton.)
+
+   * Changed max_bytes and min_bytes paramters from test block 
+     parameters to global and/or test block parameters.
+
+   * Made format of output report more robust for max_bytes and 
+     min_bytes parameters.
+
+ 1.01  Wed Jun 14 2001
+
+   * Modified cookies parameter to allow less than 10 elements.  
+     (Thanks to Thomas Ayles for suggesting this.)
+
+   * Fixed bug that caused get_response() to fail to capture all 
+     cookies returned by the webserver during redirects.  Added
+     subclass HTTP::WebTest::Cookies (a modified HTTP::Cookies
+     class).  (Thanks to Ilya Martynov for this fix.)
+
+   * Modified web server response time measurement to be more 
+     accurate.
+
+   * Exported run_web_test method so it can be called directly.
 
 =head1 TODO
 

@@ -44,16 +44,7 @@
 
 =head1 FILES
 
- The web_test() method requires (1) one or more input parameter
- files, and (2) if the file_path parameter is specified, a directory
- tree that contains the subdirectories and files described in the
- APACHE DIRECTORY AND FILES section below.
- 
-
- PARAMETER FILE
- 
- The input parameters are specified in a text file. You must pass
- the name of the file as an argument to the web_test() method.
+ The input parameters are specified in one or more text files.
  If you are running dozens of tests, you may want to divide them
  into several parameter files.  This will organize the tests
  and reduce the size of the output and e-mail messages.  However,
@@ -76,15 +67,16 @@
  specified outside of a test block.  Global parameters apply to
  every test block in the parameter file.
 
- You can specify certain parameters as BOTH GLOBAL PARAMETERS AND
- TEST BLOCK PARAMETERS.  These include the parameters accept_cookies,
- auth, ignore_case, ignore_error_log, regex_forbid, regex_require,
- send_cookies, text_forbid and text_require.  If you specify one of
- these within a test block, that value is used instead of the value
- of the corresponding global parameter for that test block only.
- If you specify some, but not all, of these parameters in a test
- block, the global parameter values are used for the unspecified
- test block parameters.
+ You can specify certain parameters as BOTH GLOBAL PARAMETERS AND TEST
+ BLOCK PARAMETERS.  These include the parameters accept_cookies, auth,
+ ignore_case, ignore_error_log, max_bytes, min_bytes, max_rtime,
+ min_rtime, pauth, regex_forbid, regex_require, send_cookies,
+ text_forbid and text_require.  If you specify one of these within
+ a test block, that value is used instead of the value of the
+ corresponding global parameter for that test block only.  If you
+ specify some, but not all, of these parameters in a test block,
+ the global parameter values are used for the unspecified test block
+ parameters.
 
  Parameters - Short descriptions
  ===============================
@@ -115,6 +107,10 @@
   method: HTTP request method; either get or post.
   max_bytes: Maximum number of bytes expected in returned page.
   min_bytes: Minimum number of bytes expected in returned page.
+  max_rtime: Maximum web server response time (seconds) expected.
+  min_rtime: Minimum web server response time (seconds) expected.
+  pauth: Two-element list containing userid and password to be passed
+     to web server for proxy authorization.  
   params: List of parameter name/value pairs to be passed to server.
   proxies: List of service name / proxy URL pairs to use for requests.
   regex_forbid: List of strings/regexs that must NOT occur in page.
@@ -224,7 +220,9 @@
     url = www.yahoo.com
     text_require = ( <a href=r/qt>Quotations</a>...<br> )
     min_bytes = 13000
-    max_bytes = 19000
+    max_bytes = 99000
+    min_rtime = 0.010
+    max_rtime = 30.0
  end_test
 
  The parameters below specify a test of a local file containing Perl
@@ -511,19 +509,32 @@
  DESCRIPTION: HTTP method for the request(s).  See RFC 2616 
  (HTTP/1.1 protocol).
 
- PARAMETER: max_bytes  TYPE: test block parameter
+ PARAMETER: max_bytes  TYPE: global and/or test block parameter
  NO DEFAULT   ALLOWED VALUES: Any integer greater that zero and
  greater than min_bytes (if min_bytes is specified).  OPTIONAL
  PARAMETER.
  DESCRIPTION: Maximum number of bytes expected in returned page.  
  If this value is exceeded, an error message is displayed.
 
- PARAMETER: min_bytes  TYPE: test block parameter
+ PARAMETER: min_bytes  TYPE: global and/or test block parameter
  NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if 
  max_bytes is specified).  OPTIONAL PARAMETER.
  DESCRIPTION: Minimum number of bytes expected in returned page.  
  If the number of returned bytes is less than this value, an error 
  message is displayed.
+
+ PARAMETER: max_rtime  TYPE: global and/or test block parameter
+ NO DEFAULT   ALLOWED VALUES: Any number greater that zero and
+ greater than min_rtime (if min_rtime is specified).  OPTIONAL
+ PARAMETER.
+ DESCRIPTION: Maximum web server response time expected.  If this 
+ value is exceeded, an error message is displayed.
+
+ PARAMETER: min_rtime  TYPE: global and/or test block parameter
+ NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if 
+ max_rtime is specified).  OPTIONAL PARAMETER.
+ DESCRIPTION: Minimum web server response time expected.  If this 
+ value is exceeded, an error message is displayed.
 
  PARAMETER: params  TYPE: test block parameter
  NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
@@ -542,6 +553,20 @@
  http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
  The names and values will be URI-escaped as defined by RFC 2396.
  (See http://www.ietf.org/rfc/rfc2396.txt.) 
+
+ PARAMETER: pauth  TYPE: global and/or test block parameter
+ No default.  ALLOWED VALUES: A one or two element list.  OPTIONAL
+ PARAMETER.
+ DESCRIPTION: Userid and password, in that order, to be passed to
+ the proxy if needed for authorization.  If you specify only one
+ element, it is used as the userid and the program will prompt you
+ interactively for the password.  If you specify values of 'prompt'
+ and 'userid_password' in that order, the program will prompt you for
+ both the userid and password.  If you specify values of 'prompt'
+ and 'password' in that order, the program will prompt you for
+ the password and use the userid of the user running the program.
+ (This last option is probably not what you want, unless your Unix
+ userid and web page userid are the same.)
 
  PARAMETER: proxies  TYPE: global parameter
  NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
@@ -734,12 +759,13 @@
  Net::SMTP
  Sys::Hostname
  Term::ReadKey
+ Time::HiRes 
  URI::URL 
 
 =head1 RESTRICTIONS / BUGS
 
-This module only works on Unix (e.g., Solaris, Linux, AIX, etc.).
-The module's HTTP requests time out after 3 minutes (the default
+This program only works on Unix (e.g., Solaris, Linux, AIX, etc.).
+The program's HTTP requests time out after 3 minutes (the default
 value for LWP::UserAgent).  If the file_path parameter is specified,
 Apache must be installed.  If the file_path parameter is specified,
 the directory /tmp cannot be NFS-mounted, since Apache's lockfile
@@ -747,13 +773,11 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 1.00, release date 10 June 2001
+This document describes version 1.01, release date 14 June 2001
 
-=head1 TODO
+=head1 CHANGES
 
-Add option to validate HTML syntax using HTML::Validator.  Add option
-to check links (see
-http://world.std.com/~swmcd/steven/perl/pm/lc/linkcheck.html).
+See HTTP::WebTest docs.
 
 =head1 AUTHOR
 
@@ -761,7 +785,7 @@ http://world.std.com/~swmcd/steven/perl/pm/lc/linkcheck.html).
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Richard Anderson. All rights reserved. This module is
+Copyright (c) 2000-2001 Richard Anderson. All rights reserved. This module is
 free software.  It may be used, redistributed and/or modified under the 
 terms of the Perl Artistic License. 
 
