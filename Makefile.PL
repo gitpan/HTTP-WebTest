@@ -10,6 +10,14 @@ WriteMakefile(
     'AUTHOR'    => 'Richard Anderson <Richard.Anderson@unixscripts.com>',
     'ABSTRACT'  => 'Run tests on remote URLs or local web files',
     'EXE_FILES' => ['wt'],
+    'PREREQ_PM' => { HTTP::Request::Common => 0,
+                     HTTP::Response        => 0,
+                     LWP::UserAgent        => 0,
+                     Net::Domain           => 0,
+                     Net::SMTP             => 0,
+                     Term::ReadKey         => 0,
+                     Time::HiRes           => 0,
+                     URI::URL              => 0 }
 );
 
 sub MY::postamble {

@@ -129,7 +129,7 @@ Data flow diagram for HTTP::WebTest using a local web file:
 
 =cut
 
-require 5.000;
+require 5.005;
 require Exporter;
 use strict;
  
@@ -157,7 +157,7 @@ $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
 @ISA = qw(Exporter);  
 @EXPORT_OK = qw(run_web_test);
-$VERSION = 1.03;
+$VERSION = 1.04;
  
 #############################
 # Constants (magic numbers) #
@@ -3128,7 +3128,7 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
                              => $test_options->{proxies}->[$i+1]);
       } 
    }
-   my $cookie_jar = HTTP::Cookies->new();
+   my $cookie_jar = HTTP::WebTest::Cookies->new();
 
    my $itest = 0;
    foreach $test (@{$mod_web_tests}) {
@@ -3262,7 +3262,8 @@ sub extract_cookies {
 
 sub add_cookie_header {
    my $self = shift;
-   if($self->{send_cookies}) { $self->SUPER::add_cookies_header(@_); }
+
+   if($self->{send_cookies}) { $self->SUPER::add_cookie_header(@_); }
 }
 
 =head1 ENVIRONMENT VARIABLES
@@ -4018,11 +4019,19 @@ This document describes version 1.02, release date 14 June 2001
 
 =head1 CHANGES
 
+ 1.04  Mon Jul 16 2001
+
+   * Added PREREQ_PM entry into Makefile.PL.  (Thanks Britton
+     <fsblk@aurora.uaf.edu> for suggesting this.)
+
+   * Fixed bug: test parameters accept_cookies and send_cookies did not
+     affected transmission and receipt of cookies at all.
+
  1.03  Wed Jul  4 2001
 
-   * First release by new maintainer
+   * First release by new maintainer.
 
-   * Fixed bug with passing form params with POST requests
+   * Fixed bug with passing form params with POST requests.
 
  1.02  Tue Jun 26 2001
 
