@@ -16,3 +16,10 @@ Revision history for Perl extension HTTP::WebTest.
     * Modified "make test" tests to write output to files in the t 
       subdirectory.
 
+0.30
+
+    * Fixed ./t/*.t files so that "make test" runs correctly on Solaris.
+      (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; export WEBTEST_LIB.)
+
+    * Improved clarity of documentation and program output.
+

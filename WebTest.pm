@@ -53,6 +53,10 @@ HTTP::WebTest - Test remote URLs or local web files
 
 This module runs tests on remote URLs or local web files containing
 Perl/HTML/JavaScript/etc. and generates a detailed test report.  
+This module is designed to test the source code, not the webserver or
+Internet connectivity.  (There are a variety of better solutions for 
+testing server reponse times or Internet connectivity.)  
+
 The test specifications can be read from a parameter file or 
 input as method arguments.  If you are testing a local file, Apache 
 is started on a private/dynamic port with a configuration file in a 
@@ -95,8 +99,8 @@ Data flow diagram for WebTest using a local web file:
 
           --------------           ---------------------
           |            |           |                   |
-          | Input      |           |  web page code    |
-          | parameters |           |  (HTML/perl/etc.  |
+          | Input      |           |  Web page code    |
+          | parameters |           |  (HTML/perl/etc.) |
           |            |           |                   |
           --------------           ---------------------
                 |                            |
@@ -113,8 +117,8 @@ Data flow diagram for WebTest using a local web file:
               V  |                        V    |
           ------------             ----------------------
           |          |   request   |                    |
-          |   HTTP   |------------>| Local instance of  |
-          |   user   |             | Apache webserver   |
+          |   HTTP   |------------>| Temporary local    |
+          |   user   |             | instance of Apache |
           |   agent  |<------------|                    |
           |          |   response  ----------------------
           ------------
@@ -2851,10 +2855,10 @@ sub run_web_test {
        $fetch_ok);
    $$num_fail = $$num_succeed = 0;
    my $report = '';
-   my $summary = "Failed  Passed  Test Name\n";
+   my $summary = "Failed  Succeeded  Test Name\n";
 
    format WRITE_SUMMARY =
- @|||||  @||||| @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+ @|||||     @||||| @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
 .
 
