@@ -1,0 +1,29 @@
+
+# Input file for HTTP::WebTest module.
+ 
+# Global parameters
+###################
+
+# debug = yes
+ignore_case = yes
+text_forbid = ( Premature end of script headers
+                Error processing directive 
+              )
+show_cookies = yes
+# show_html = yes
+
+# Test block parameters
+#######################
+
+test_name = 'Portable Unix Toolkit download survey form' 
+   url = http://www.unixscripts.com/cgi-bin/webtest_form.cgi
+   params = ( 
+              unix_type => Linux
+              email => tester@unixscripts.com
+              job_function => Testing / QA
+            )
+   text_require = (
+      Your responses have been recorded.  Thank you for your participation
+                  )
+end_test
+

@@ -1,0 +1,9 @@
+
+HTTP::WebTest only works on Unix (e.g., Solaris, Linux, AIX, etc.).
+
+To install HTTP::WebTest, do this:
+
+perl Makefile.PL
+make
+make test
+make install       
