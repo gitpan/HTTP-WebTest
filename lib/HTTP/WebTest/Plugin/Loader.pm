@@ -1,4 +1,4 @@
-# $Id: Loader.pm,v 1.1.2.4 2002/01/13 02:47:58 ilya Exp $
+# $Id: Loader.pm,v 1.1.2.5 2002/01/15 17:16:08 ilya Exp $
 
 package HTTP::WebTest::Plugin::Loader;
 
@@ -71,6 +71,8 @@ modified under the terms of the Perl Artistic License.
 =head1 SEE ALSO
 
 L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::API|HTTP::WebTest::API>
 
 L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>
 

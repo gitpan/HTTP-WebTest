@@ -1,4 +1,4 @@
-# $Id: Plugins.pod,v 1.1.2.5 2002/01/08 02:02:44 ilya Exp $
+# $Id: Plugins.pod,v 1.1.2.6 2002/01/15 17:16:08 ilya Exp $
 
 =head1 NAME
 
@@ -184,7 +184,7 @@ modified under the terms of the Perl Artistic License.
 
 L<HTTP::WebTest|HTTP::WebTest>
 
-L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
+L<HTTP::WebTest::API|HTTP::WebTest::API>
 
 L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>
 

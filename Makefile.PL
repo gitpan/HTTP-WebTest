@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.1.1.1.2.34 2002/01/13 02:44:13 ilya Exp $
+# $Id: Makefile.PL,v 1.1.1.1.2.38 2002/01/18 00:43:33 ilya Exp $
 
 use 5.005;
 
@@ -41,13 +41,13 @@ WriteMakefile( NAME         => 'HTTP::WebTest',
 	       AUTHOR       => $AUTHOR,
 	       ABSTRACT     => 'Run tests on remote URLs or local web files');
 
-sub MY::manifypods {
+sub MY::dist_core {
     my $self = shift;
 
-    my $make = $self->MY::SUPER::manifypods;
+    my $make = $self->MY::SUPER::dist_core();
 
-    # use PODs from INST_LIB for man page creation
-    $make =~ s/(\s)lib/$1\$(INST_LIB)/g;
+    # add our hook for dist target
+    $make =~ s/^dist : /dist : distprepare /m;
 
     return $make;
 }
@@ -67,25 +67,30 @@ sub MY::postamble {
 
     # add pod merge target
     my $webtest_pm = File::Spec->catfile(qw(lib HTTP WebTest.pm));
+    my $pod_merge_pl = File::Spec->catfile(qw(scripts pod_merge.PL));
     $make .= <<MAKE;
 
-pure_all :: pod_merge
-\t\$(NOOP)
-
-pod_merge: pm_to_blib
-\t\$(PERL) pod_merge.PL lib \$(INST_LIB)
-\t\@\$(TOUCH) \$\@
-
-clean ::
-\t\$(RM_F) pod_merge
+# we are lacking dependencies on plugin POD files yet
+$webtest_pm : $webtest_pm.in $pod_merge_pl
+\t\$(PERL) $pod_merge_pl lib $webtest_pm.in $webtest_pm
 MAKE
 
     # add README generation target
+    my $make_readme_pl = File::Spec->catfile(qw(scripts make_readme.PL));
     $make .= <<MAKE;
 
-README: $webtest_pm
-\t\$(PERL) make_readme.PL $webtest_pm README
+README: $webtest_pm $make_readme_pl
+\t\$(PERL) $make_readme_pl $webtest_pm README
+MAKE
 
+    # add distprepare target (dist target depends on it)
+    $make .= <<MAKE;
+
+distprepare :: README
+\t\$(NOOP)
+
+distprepare :: $webtest_pm
+\t\$(NOOP)
 MAKE
 
     return $make;

@@ -1,19 +1,18 @@
-$Id: TODO,v 1.1.2.73 2002/01/12 00:12:03 ilya Exp $
+$Id: TODO,v 1.1.2.75 2002/01/17 21:33:21 ilya Exp $
 
 My current TODO:
 
 * write cookbook
 
-* separate global and normal test parameters in reference
+* separate global and normal test parameters in a reference
+
+* generate index of test parameters in a reference
 
 * reread all docs to check if it makes any sense
 
 * polish local mode tests - they are *very* non portable now
 
 * add support for interactive queries for auth and pauth params
-
-* test, test, test and test it with code and .wt files which were
-  written for stable HTTP-WebTest
 
 * save_output option for backward compatibility API
 

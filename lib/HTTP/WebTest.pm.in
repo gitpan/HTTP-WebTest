@@ -1,16 +1,98 @@
-# $Id: Reference.pod,v 1.1.2.9 2002/01/12 00:16:51 ilya Exp $
+# This is a -*-perl-*- source file
+
+# $Id: WebTest.pm.in,v 1.1.2.3 2002/01/18 00:39:04 ilya Exp $
+
+package HTTP::WebTest;
+
+$VERSION = '1.99_02';
+
+# actual content of HTTP::WebTest package is in HTTP::WebTest::API
+require HTTP::WebTest::API;
 
 =head1 NAME
 
-HTTP::WebTest::Reference - HTTP::WebTest reference.
+HTTP::WebTest - Test remote URLs or local web files
 
 =head1 SYNOPSIS
 
-Not applicable.
+All HTTP::WebTest API cannot be summarized here. Only basic usage.
+
+    use HTTP::WebTest;
+
+    my $webtest = new HTTP::WebTest;
+
+    $webtest->run_wtscript('script.wt');
+    $webtest->run_tests($tests);
+
+See below for all API.
 
 =head1 DESCRIPTION
 
-This document describes:
+=head2 Introduction
+
+This module runs tests on remote URLs or local web files containing
+Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
+report. This module has plugin based architecture. Plugins can define
+test types and provide various report capabilities. This module comes
+with a set of default plugins but can be easily extended with third
+party plugins.
+
+The test specifications can be read from a parameter file (wtscript)
+or input as method arguments. If you are testing a local file, Apache
+is started on a private/dynamic port with a configuration file in a
+temporary directory. The module can display the test results via
+report plugin(s). Default report plugin can output them on the
+terminal, directs them to a file or scalar variable and/or email them.
+
+Data flow for C<HTTP::WebTest> using a remote URL:
+
+          --------------              -------------
+          |            |              |           |
+          | Input      |------------->|  WebTest  |
+          | parameters |              |           |
+          |            |              -------------
+          --------------                  |   ^
+                                          |   |
+                                          V   |
+          -------------               ------------
+          |           |    request    |          |
+          | Remote    |<--------------|   HTTP   |
+          | webserver |-------------->|   user   |
+          |           |    response   |   agent  |
+          -------------               |          |
+                                      ------------
+
+Data flow diagram for C<HTTP::WebTest> using a local web file:
+
+          --------------           ---------------------
+          |            |           |                   |
+          | Input      |           |  Web page code    |
+          | parameters |           |  (Perl/HTML/etc.) |
+          |            |           |                   |
+          --------------           ---------------------
+                |                            |
+                |  ---------------------------
+                |  |
+                V  V              ------------------------
+          -------------           |                      |
+          |           |---------->| Temporary Apache     |
+          |  WebTest  |           | directories (htdocs, |
+          |           |<----------| conf, logs)          |
+          -------------           |                      |
+              |  ^                ------------------------
+              |  |                        |    ^
+              V  |                        V    |
+          ------------             ----------------------
+          |          |   request   |                    |
+          |   HTTP   |------------>| Temporary local    |
+          |   user   |             | instance of Apache |
+          |   agent  |<------------|                    |
+          |          |   response  ----------------------
+          ------------
+
+=head2 Getting Started
+
+This document is good starting point. It describes:
 
 =over 4
 
@@ -21,8 +103,29 @@ SPECIFICATION>.
 
 =item *
 
-All test parameters supported by default L<HTTP::WebTest|HTTP::WebTest>
+All test parameters supported by core C<HTTP::WebTest>
 plugins. See section L<TEST PARAMETERS|TEST PARAMETERS>.
+
+=back
+
+Other useful documentation is:
+
+=over 4
+
+=item *
+
+L<perldoc HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook> - examples
+of wtscript files and examples of C<HTTP::WebTest> API usage.
+
+=item *
+
+L<perldoc HTTP::WebTest::API|HTTP::WebTest::API> - full documentaion
+on HTTP::WebTest::API.
+
+=item *
+
+L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> - for
+developers of C<HTTP::WebTest> plugins.
 
 =back
 
@@ -33,9 +136,9 @@ or input in form of array of hashes.
 
 =head2 Wtscript
 
-L<HTTP::WebTest|HTTP::WebTest> can read test specification from file
+C<HTTP::WebTest> can read test specification from file
 in format called as C<wtscript>. Tests defined by wtscript file can be
-run either using Perl API of L<HTTP::WebTest|HTTP::WebTest>
+run either using Perl API of C<HTTP::WebTest>
 
     use HTTP::WebTest;
 
@@ -216,6 +319,9 @@ copied using the C<include_file_path> parameter.
 
 =head2 Array of Hashes
 
+If you are using Perl API of C<HTTP::WebTest> then test sequence can
+be defined in form of array of hashes.
+
 Each hash in array defines tests for one URL. Keys in hashes are test
 parameter names and values in hashes are values of test
 parameters. Also there can be defined global test parameters in form
@@ -268,6 +374,26 @@ C<tester@unixscripts.com>.
 Content of this section should be autogenerated from POD docs in plugin
 modules.
 
+=head1 RESTRICTIONS / BUGS
+
+This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
+etc.) but it should work on Win32 systems.
+
+Local file tests don't work on Win32 systems.
+
+The module's HTTP requests time out after 3 minutes (the default value
+for L<LWP::UserAgent|LWP::UserAgent>). If the file_path parameter is
+specified, Apache must be installed.
+
+=head1 AUTHOR
+
+Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
+C<HTTP::WebTest 1.xx>.
+
+Ilya Martynov <ilya@martynov.org> made rewrite of C<HTTP::WebTest>. He
+is maintaining C<HTTP::WebTest> now. Please email him bug reports,
+suggestions, questions, etc.
+
 =head1 COPYRIGHT
 
 Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
@@ -279,10 +405,14 @@ modified under the terms of the Perl Artistic License.
 
 =head1 SEE ALSO
 
-L<HTTP::WebTest|HTTP::WebTest>
+L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>
 
-L<HTTP::WebTest::Reference|HTTP::WebTest::Cookbook>
+L<HTTP::WebTest::API|HTTP::WebTest::API>
+
+L<HTTP::WebTest::Plugins|HTTP::WebTest::Plugins>
 
 L<wt|wt>
 
 =cut
+
+1;

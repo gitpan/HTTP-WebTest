@@ -1,4 +1,4 @@
-# $Id: TestResult.pm,v 1.1.2.8 2002/01/02 20:45:25 ilya Exp $
+# $Id: TestResult.pm,v 1.1.2.9 2002/01/15 17:16:08 ilya Exp $
 
 package HTTP::WebTest::TestResult;
 
@@ -102,6 +102,8 @@ modified under the terms of the Perl Artistic License.
 =head1 SEE ALSO
 
 L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::API|HTTP::WebTest::API>
 
 L<HTTP::WebTest::Test|HTTP::WebTest::Test>
 

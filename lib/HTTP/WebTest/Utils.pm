@@ -1,4 +1,4 @@
-# $Id: Utils.pm,v 1.1.2.12 2002/01/02 15:27:16 ilya Exp $
+# $Id: Utils.pm,v 1.1.2.13 2002/01/15 17:16:08 ilya Exp $
 
 package HTTP::WebTest::Utils;
 
@@ -205,6 +205,8 @@ modified under the terms of the Perl Artistic License.
 =head1 SEE ALSO
 
 L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::API|HTTP::WebTest::API>
 
 =cut
 

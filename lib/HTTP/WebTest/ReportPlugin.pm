@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.1.2.16 2002/01/07 00:42:58 ilya Exp $
+# $Id: ReportPlugin.pm,v 1.1.2.17 2002/01/15 17:16:08 ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -252,6 +252,8 @@ modified under the terms of the Perl Artistic License.
 =head1 SEE ALSO
 
 L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::API|HTTP::WebTest::API>
 
 L<HTTP::WebTest::Plugins|HTTP::WebTest::Plugins>
 

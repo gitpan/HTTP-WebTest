@@ -21,7 +21,7 @@ modified under the terms of the Perl Artistic License.
 
 L<HTTP::WebTest|HTTP::WebTest>
 
-L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
+L<HTTP::WebTest::API|HTTP::WebTest::API>
 
 L<wt|wt>
 

@@ -62,14 +62,6 @@ DESCRIPTION
               |          |   response  ----------------------
               ------------
 
-  Getting Started
-    If you are new to "HTTP::WebTest 2.xx" you should read:
-
-    HTTP::WebTest::Reference docs - description of test specification, list of
-    test types and reports provided by default plugins.
-
-    HTTP::WebTest::Plugins docs - for developers of "HTTP::WebTest" plugins.
-
 RESTRICTIONS / BUGS
     This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
     etc.) but it should work on Win32 systems.
