@@ -1,5 +1,11 @@
 Revision history for Perl extension HTTP::WebTest.
 
+ 1.03  Wed Jul  4 2001
+
+   * First release by new maintainer
+
+   * Fixed bug with passing form params with POST requests
+
  1.02  Tue Jun 26 2001
 
    * OWNERSHIP OF HTTP:WebTest HAS BEEN TRANSFERRED FROM Richard

@@ -157,7 +157,7 @@ $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
 @ISA = qw(Exporter);  
 @EXPORT_OK = qw(run_web_test);
-$VERSION = 1.02;
+$VERSION = 1.03;
  
 #############################
 # Constants (magic numbers) #
@@ -680,7 +680,7 @@ sub get_response {
    my ($request, $response, $uri); 
 
    if (uc($test->{method}) eq 'POST') {
-      $request = POST($url, %{$test->{params}});
+      $request = POST($url, [ %{$test->{params}} ]);
       $request->header('Content-type' => 'application/x-www-form-urlencoded');
    } else {
       if (ref($test->{params}) eq 'HASH') {
@@ -4017,6 +4017,12 @@ and the SSL mutex file must be stored on a local disk.
 This document describes version 1.02, release date 14 June 2001
 
 =head1 CHANGES
+
+ 1.03  Wed Jul  4 2001
+
+   * First release by new maintainer
+
+   * Fixed bug with passing form params with POST requests
 
  1.02  Tue Jun 26 2001
 

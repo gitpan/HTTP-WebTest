@@ -4,5 +4,14 @@ MANIFEST
 Makefile.PL
 README
 WebTest.pm
-test.pl
+http-webtest/conf/httpd.conf-dist
+http-webtest/htdocs/webtest/is_apache_responding.html
+t/404.t
+t/404.wt
+t/cookie.t
+t/cookie.wt
+t/form.t
+t/form.wt
+t/yahoo.t
+t/yahoo.wt
 wt_dist
