@@ -1,4 +1,4 @@
-# $Id: Apache.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
+# $Id: Apache.pm,v 1.3 2002/02/02 04:08:19 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Apache;
 
@@ -221,37 +221,17 @@ Perl @INC array.
 =cut
 
 sub param_types {
-    return { qw(file_path         list
-                include_file_path list
-                apache_dir        string
-                apache_loglevel   string
-                apache_exec       string
-                apache_options    string
-                apache_max_wait   string
-                error_log         string
-                ignore_error_log  yesno
-                mail_server       string
-                mail_addresses    string) };
-}
-
-sub validate_params {
-    my $self = shift;
-    my $params = shift;
-
-    my %checks = $self->SUPER::validate_params($params);
-
-    if(exists $checks{file_path}) {
-	$checks{file_path} &&=
-	    $self->test_result(@{$params->{file_path}} == 2,
-			       'Parameter file_path should have two elements.');
-    }
-    if(exists $checks{include_file_path}) {
-	$checks{include_file_path} &&=
-	    $self->test_result((@{$params->{include_file_path}} % 2) == 0,
-			       'Parameter include_file_path should have even number of elements.');
-    }
-
-    return %checks;
+    return q(file_path         list('scalar','scalar')
+             include_file_path hashlist
+             apache_dir        scalar
+             apache_loglevel   scalar
+             apache_exec       scalar
+             apache_options    scalar
+             apache_max_wait   scalar
+             error_log         scalar
+             ignore_error_log  yesno
+             mail_server       scalar
+             mail_addresses    scalar);
 }
 
 # time period between checks if Apache have been started
@@ -287,6 +267,11 @@ sub prepare_request {
 
     # get request object
     my $request = $self->webtest->last_request;
+
+    $self->global_validate_params(qw(apache_dir apache_loglevel
+                                     apache_exec apache_options
+                                     apache_max_wait error_log));
+    $self->validate_params(qw(file_path include_file_path));
 
     # get various params we handle
     my $apache_dir        = $self->global_test_param('apache_dir');
@@ -350,6 +335,8 @@ sub prepare_request {
 
 sub check_response {
     my $self = shift;
+
+    $self->validate_params(qw(ignore_error_log));
 
     # get various params we handle
     my $ignore_error_log = $self->yesno_test_param('ignore_error_log');
@@ -468,6 +455,8 @@ sub write_config {
     }
     my $config = join '', <$fh_in>;   # Slurp entire file
     $fh_in->close;
+
+    $self->global_validate_params(qw(mail_server mail_addresses));
 
     # get test params we use
     my $mail_server    = $self->global_test_param('mail_server');

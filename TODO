@@ -1,18 +1,12 @@
-$Id: TODO,v 1.2 2002/01/28 07:11:05 m_ilya Exp $
+$Id: TODO,v 1.9 2002/02/17 10:48:51 m_ilya Exp $
 
 My current TODO:
 
-* write cookbook
+* test broken tests diagnostics
 
 * resurrect all parameter checks from old HTTP::WebTest
 
 * generate index of test parameters in a reference
-
-* reread all docs to check if it makes any sense
-
-* add pointers on ::HarnessReport in HTTP::WebTest docs
-
-* embeded Perl in wtscripts
 
 * polish local mode tests - they are *very* non portable now
 
@@ -28,7 +22,7 @@ My current TODO:
 
 * plugin for page validation with HTML::Validator
 
-* simple navigation using link names and button names (with HTML::Form)
+* simple navigation using link names and button names (with HTML::Form ?)
 
 * Generator of both Perl and wtscript code from test objects
 

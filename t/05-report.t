@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.1.1.1 2002/01/24 12:26:11 m_ilya Exp $
+# $Id: 05-report.t,v 1.2 2002/02/12 12:47:35 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -18,7 +18,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL $TEST);
 
-BEGIN { plan tests => 10 }
+BEGIN { plan tests => 11 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -155,6 +155,30 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 		  opts => $opts,
 		  tests => $tests,
 		  check_file => 't/test.out/test-harness')
+}
+
+# 11: test show_headers parameter
+{
+    # remove cookies from cookie jar - it affects output of report plugin
+    $WEBTEST->reset_user_agent;
+
+    my $tests = [ $TEST,
+		  { url => abs_url($URL, '/non-existent') } ];
+
+    my $opts = { show_headers => 'yes' };
+
+    my $out_filter = sub {
+	$_[0] =~ s/: .*?GMT/: SOMEDAY/g;
+	$_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
+	$_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
+    };
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  opts => $opts,
+		  out_filter => $out_filter,
+		  tests => $tests,
+		  check_file => 't/test.out/show-headers')
 }
 
 # try to stop server even we have been crashed

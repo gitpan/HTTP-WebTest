@@ -7,6 +7,7 @@
 #            lib/HTTP/WebTest/Plugin/Cookies.pm
 #            lib/HTTP/WebTest/Plugin/DefaultReport.pm
 #            lib/HTTP/WebTest/Plugin/HarnessReport.pm
+#            lib/HTTP/WebTest/Plugin/Hooks.pm
 #            lib/HTTP/WebTest/Plugin/Loader.pm
 #            lib/HTTP/WebTest/Plugin/ResponseTimeTest.pm
 #            lib/HTTP/WebTest/Plugin/SetRequest.pm
@@ -23,7 +24,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_03';
+$VERSION = '1.99_04';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -204,7 +205,18 @@ different parameter files.
 
 =head3 File format
 
-The following is ignored in wtscript file:
+The wtscript file is a text file containing global parameters and 
+test blocks containing test block parameters.  A test block begins with
+a test_name parameter and ends with an end_test directive.  The order of
+the parameters and test blocks is arbitrary.
+
+Test block parameters MUST occur between a test_name parameter and an
+end_test directive. (Test block parameters affect only an individual
+test.) Global parameters must NOT occur between a test_name parameter
+and an end_test directive. (This requirement does not apply to
+certain parameters that are both global and test block parameters.)
+
+The following lines are ignored:
 
 =over 4
 
@@ -223,31 +235,12 @@ sign
 
 =back
 
-The order of the parameters in the parameter file is arbitrary,
-with the following exceptions:
-
-=over 4
-
-=item *
-
-Test block parameters MUST occur between a test_name parameter and an
-end_test directive. (Test block parameters affect only an individual
-test.)
-
-=item *
-
-Global parameters must NOT occur between a test_name parameter
-and an end_test directive. (This requirement does not apply to
-parameters that are both global and test block parameters.)
-
-=back
-
 Parameters are either scalar (single-valued) or lists (single or
 multi-valued).
 
 You can specify scalar parameters using forms such as:
 
-    name = value
+    name=value
     name =
            value
     name = 'value'
@@ -256,18 +249,18 @@ You can specify list parameters using forms such as:
 
     name = ( first value
              second value )
-    name = ( first value => second value
-             third value => fourth value
-           )
+    name=( first value => second value
+           third value => fourth value
+         )
     name = ( first value => second value )
     name = (
              'first value'
              'second value' )
-    name = (
+    name= (
              first value
              second value
              third value => 'fourth value'
-           )
+          )
     name =
            ( first value
              'second value' )
@@ -276,40 +269,38 @@ You can specify list parameters using forms such as:
              'second value'
            )
 
-(The equals sign must be followed by a space, tab or newline; all
-other spaces are optional.)
+You can specify a null (placeholder) value using '' or "".  Within single
+or double quotes, the usual Perl string quoting rules apply.  Thus, single
+quotes mean that all enclosed characters are interpreted literally: '\n'
+is backslash-n rather than a newline character.  Double quotes mean that
+Perl metasymbols are interpreted: "\n\t" is a newline and a tab.
 
-PARAMETER VALUES BEGINNING AND ENDING WITH A SINGLE QUOTE WILL HAVE
-THE SINGLE QUOTES REMOVED. For example, 'foobar' is parsed as a value
-of foobar and ''foobar'' is parsed as a value of 'foobar'. To specify
-a null (placeholder) value, use ''.
+Also it is possible to specify Perl code instead of scalar, instead of
+list parameter value or instead of element of list paramater. Curly
+brackets are used to denote Perl code inside wtscript files.  This
+code will be evaluated during test run.
 
-You MUST enclose the parameter value in single quotes if you want
-to specify:
+C<HTTP::WebTest> compiles this Perl code as anonymous subroutines
+which are called during test run when value of corresponding test
+parameters are required. When these subroutines are called
+C<HTTP::WebTest> object is passed to them.
 
-=over 4
+Some examples of syntax:
 
-=item *
+    # scalar value
+    name = { 1 + 1 }
 
-a value beginning with a left parenthesis
+    # list value (Perl code should return array reference)
+    name = { [ a => 'b', c => 'd' ] }
 
-=item *
+    # element of list value
+    name = (
+             'first value'
+             { "first " . "value" }
+           )
 
-a value ending with a right parenthesis
-
-=item *
-
-a value beginning with leading white space (blanks or tabs)
-
-=item *
-
-a value ending with trailing white space (blanks or tabs)
-
-=item *
-
-a value beginning and ending with single quotes
-
-=back
+    # accessing HTTP::WebTest object
+    name = { my $webtest = shift; ..... }
 
 =head3 Examples of wtscript files
 
@@ -383,6 +374,11 @@ in hashes are test parameter names and values in hashes are values of
 test parameters. Additionally, optional global test parameters can be
 passed in a hash passed as the second argument.
 
+Instead of test parameter values subroutine references can be
+specified. Referenced subroutines are called during test run when
+values of corresponding test parameters are required. When called
+these subroutines get C<HTTP::WebTest> object passed to them.
+
 Tests can be run as
 
     use HTTP::WebTest;
@@ -423,6 +419,86 @@ C<tester@unixscripts.com>.
                  };
 
     $webtest->run_tests($tests, $params);
+
+=head1 PLUGIN MODULES
+
+=head2 Core Plugin Modules
+
+C<HTTP::WebTest> provides a number of core plugin modules which are
+loaded by default:
+
+=over 4
+
+=item L<HTTP::WebTest::Plugin::Apache>
+
+This plugin provides support for local web file test mode.
+
+=item L<HTTP::WebTest::Plugin::ContentSizeTest>
+
+This plugin provides size checks of HTTP response bodies.
+
+=item L<HTTP::WebTest::Plugin::Cookies>
+
+This plugin provides means to control sending and recieve cookies.
+
+=item L<HTTP::WebTest::Plugin::DefaultReport>
+
+Default test report plugin.
+
+=item L<HTTP::WebTest::Plugin::Loader>
+
+This plugin allows to load external plugin modules.
+
+=item L<HTTP::WebTest::Plugin::ResponseTimeTest>
+
+This plugin provides support for response time tests.
+
+=item L<HTTP::WebTest::Plugin::SetRequest>
+
+This plugin initializes test HTTP requests.
+
+=item L<HTTP::WebTest::Plugin::StatusTest>
+
+This plugin checks HTTP response statuses.
+
+=item L<HTTP::WebTest::Plugin::TextMatchTest>
+
+This plugin provides test parameters which allow to check body of HTTP
+responses.
+
+=back
+
+Information about test parameters supported by core plugins is
+summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
+
+=head2 Other Plugin Modules Bundled With HTTP::WebTest
+
+Following plugin modules come with HTTP::WebTest but they are not
+loaded by default. They should be loaded using global test parameter
+C<plugins> when needed.
+
+=over 4
+
+=item L<HTTP::WebTest::Plugin::HarnessReport>
+
+This report plugin can generate L<Test::Harness|Test::Harness>
+compatible test reports.
+
+=item L<HTTP::WebTest::Plugin::Hooks>
+
+This plugin allows to define callback test parameters which are
+evaluated at specific time of L<HTTP::WebTest> test run. These test
+parameters can define user-defined checks.
+
+=back
+
+See documentation on these modules for more information.
+
+=head2 Writting Plugin Modules
+
+L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> contains
+information needed for L<HTTP::WebTest|HTTP::WebTest> plugin
+developers.
 
 =head1 TEST PARAMETERS
 
@@ -945,7 +1021,6 @@ The names and values will be URI-escaped as defined by RFC 2396.
 A list which contains two elements: userid/password pair to be used
 for proxy server access authorization.
 
-
 =head2 plugins
 
 I<GLOBAL PARAMETER>
@@ -1025,6 +1100,18 @@ C<yes>, C<no>
 
 C<no>
 
+=head2 show_headers
+
+Include request and response headers in the test report.
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<no>
+
 =head2 show_html
 
 Include content of HTTP response in the test report.
@@ -1084,6 +1171,18 @@ See also the C<regex_require> and C<ignore_case> parameters.
 
 URL to test. If schema part of URL is omitted (i.e. URL doesn't start
 with C<http://>, C<ftp://>, etc) then C<http://> is implied.
+
+=head2 user_agent
+
+Set the product token that is used to identify the user agent on
+the network.
+
+=head3 Default value
+
+C<HTTP-WebTest/NN>
+
+where C<NN> is version number of HTTP-WebTest.
+
 
 
 =cut

@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.2 2002/01/28 09:49:56 m_ilya Exp $
+# $Id: Parser.pm,v 1.7 2002/02/12 11:47:20 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -24,6 +24,7 @@ use strict;
 
 use IO::File;
 use Parse::RecDescent;
+use Text::Balanced qw(extract_codeblock extract_delimited);
 
 use vars qw(@ERRORS);
 
@@ -32,7 +33,7 @@ use vars qw(@ERRORS);
 
 # wtscript grammar
 my $parser = new Parse::RecDescent (q{
-    file: chunk(s) eofile { [ @{$item[1]} ] }
+    file: chunk(s) eofile { [ @{$item{chunk}} ] }
           | {
                 for my $error (@{$thisparser->{errors}}) {
                     my ($text, $line) = @$error;
@@ -52,37 +53,87 @@ my $parser = new Parse::RecDescent (q{
     comment: /#.*/ { [ 'comment', $item[1] ] }
 
     test: starttest testchunk(s) endtest
-        { [ 'test', [ [ 'param', 'test_name', $item[1] ], @{$item[2]} ] ] }
+        {
+          [ 'test',
+            [
+              [ 'param', 'test_name', $item{starttest} ],
+              @{$item{testchunk}}
+            ]
+          ]
+        }
 
     testchunk: comment
              | param
              | <error: Test parameter or end of test block is expected near @{[$text =~ /(.*)/]}>
 
-    starttest: 'test_name' '=' scalar { $item[3] }
+    starttest: 'test_name' '=' scalar { $item{scalar} }
 
     endtest: 'end_test'
 
-    param: name '=' value { [ 'param', $item[1], $item[3] ] }
+    param: name '=' value { [ 'param', $item{name}, $item{value} ] }
 
     name : /[a-zA-Z_]+/ { $item[1] eq 'test_name' ? undef : $item[1] }
 
-    value: '(' list ')' { $item[2] }
-         | scalar       { $item[1] }
+    value: '(' <commit> list ')'  { $item{list} }
+         | <error?: Missing right bracket>
+         | scalar                 { $item{scalar} }
 
-    list: listelem(s) { [ map ref($_) eq 'ARRAY' ? @$_ : $_, @{$item[1]} ] }
+    list: listelem(s) { [ map ref($_) eq 'ARRAY' ?
+                              @$_ :
+                              $_, @{$item{listelem}} ] }
 
     listelem: scalar '=>' scalar { [$item[1], $item[3]] }
             | scalar
 
-    scalar: qscalar
+    scalar: <rulevar: $delim >
+
+    scalar: /(?=')/ <commit> qscalar { $item{qscalar} }
+          | <error?: Can't find string terminator "'" anywhere before EOF>
+          | /(?=")/ <commit> qscalar { $item{qscalar} }
+          | <error?: Can't find string terminator """ anywhere before EOF>
+          | /(?=\{)/ <commit> eval
+          | <error?: Missing right curly>
           | uscalar
 
-    qscalar: /'([^\']*)'/ { $1 }
-           | /"([^\"]*)"/ { $1 }
+    qscalar: <rulevar: $extracted >
+
+    qscalar: { $extracted = extract_delimited($text) }
+             {
+		 my $delim =  substr $extracted, 0, 1;
+		 # let Perl remove quote chars and handle special
+		 # sequences like \n but don't treat $ and @ as
+		 # special. Note \\\\ in patterns. It is actually just
+		 # *one* backslash. Four chars are because of double
+		 # quoting (one inside parser grammar definition,
+		 # second inside regexp body)
+                 if($delim eq '"') {
+                     $extracted =~ s/(^|[^\\\\])((?:\\\\\\\\)*)(\\\\)(\$|\@)/$1$2$3$3$4/g;
+    		     $extracted =~ s/(\$|\@)/\\\\$1/g;
+                 }
+		 my $string = eval "$extracted";
+		 $string;
+             }
 
     uscalar: <rulevar: $word_re = qr/ (?: [^=)\s] | [^)\s] (?!>) ) /x>
 
     uscalar: / (?: $word_re+ [ \t]+ )* $word_re+ /xo
+
+    eval: <rulevar: $extracted >
+
+    eval: <rulevar: $exception >
+
+    eval: {
+            $extracted = extract_codeblock($text);
+            defined $extracted ? 1 : undef;
+          }
+          <commit>
+          {
+            my $sub = eval "package HTTP::WebTest::PlayGround;\n" .
+                           "sub { $extracted }\n";
+            $exception = $@;
+            $sub;
+          }
+        | <error?: Eval error\n$exception\nnear @{[$text =~ /(.*)/]}>
 
     eofile: /^\Z/
 			     });

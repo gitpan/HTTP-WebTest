@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: utils.pl,v 1.1.1.1 2002/01/24 12:26:11 m_ilya Exp $
+# $Id: utils.pl,v 1.3 2002/02/17 14:15:29 m_ilya Exp $
 
 # some subs common for all tests are defined here
 
@@ -101,14 +101,14 @@ sub canonical_output {
     # change urls on some canonical in test output
     if(defined $server_url) {
 	my $url = abs_url($server_url, '/')->as_string;
-	$$output_ref =~ s|( URL: \s+ ) \Q$url\E
-                         |$1http://http.web.test/|xg;
+	$$output_ref =~ s|\Q$url\E
+                         |http://http.web.test/|xg;
     }
 
     # change urls on some canonical in test output
     if(defined $server_hostname) {
-	$$output_ref =~ s|( URL: \s+ ) http://\Q$server_hostname\E:\d+/
-                         |$1http://http.web.test/|xg;
+	$$output_ref =~ s|http://\Q$server_hostname\E:\d+/
+                         |http://http.web.test/|xg;
     }
 }
 

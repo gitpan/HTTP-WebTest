@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.1.1.1 2002/01/24 12:26:02 m_ilya Exp $
+# $Id: Makefile.PL,v 1.3 2002/02/17 14:19:25 m_ilya Exp $
 
 use 5.005;
 
@@ -23,11 +23,8 @@ WriteMakefile( NAME         => 'HTTP::WebTest',
 	       PREREQ_PM    => { 'Algorithm::Diff'   => 0,
 				 'CGI::Cookie'       => 0,
 				 'File::Temp'        => 0,
-				 'HTTP::Cookies'     => 0,
 				 'HTTP::Daemon'      => 0,
-				 'HTTP::Request'     => 0,
-				 'HTTP::Status'      => 0,
-				 'LWP::UserAgent'    => 0,
+				 'LWP'               => 5.60,
 				 'MIME::Base64'      => 0,
 				 'Net::SMTP'         => 0,
 				 'Parse::RecDescent' => 0,
@@ -163,7 +160,7 @@ sub apache_exec_setup {
 
 HTTP-WebTest automated test suite contains tests for local web files
 test mode. Running these tests requires Apache web server. If you do
-not have Apache you can skip this tests.
+not have Apache you can skip these tests.
 
 Run local web files test mode tests during 'make test'? [Y/n]:
 TEXT

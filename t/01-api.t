@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.4 2002/01/28 09:49:56 m_ilya Exp $
+# $Id: 01-api.t,v 1.5 2002/02/07 23:34:25 m_ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
@@ -15,7 +15,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 16 }
+BEGIN { plan tests => 13 }
 
 # init test
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -74,74 +74,7 @@ my $WEBTEST = HTTP::WebTest->new;
     ok(@$aref == 3);
 }
 
-# 9: test validate_params
-{
-    my $tests = [ { url => [] },
-		  { url => 'http://test.org',
-		    method => 'invalid' },
-		  { url => 'http://this.uri.is/good',
-		    method => 'GET' },
-		  { method => 'post' },
-		  { auth => [1, 2] },
-		  { pauth => {} },
-		  { auth => [3] },
-		  { params => { a => 'b' } },
-		  { params => 1 },
-		  { ignore_case => '' },
-		  { ignore_case => 'Yes' },
-		  { ignore_case => 'nO' } ];
-
-    my $res = '';
-    for my $test (@$tests) {
-	my %checks = $WEBTEST->validate_params($test);
-
-	# order of keys in hashes is different in various versions of
-	# Perl so we sort hash values by key to make sure that this
-	# test works on all versions of Perl
-	for my $param (sort keys %checks) {
-	    my $result = $checks{$param};
-	    $res .= "$param\n";
-	    $res .= "Comment: " . $result->comment . "\n";
-	    $res .= "Ok: " . ($result->ok ? 'yes' : 'no') . "\n";
-	}
-
-	$res .= "\n";
-    }
-
-    compare_output(output_ref => \$res,
-		   check_file => 't/test.out/check-params');
-}
-
-# 10-11: check how webtest handles broken tests
-{
-    my $tests = [ { url => [] } ];
-
-    # no bad global params
-    check_webtest(webtest => $WEBTEST,
-		  server_url => $URL,
-		  tests => $tests,
-		  check_file => 't/test.out/broken-test');
-
-    # some bad global params
-    eval {
-	my $opts = { plugins => '',
-		     mail_addresses => '',
-		     mail => {},
-		     mail_server => {},
-		     mail_from => [] };
-	$WEBTEST->run_tests($tests, $opts);
-    };
-    if($@) {
-	my $res = $@;
-	$res =~ s/(at )\S+( line )\d+(\.)$/$1SomeFile$2SomeLine$3/;
-	compare_output(output_ref => \$res,
-		       check_file => 't/test.out/check-global-params');
-    } else {
-	ok(0);
-    }
-}
-
-# 12-13: parse wt script
+# 9-10: parse wt script
 {
     my $data = read_file('t/simple.wt');
 
@@ -150,7 +83,7 @@ my $WEBTEST = HTTP::WebTest->new;
     ok($opts->{text_require}[0] eq 'Require some');
 }
 
-# 14: run tests defined in wt script
+# 11: run tests defined in wt script
 {
     generate_wscript(file => 't/real.wt', server_url => $URL);
 
@@ -163,7 +96,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		   check_file => 't/test.out/run-wtscript');
 }
 
-# 15-16: test num_fail and num_succeed
+# 12-13: test num_fail and num_succeed
 {
     my $tests = [ { url => abs_url($URL, '/test-file1') },
 		  { url => abs_url($URL, '/status-forbidden') },

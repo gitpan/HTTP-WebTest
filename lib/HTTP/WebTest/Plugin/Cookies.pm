@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.1.1.1 2002/01/24 12:26:29 m_ilya Exp $
+# $Id: Cookies.pm,v 1.2 2002/02/02 04:08:19 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Cookies;
 
@@ -224,16 +224,19 @@ over 10 it must have an even number of elements.
 =cut
 
 sub param_types {
-    return { qw(accept_cookies yesno
-                send_cookies   yesno
-                cookie         list
-                cookies        list) };
+    return q(accept_cookies yesno
+             send_cookies   yesno
+             cookie         list
+             cookies        list);
 }
 
 use constant NCOOKIE_REFORMAT => 10;
 
 sub prepare_request {
     my $self = shift;
+
+    $self->validate_params(qw(accept_cookies send_cookies
+                              cookies cookie));
 
     my $accept_cookies = $self->yesno_test_param('accept_cookies', 1);
     my $send_cookies = $self->yesno_test_param('send_cookies', 1);

@@ -1,6 +1,6 @@
 =head1 NAME
 
-HTTP::WebTest::Cookbook - recipes of tests for every day
+HTTP::WebTest::Cookbook - Recipes of tests for every day
 
 =head1 SYNOPSIS
 
@@ -11,13 +11,13 @@ Not Applicable
 This document contains some examples of L<HTTP::WebTest|HTTP::WebTest>
 usage.
 
-All examples are either runnable programs (see
-L<HTTP::WebTest::API|HTTP::WebTest::API>) or runnable wtscript files
-(see L<perldoc wt|wt>).
+Unless otherwise is stated all examples are either runnable programs
+(see L<HTTP::WebTest::API|HTTP::WebTest::API>) or runnable wtscript
+files (see L<perldoc wt|wt>).
 
 =head1 BASICS
 
-=head2 Check Statis Website
+=head2 Check Static Website
 
 This wtscript tests couple of static pages on my website:
 
@@ -83,7 +83,7 @@ This wtscripts tests login form on http://fsck.com/rt2/:
 
 =head1 ADVANCED
 
-=head2 Test::Harness compatible output
+=head2 Test::Harness Compatible Output
 
 This Perl script reads test specification from file C<test.wt> and
 generates L<Test::Harness|Test::Harness> compatible output:
@@ -96,6 +96,80 @@ generates L<Test::Harness|Test::Harness> compatible output:
                              default_report => 'no',
                              plugins        => [ '::HarnessReport' ]
                            });
+
+=head2 User-Defined Checks
+
+It is possible to define new checks without writting new plugin
+module. Here fragment of wtscript file which checks if a new record
+have been inserted into a database as result of test request.
+
+    # load HTTP::WebTest::Plugin::Hooks module which provides test
+    # parameter on_response
+    plugins = ( ::Hooks )
+
+    ....
+
+    test_name = Add Record
+        # request to this URL with parameter 'name' adds new record
+        url = http://some.server/add-record
+        params = ( name => 'John' )
+
+        # define check
+        on_response = {
+            # it is assumed that $Test::dbh is database handler
+            my $has_record = $Test::dbh->selectrow_array(
+                                 'SELECT COUNT(*) FROM USERS ' .
+                                 'WHERE NAME = ?',
+                                 undef, 'John'
+                             );
+
+            # return result of check with a comment
+            [ $has_record > 0 ? 'yes' : 'no', 'Have got John' ];
+        }
+    end_test
+
+=head2 Dynamic Tests
+
+Sometimes it is needed to feed the results of a previous test into the
+next test. For example, C<Add Record> creates a database record, emits
+HTML containing the new record id, and C<Delete Record> deletes the
+database record using the record id generated in C<Add Record>.
+
+It is possible to use L<HTTP::WebTest|HTTP::WebTest> to write such
+tests. Here incomplete example of wtscript which implements it.
+
+    # load HTTP::WebTest::Plugin::Hooks module which provides test
+    # parameter on_response
+    plugins = ( ::Hooks )
+
+    ....
+
+    test_name = Add Record
+        # request to this URL with parameter 'name' adds new record
+        url = http://some.server/add-record
+        params = ( name => 'John' )
+
+        # get ID from a page
+        on_response = {
+            # get webtest object
+            my $webtest = shift;
+
+            # find ID in the returned page
+            ($ID) = $webtest->last_response->content =~ /ID=(\d+)/;
+
+            # because no checks are defined a reference on empty array
+            # must be returned
+            [];
+        }
+    end_test
+
+    ....
+
+    test_name = Delete Record
+        # request to this URL with parameter 'id' deletes record
+        url = http://some.server/delete-record
+        params = ( id => { $ID } )
+    end_test
 
 =head1 COPYRIGHT
 

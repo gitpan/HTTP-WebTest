@@ -1,4 +1,4 @@
-# $Id: DefaultReport.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
+# $Id: DefaultReport.pm,v 1.4 2002/02/12 12:47:10 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::DefaultReport;
 
@@ -49,6 +49,18 @@ C<yes>
 =head2 test_name
 
 Name associated with this url in the test report and error messages.
+
+=head2 show_headers
+
+Include request and response headers in the test report.
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<no>
 
 =head2 show_html
 
@@ -101,27 +113,13 @@ C<no>
 =cut
 
 sub param_types {
-    return { %{ shift->SUPER::param_types },
-	     qw(default_report yesno
-                test_name      string
-                show_html      yesno
-                show_cookies   yesno
-                terse          string) };
-}
-
-sub validate_params {
-    my $self = shift;
-    my $params = shift;
-
-    my %checks = $self->SUPER::validate_params($params);
-
-    if(exists $checks{terse}) {
-	$checks{terse} &&=
-	    $self->test_result($params->{terse} =~ /^(?:no|summary|failed_only)$/i ? 1 : 0,
-			       'Parameter terse can be either no, summary or failed_only.');
-    }
-
-    return %checks;
+    return shift->SUPER::param_types . "\n" .
+	   q(default_report yesno
+             test_name      scalar
+             show_html      yesno
+             show_cookies   yesno
+             show_headers   yesno
+             terse          scalar('^(?:no|summary|failed_only)$') );
 }
 
 # accessor for temporary buffer
@@ -129,6 +127,8 @@ sub validate_params {
 
 sub start_tests {
     my $self = shift;
+
+    $self->global_validate_params(qw(default_report));
 
     return unless $self->global_yesno_test_param('default_report', 1);
 
@@ -141,12 +141,18 @@ sub start_tests {
 sub report_test {
     my $self = shift;
 
+    $self->global_validate_params(qw(default_report));
+
     return unless $self->global_yesno_test_param('default_report', 1);
+
+    $self->validate_params(qw(test_name show_html show_headers
+                              show_cookies terse));
 
     # get test params we handle
     my $test_name    = $self->test_param('test_name');
     my $show_html    = $self->yesno_test_param('show_html');
     my $show_cookies = $self->yesno_test_param('show_cookies');
+    my $show_headers = $self->yesno_test_param('show_headers');
     my $terse        = lc $self->test_param('terse');
 
     my $url = 'N/A';
@@ -192,8 +198,21 @@ FORMAT
     my $response = $self->webtest->last_response;
     my $request = $self->webtest->last_request;
 
+    if($show_headers) {
+	# show all headers
+
+	$out .= "\n";
+
+	$out .= "  REQUEST HEADERS:\n";
+	$out .= $request->method . ' ' . $request->uri . "\n";
+	$out .= $request->headers_as_string . "\n";
+	$out .= "  RESPONSE HEADERS:\n";
+	$out .= $response->protocol . " " . $response->status_line . "\n";
+	$out .= $response->headers_as_string . "\n";
+    }
+
     if($show_cookies) {
-	# sent and recieved cookies
+	# show sent and recieved cookies
 
 	my @sent = $request->header('Cookie');
 	my @recv = $response->header('Set-Cookie');
@@ -233,6 +252,8 @@ FORMAT
 
 sub end_tests {
     my $self = shift;
+
+    $self->global_validate_params(qw(default_report));
 
     return unless $self->global_yesno_test_param('default_report', 1);
 

@@ -1,4 +1,4 @@
-# $Id: Loader.pm,v 1.1.1.1 2002/01/24 12:26:32 m_ilya Exp $
+# $Id: Loader.pm,v 1.2 2002/02/02 04:08:19 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Loader;
 
@@ -44,11 +44,13 @@ is equal to
 =cut
 
 sub param_types {
-    return { qw(plugins list) };
+    return q(plugins list);
 }
 
 sub start_tests {
     my $self = shift;
+
+    $self->global_validate_params(qw(plugins));
 
     my $plugins = $self->global_test_param('plugins');
 

@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.3 2002/01/28 07:11:05 m_ilya Exp $
+# $Id: API.pm,v 1.5 2002/02/15 10:38:33 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API. That's right
 package HTTP::WebTest;
@@ -101,19 +101,6 @@ sub run_tests {
 
     $self->tests([ @tests ]);
     $self->_global_test_params($params);
-
-    # validate global test parameters
-    my %checks = $self->validate_params($params);
-    # be sure that checks are sorted by param name
-    my @broken = grep { not $_->ok } map $checks{$_}, sort keys %checks;
-
-    # is is hard to report errors nicely (i.e. via report plugins)
-    # here because plugins are not initialized yet. Just die right now
-    # if there are any bad global test parameters
-    if(@broken) {
-	my $die = join "\n", 'HTTP::WebTest:', map $_->comment, @broken;
-	die $die;
-    }
 
     # start tests hook
     for my $plugin (@{$self->plugins}) {
@@ -358,6 +345,9 @@ sub create_user_agent {
     # create cookie jar
     $user_agent->cookie_jar(new HTTP::WebTest::Cookies);
 
+    # allow redirects after POST
+    push @{ $user_agent->requests_redirectable }, 'POST';
+
     return $user_agent;
 }
 
@@ -514,54 +504,42 @@ sub run_test {
 
     $self->_global_test_params($params);
 
-    # validate test params
-    my %checks = ($self->validate_params($test->params),
-		  $self->validate_params($params));
-    # be sure that checks are sorted by param name
-    my @broken = grep { not $_->ok } map $checks{$_}, sort keys %checks;
+    # create request (note that actual url is more likely to be
+    # set in plugins)
+    my $request = HTTP::Request->new('GET' => 'http://localhost/');
+    $self->last_request($request);
 
-    if(@broken) {
-	$self->last_test->reset;
-	$self->last_results([ [ 'Test parameters error', @broken ] ]);
-    } else {
-
-	# create request (note that actual url is more likely to be
-	# set in plugins)
-	my $request = HTTP::Request->new('GET' => 'http://localhost/');
-	$self->last_request($request);
-
-	# set request object with plugins
-	for my $plugin (@{$self->plugins}) {
-	    if($plugin->can('prepare_request')) {
-		$plugin->prepare_request;
-	    }
+    # set request object with plugins
+    for my $plugin (@{$self->plugins}) {
+	if($plugin->can('prepare_request')) {
+	    $plugin->prepare_request;
 	}
-
-	# measure current time
-	my $time1 = time;
-
-	# get response
-	my $response = $self->user_agent->request($request);
-	$self->last_response($response);
-
-	# measure current time
-	my $time2 = time;
-
-	# calculate response time
-	$self->last_response_time($time2 - $time1);
-
-	# init results
-	my @results = ();
-
-	# check response with plugins
-	for my $plugin (@{$self->plugins}) {
-	    if($plugin->can('check_response')) {
-		push @results, $plugin->check_response;
-	    }
-	}
-
-	$self->last_results(\@results);
     }
+
+    # measure current time
+    my $time1 = time;
+
+    # get response
+    my $response = $self->user_agent->request($request);
+    $self->last_response($response);
+
+    # measure current time
+    my $time2 = time;
+
+    # calculate response time
+    $self->last_response_time($time2 - $time1);
+
+    # init results
+    my @results = ();
+
+    # check response with plugins
+    for my $plugin (@{$self->plugins}) {
+	if($plugin->can('check_response')) {
+	    push @results, $plugin->check_response;
+	}
+    }
+
+    $self->last_results(\@results);
 
     # report test results
     for my $plugin (@{$self->plugins}) {
@@ -592,35 +570,6 @@ sub convert_tests {
     my @conv = map HTTP::WebTest::Test->convert($_), @tests;
 
     return wantarray ? @conv : $conv[0];
-}
-
-=head2 validate_params ($params)
-
-Validates test parameters.
-
-=head3 Returns
-
-A hash with results of checks. The keys are the test parameters and
-the values are L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult>
-objects.
-
-=cut
-
-sub validate_params {
-    my $self = shift;
-    my $params = shift;
-
-    my %checks = ();
-
-     # check params with all plugins
-     for my $plugin (@{$self->plugins}) {
- 	if(my $validate_params = $plugin->can('validate_params')) {
- 	    %checks = (%checks,
- 		       $plugin->$validate_params($params));
- 	}
-     }
-
-    return %checks;
 }
 
 =head1 BACKWARD COMPATIBILITY

@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
+# $Id: Plugin.pm,v 1.8 2002/02/16 00:36:35 m_ilya Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -76,8 +76,9 @@ sub global_test_param {
 
     my $value = $self->webtest->global_test_param($param);
 
-    return $default unless defined $value;
-    return $value;
+    my $ret = defined $value ? $value : $default;
+
+    return $self->_canonic_value($ret);
 }
 
 =head2 test_param ($param, $optional_default)
@@ -101,13 +102,14 @@ sub test_param {
     my $value;
     if(defined $self->webtest->last_test) {
 	$value = $self->webtest->last_test->param($param);
-	$value = $self->merge_param($value, $global_value);
+	$value = defined $value ? $value : $global_value;
     } else {
 	$value = $global_value;
     }
 
-    return $default unless defined $value;
-    return $value;
+    my $ret = defined $value ? $value : $default;
+
+    return $self->_canonic_value($ret);
 }
 
 =head2 global_yesno_test_param ($param, $optional_default)
@@ -156,22 +158,35 @@ sub yesno_test_param {
     return $value =~ /^yes$/i;
 }
 
-=head2 merge_params ($param, $value, $global_value)
+# reference on hash which caches return value of subroutine calls
+*_sub_cache = make_access_method('_SUB_CACHE', sub { {} });
 
-Merges test parameter value with global test parameter value.
-
-=head3 Returns
-
-A merged test parameter value.
-
-=cut
-
-sub merge_param {
+# searches passed data structure for code references and replaces them
+# with value returned by referenced subs
+sub _canonic_value {
     my $self = shift;
     my $value = shift;
-    my $global_value = shift;
 
-    return defined $value ? $value : $global_value;
+    if(ref($value) eq 'CODE') {
+	# check if value is in cache; value returned from subroutine
+	# is cached so we don't evaluate test parameter value more
+	# than one time
+	unless(${$self->_sub_cache}{$value}) {
+	    ${$self->_sub_cache}{$value} = $value->($self->webtest);
+	}
+
+	$value = ${$self->_sub_cache}{$value};
+    }
+
+    if(ref($value) eq 'ARRAY') {
+	$value = [ map $self->_canonic_value($_), @$value ];
+    } elsif(ref($value) eq 'HASH') {
+	for my $key (keys %$value) {
+	    $value->{$key} = $self->_canonic_value($value->{$key});
+	}
+    }
+
+    return $value;
 }
 
 =head2 test_result ($ok, $comment)
@@ -196,34 +211,92 @@ sub test_result {
     return $result;
 }
 
-=head2 validate_params ($params)
+# helper method used by validate_params and by global_validate_params
+# to validate values of test parameters
+sub _validate_params {
+    my $self = shift;
+    my %params = @_;
 
-Checks test parameters.
+    my %param_types = grep $_ =~ /\S/, split /\s+/, $self->param_types;
 
-=head3 Returns
+    while(my($param, $value) = each %params) {
+	next unless defined $value;
 
-A hash. The keys are the test parameters and the values are
-L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects.
+	my $type = $param_types{$param};
+	die "HTTP::WebTest: unknown test parameter '$param'"
+	    unless defined $type;
+
+	$self->validate_value($param, $value, $type);
+    }
+}
+
+=head2 validate_params (@params)
+
+Checks test parameters listed in C<@params>. Throws exception if any
+of them are invalid.
 
 =cut
 
 sub validate_params {
     my $self = shift;
-    my $params = shift;
+    my @params = @_;
 
-    my %param_types = %{$self->param_types};
-
-    my %checks = ();
-    while(my($param, $type) = each %param_types) {
-	my $method = 'check_' . $type;
-	my $value = $params->{$param};
-	next unless defined $value;
-	my $ok = $self->$method($value);
-	my $message = "Parameter $param should be of $type type.";
-	$checks{$param} = $self->test_result($ok, $message);
+    my %params = ();
+    for my $param (@params) {
+	$params{$param} = $self->test_param($param);
     }
 
-    return %checks;
+    $self->_validate_params(%params);
+}
+
+=head2 global_validate_params (@params)
+
+Checks global test parameters listed in C<@params>. Throws exception
+if any of them are invalid.
+
+=cut
+
+sub global_validate_params {
+    my $self = shift;
+    my @params = @_;
+
+    my %params = ();
+    for my $param (@params) {
+	$params{$param} = $self->global_test_param($param);
+    }
+
+    $self->_validate_params(%params);
+}
+
+=head2 validate_value($param, $value, $type)
+
+Checks if C<$value> of test parameter C<$param> has type <$type>.
+
+=head3 Exceptions
+
+Dies if check is not successful.
+
+=cut
+
+sub validate_value {
+    my $self = shift;
+    my $param = shift;
+    my $value = shift;
+    my $type = shift;
+
+    # parse param type specification
+    my($method, $args) = $type =~ /^ (\w+) (?: \( (.*?) \) )? $/x;
+    die "HTTP::WebTest: bad type specification '$type'"
+	unless defined $method;
+    $method = 'check_' . $method;
+
+    # get additional arguments for type validation sub
+    $args = '' unless defined $args;
+    my @args = eval " ( $args ) ";
+    die "HTTP::WebTest: can't eval args '$args': $@"
+	if $@;
+
+    $self->$method($param, $self->_canonic_value($value), @args);
 }
 
 =head2 param_types ()
@@ -234,140 +307,217 @@ tests.
 
 =head3 Returns
 
-An hash reference. Keys are names of test parameters which are
-supported by plugin. Values are their type.
+A string which looks like:
+
+    'param1 type1
+     param2 type2
+     param3 type3(optional,args)
+     param4 type4'
 
 =cut
 
-sub param_types { {} }
+sub param_types { '' }
 
 =head2 check_anything ($value)
 
 Method which checks test parameter if it is value is of C<anything>
 type.
 
-=head3 Returns
-
-Always true.
+This is NOOP operation.
 
 =cut
 
 sub check_anything { 1 }
 
-=head2 check_list ($value)
+=head2 check_list ($param, $value, @optional_spec)
 
 Method which checks test parameter if it is value is of C<list>
-type.
+type. That is it is a reference on an array.
 
-=head3 Returns
+Optional list C<@optional_spec> can define specification on allowed
+elements of list. It can be either
 
-True if C<$value> is an array reference. False otherwise.
+    ('TYPE_1', 'TYPE_2', ..., 'TYPE_N')
+
+or
+
+    ('TYPE_1', 'TYPE_2', ..., 'TYPE_M', '...')
+
+First specification requires list value of test parameter to contain
+C<N> elements. First element of list should be of should C<TYPE_1>
+type, second element of list should of C<TYPE_2> type, ..., N-th
+element of list should be of C<TYPE_N> type.
+
+Second specification requires list value of test parameter to contain
+at least C<N> elements.  First element of list should be of should
+C<TYPE_1> type, second element of list should of C<TYPE_2> type, ...,
+M-th element of list should be of C<TYPE_M> type, all following
+elements should be of C<TYPE_M> type.
+
+=head3 Exceptions
+
+Dies if checks is not successful.
 
 =cut
 
 sub check_list {
     my $self = shift;
+    my $param = shift;
     my $value = shift;
+    my @spec = @_;
 
-    return ref($value) eq 'ARRAY';
+    die "HTTP::WebTest: parameter '$param' is not a list"
+	unless ref($value) eq 'ARRAY';
+
+    return unless @spec;
+
+    my @list = @$value;
+    my $prev_type = undef;
+    for my $i (0 .. @list - 1) {
+	my $type = shift @spec;
+
+	die "HTTP::WebTest: too many elements in list parameter '$param'"
+	    unless defined $type;
+
+	if($type eq '...') {
+	    $type = $prev_type;
+	    push @spec, '...';
+	}
+
+	my $elem = $list[$i];
+
+	$self->validate_value("$param\[$i]", $elem, $type);
+
+	$prev_type = $type;
+    }
+
+    shift @spec if defined $spec[1] and $spec[1] eq '...';
+
+    die "HTTP::WebTest: too few elements in list parameter '$param'"
+	if @spec;
 }
 
-=head2 check_string ($value)
+=head2 check_scalar ($param, $value, $optional_regexp)
 
-Method which checks test parameter if it is value is of C<string>
-type.
+Method which checks test parameter if it is value is of C<scalar>
+type. That is it is usual Perl scalar and is not a reference.
 
-=head3 Returns
+If C<$optional_regexp> is specified also checks value of parameter
+using this regual expression.
 
-True if C<$value> is a string. False otherwise.
+=head3 Exceptions
+
+Dies if check is not successful.
 
 =cut
 
-sub check_string {
+sub check_scalar {
     my $self = shift;
+    my $param = shift;
     my $value = shift;
+    my $optional_regexp = shift;
 
-    return not ref($value);
+    die "HTTP::WebTest: parameter '$param' is not a scalar"
+	unless not ref($value);
+
+    return unless defined $optional_regexp;
+
+    die "HTTP::WebTest: parameter '$param' doesn't match regexp '$optional_regexp'"
+	unless $value =~ /$optional_regexp/i;
 }
 
-=head2 check_stringref ($value)
+=head2 check_stringref ($param, $value)
 
 Method which checks test parameter if it is value is of C<stringref>
-type.
+type. That is it is a reference on scalar.
 
-=head3 Returns
+=head3 Exceptions
 
-True if C<$value> is a string reference. False otherwise.
+Dies if check is not successful.
 
 =cut
 
 sub check_stringref {
     my $self = shift;
+    my $param = shift;
     my $value = shift;
 
-    return ref($value) eq 'SCALAR';
+    die "HTTP::WebTest: parameter '$param' is not a scalar reference"
+	unless ref($value) eq 'SCALAR';
 }
 
-=head2 check_uri ($value)
+=head2 check_uri ($param, $value)
 
 Method which checks test parameter if it is value is of C<uri>
-type.
+type. That is it either scalar or L<URI|URI> object.
 
-=head3 Returns
+=head3 Exceptions
 
-True if C<$value> is an URI. False otherwise.
+Dies if check is not successful.
 
 =cut
 
 sub check_uri {
     my $self = shift;
+    my $param = shift;
     my $value = shift;
 
-    my $check = $self->check_string($value);
-    $check ||= (defined ref($value) and UNIVERSAL::isa($value, 'URI'));
+    my $ok = 1;
+    eval { $self->check_scalar($param, $value) };
+    if($@) {
+	$ok = 0
+	    unless defined ref($value) and UNIVERSAL::isa($value, 'URI');
+    }
 
-    return $check;
+    die "HTTP::WebTest: parameter '$param' is not a URI"
+	unless $ok;
 }
 
-=head2 check_hashlist ($value)
+=head2 check_hashlist ($param, $value)
 
 Method which checks test parameter if it is value is of C<hashlist>
-type.
+type. That is it is either a hash reference or an array reference
+which points to array containing even number of elements.
 
-=head3 Returns
+=head3 Exceptions
 
-True if C<$value> is a hash reference or an array reference which
-points to array containing even number of elements. False otherwise.
+Dies if check is not successful.
 
 =cut
 
 sub check_hashlist {
     my $self = shift;
+    my $param = shift;
     my $value = shift;
 
-    my $check = $self->check_list($value);
-    $check &&= ((@$value % 2) == 0);
-    $check ||= ref($value) eq 'HASH';
+    my $ok = 1;
+    eval { $self->check_list($param, $value) };
+    if($@) {
+	$ok = 0
+	    unless ref($value) eq 'HASH';
+    } else {
+	$ok = 0
+	    unless (@$value % 2) == 0;
+    }
 
-    return $check;
+    die "HTTP::WebTest: parameter '$param' is neither a hash nor a list with even number of elements"
+	unless $ok;
 }
 
-=head2 check_yesno ($value)
+=head2 check_yesno ($param, $value)
 
-Method which checks test parameter if it is value is of C<yesno>
-type.
+Same as
 
-=head3 Returns
-
-True if C<$value> is either C<yes> or C<no>. False otherwise.
+    check_scalar($param, $value, '^(?:yes|no)$');
 
 =cut
 
 sub check_yesno {
     my $self = shift;
+    my $param = shift;
     my $value = shift;
 
-    return $value =~ /^(?:yes|no)$/i;
+    check_scalar($param, $value, '^(?:yes|no)$');
 }
 
 =head1 COPYRIGHT

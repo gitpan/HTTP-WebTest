@@ -1,4 +1,4 @@
-# $Id: HarnessReport.pm,v 1.1.1.1 2002/01/24 12:26:30 m_ilya Exp $
+# $Id: HarnessReport.pm,v 1.3 2002/02/15 13:12:55 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::HarnessReport;
 
@@ -8,7 +8,7 @@ HTTP::WebTest::Plugin::HarnessReport - Test::Harness compatible reports
 
 =head1 SYNOPSIS
 
-    plugins = ::HarnessReport
+    plugins = ( ::HarnessReport )
     default_report = no
 
 =head1 DESCRIPTION
@@ -52,6 +52,8 @@ sub report_test {
     my $self = shift;
 
     my @results = @{$self->webtest->last_test->results};
+
+    $self->validate_params(qw(test_name));
 
     my $test_name = $self->test_param('test_name');
     my $url = 'N/A';

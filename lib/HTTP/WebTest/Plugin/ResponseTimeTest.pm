@@ -1,4 +1,4 @@
-# $Id: ResponseTimeTest.pm,v 1.1.1.1 2002/01/24 12:26:30 m_ilya Exp $
+# $Id: ResponseTimeTest.pm,v 1.2 2002/02/02 04:08:19 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ResponseTimeTest;
 
@@ -44,8 +44,8 @@ C<min_rtime> is specified).
 =cut
 
 sub param_types {
-    return { qw(min_rtime string
-                max_rtime string) };
+    return q(min_rtime scalar
+             max_rtime scalar);
 }
 
 sub check_response {
@@ -53,6 +53,8 @@ sub check_response {
 
     # response time
     my $rtime = $self->webtest->last_response_time;
+
+    $self->validate_params(qw(min_rtime max_rtime));
 
     # response time limits
     my $min_rtime = $self->test_param('min_rtime');

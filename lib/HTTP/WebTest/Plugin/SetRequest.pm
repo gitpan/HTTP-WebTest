@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
+# $Id: SetRequest.pm,v 1.6 2002/02/12 13:09:18 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -85,40 +85,27 @@ For example (C<wtscript> usage):
 A list which contains two elements: userid/password pair to be used
 for proxy server access authorization.
 
+=head2 user_agent
+
+Set the product token that is used to identify the user agent on
+the network.
+
+=head3 Default value
+
+C<HTTP-WebTest/NN>
+
+where C<NN> is version number of HTTP-WebTest.
+
 =cut
 
 sub param_types {
-    return { qw(url     uri
-	        method  string
-                params  hashlist
-	        auth    list
-	        proxies hashlist
-	        pauth   list) };
-}
-
-sub validate_params {
-    my $self = shift;
-    my $params = shift;
-
-    my %checks = $self->SUPER::validate_params($params);
-
-    if(exists $checks{method}) {
-	$checks{method} &&=
-	    $self->test_result($params->{method} =~ /^(?:GET|POST)$/i ? 1 : 0,
-			       'Request method should be either GET or POST.');
-    }
-    if(exists $checks{auth}) {
-	$checks{auth} &&=
-	    $self->test_result(@{$params->{auth}} == 2,
-			       'Parameter auth should have two elements.');
-    }
-    if(exists $checks{pauth}) {
- 	$checks{pauth} &&=
- 	    $self->test_result(@{$params->{pauth}} == 2,
- 			       'Parameter auth should have two elements.');
-    }
-
-    return %checks;
+    return q(url        uri
+	     method     scalar('^(?:GET|POST)$')
+ 	     params     hashlist
+	     auth       list('scalar','scalar')
+	     proxies    hashlist
+	     pauth      list('scalar','scalar')
+             user_agent scalar);
 }
 
 sub prepare_request {
@@ -130,13 +117,18 @@ sub prepare_request {
     # get request object
     my $request = $self->webtest->last_request;
 
+    $self->validate_params(qw(url method params
+                              auth proxies pauth
+                              user_agent));
+
     # get various params we handle
-    my $url = $self->test_param('url');
-    my $method = $self->test_param('method');
-    my $params = $self->test_param('params');
-    my $auth = $self->test_param('auth');
+    my $url     = $self->test_param('url');
+    my $method  = $self->test_param('method');
+    my $params  = $self->test_param('params');
+    my $auth    = $self->test_param('auth');
     my $proxies = $self->test_param('proxies');
-    my $pauth = $self->test_param('pauth');
+    my $pauth   = $self->test_param('pauth');
+    my $ua_name = $self->test_param('user_agent');
 
     # fix broken url
     if(defined $url) {
@@ -162,7 +154,8 @@ sub prepare_request {
 	# We use a temporary URI object to format
 	# the application/x-www-form-urlencoded content.
 	my $url = URI->new('http:');
-	$url->query_form(@$params);
+	my @params = ref($params) eq 'ARRAY' ? @$params : %$params;
+	$url->query_form(@params);
 	my $query = $url->query;
 
 	if($request->method eq 'GET') {
@@ -189,6 +182,11 @@ sub prepare_request {
     if(defined $pauth) {
 	$request->proxy_authorization_basic(@$pauth);
     }
+
+    # set user agent name
+    $ua_name = 'HTTP-WebTest/' . HTTP::WebTest->VERSION
+	unless defined $ua_name;
+    $user_agent->agent($ua_name);
 }
 
 =head1 COPYRIGHT

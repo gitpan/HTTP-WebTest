@@ -1,4 +1,4 @@
-# $Id: TextMatchTest.pm,v 1.1.1.1 2002/01/24 12:26:33 m_ilya Exp $
+# $Id: TextMatchTest.pm,v 1.3 2002/02/15 23:59:44 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::TextMatchTest;
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin provides test parameters that allow to check response
+This plugin provides test parameters which allow to check response
 body. It supports regexps and literal string searches.
 
 =cut
@@ -75,11 +75,11 @@ See also the C<text_require> and C<ignore_case> parameters.
 =cut
 
 sub param_types {
-    return { qw(ignore_case   yesno
-                text_forbid   list
-                text_require  list
-                regex_forbid  list
-                regex_require list) };
+    return q(ignore_case   yesno
+             text_forbid   list
+             text_require  list
+             regex_forbid  list
+             regex_require list);
 }
 
 sub check_response {
@@ -87,6 +87,10 @@ sub check_response {
 
     # response content
     my $content = $self->webtest->last_response->content;
+
+    $self->validate_params(qw(ignore_case
+                              text_forbid text_require
+                              regex_forbid regex_require));
 
     # ignore case or not?
     my $ignore_case = $self->yesno_test_param('ignore_case');

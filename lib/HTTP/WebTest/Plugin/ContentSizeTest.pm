@@ -1,4 +1,4 @@
-# $Id: ContentSizeTest.pm,v 1.1.1.1 2002/01/24 12:26:32 m_ilya Exp $
+# $Id: ContentSizeTest.pm,v 1.4 2002/02/15 23:37:38 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ContentSizeTest;
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin provides http response body size checks.
+This plugin provides size checks of HTTP response body.
 
 =cut
 
@@ -44,8 +44,8 @@ C<min_bytes> is specified).
 =cut
 
 sub param_types {
-    return { qw(min_bytes string
-                max_bytes string) };
+    return q(min_bytes scalar
+             max_bytes scalar);
 }
 
 sub check_response {
@@ -53,6 +53,8 @@ sub check_response {
 
     # response content length
     my $nbytes = length $self->webtest->last_response->content;
+
+    $self->validate_params(qw(min_bytes max_bytes));
 
     # size limits
     my $min_bytes = $self->test_param('min_bytes');

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.1.1.1 2002/01/24 12:26:13 m_ilya Exp $
+# $Id: 02-generic.t,v 1.7 2002/02/16 00:36:35 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -17,7 +17,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 13 }
+BEGIN { plan tests => 22 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -317,6 +317,115 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/short-url');
 }
 
+# 14-16: subroutines as value of test parameter
+{
+    my $tests = [ { url => sub { abs_url($URL, '/test-file1') } },
+		  { url => sub { abs_url($URL, '/status-forbidden') } }
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/subparam1');
+
+    $tests = [ { url => abs_url($URL, '/show-request'),
+		 params => sub { [ qw(a b c d) ] },
+		 text_require => [ 'Query: <a=b&c=d>',
+				    sub { 'Method: <GET>' } ] }
+	     ];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/subparam2');
+
+    $tests = [ { url => abs_url($URL, '/show-request'),
+		 params => sub { my %h = ( qw(a b c d) ); \%h },
+		 text_require => [ 'Query: <a=b&c=d>',
+				    sub { 'Method: <GET>' } ] }
+	     ];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/subparam2');
+}
+
+# 17: test user_agent parameter
+{
+    my $version = HTTP::WebTest->VERSION;
+
+    my $tests = [ { url => abs_url($URL, '/show-agent'),
+		    text_require => [ "User agent: HTTP-WebTest/$version" ], },
+		  { url => abs_url($URL, '/show-agent'),
+		    user_agent => 'Test Test',
+		    text_require => [ "User agent: Test Test" ] }
+		];
+
+    my $out_filter = sub {
+	$_[0] =~ s|HTTP-WebTest/\Q$version\E|HTTP-WebTest/NN|g;
+    };
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  out_filter => $out_filter,
+		  check_file => 't/test.out/user_agent');
+}
+
+# 18: test handling of redirects
+{
+    my $tests = [ { url => abs_url($URL, '/redirect'),
+		    method => 'get',
+		    text_require => [ 'abcde' ], },
+		  { url => abs_url($URL, '/redirect'),
+		    method => 'post',
+		    text_require => [ 'abcde' ], },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/redirect');
+}
+
+# 19-21: test subroutine caching
+{
+    my $value = 0;
+
+    my $sub = sub {
+	$value ++;
+
+	return abs_url($URL, '/test-file1');
+    };
+
+    my $tests1 = [ { url => $sub } ];
+    my $opts = { default_report => 'no' };
+
+    $WEBTEST->run_tests($tests1, $opts);
+    ok($value == 1);
+    $WEBTEST->run_tests($tests1, $opts);
+    ok($value == 2);
+
+    my $tests2 = [ { url => $sub },
+		   { url => $sub } ];
+
+    $WEBTEST->run_tests($tests1, $opts);
+    ok($value == 3);
+}
+
+# 22: test arguments passed to subroutine test parameter
+{
+    my $webtest = undef;
+
+    my $tests1 = [ { url => abs_url($URL, '/test-file1'),
+		     text_require => sub { $webtest = shift; [] } } ];
+    my $opts = { default_report => 'no' };
+
+    $WEBTEST->run_tests($tests1, $opts);
+    ok($webtest eq $WEBTEST);
+}
+
 # try to stop server even we have been crashed
 END { stop_webserver($PID) if defined $PID }
 
@@ -396,6 +505,23 @@ sub server_sub {
 	my $response = new HTTP::Response(RC_OK);
 	$response->header(Content_Type => 'text/plain');
 	$response->content($content);
+
+	# send it to browser
+	$connect->send_response($response);
+    } elsif($path eq '/show-agent') {
+	my $content = 'User agent: ' . $request->user_agent;
+
+	# create response object
+	my $response = new HTTP::Response(RC_OK);
+	$response->header(Content_Type => 'text/plain');
+	$response->content($content);
+
+	# send it to browser
+	$connect->send_response($response);
+    } elsif($path eq '/redirect') {
+	# create response object
+	my $response = new HTTP::Response(RC_FOUND);
+	$response->header(Location => '/test-file1');
 
 	# send it to browser
 	$connect->send_response($response);

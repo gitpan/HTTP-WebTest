@@ -1,4 +1,4 @@
-# $Id: Plugins.pod,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
+# $Id: Plugins.pod,v 1.3 2002/02/16 23:48:54 m_ilya Exp $
 
 =head1 NAME
 
@@ -37,27 +37,30 @@ Each plugin package should provide following method:
 
 =head3 Returns
 
-A hash reference on hash which contains information about supported
-test parameters and their type.
+A string which contains information about supported test parameters and
+their types.
 
-Each test type is defined by method in
+String has following format:
+
+    PARAM1 TYPE1 PARAM2 TYPE2 PARAM3 TYPE3 ... PARAMN TYPEN
+
+PARAM is a name of test parameter and TYPE is it's type
+specification. It should be separated by any whitespace character.
+
+Each test parameter type is defined by method in
 L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>. Type C<foobar> is
 defined as method C<check_foobar> in this package. See its
 documentation for list of all C<check_****> methods which define all
 known test types.
 
-This method is used to validate values of test parameters. If
-additional checks are required they can be defined in method
-C<validate_params>. See below.
-
 =head3 Example
 
     sub param_types {
-        return { qw(ignore_case   yesno
-                    text_forbid   list
-                    text_require  list
-                    regex_forbid  list
-                    regex_require list) };
+        return q(ignore_case   yesno
+                 text_forbid   list
+                 text_require  list
+                 regex_forbid  list
+                 regex_require list);
     }
 
 This is from
@@ -68,52 +71,7 @@ C<list> are test parameter types.
 
 =head1 OPTIONAL METHODS
 
-Each plugin package can provide following methods:
-
-=head2 validate_params ($params)
-
-This method can be defined in plugin packages to add additional checks
-for test parameters which are not covered by test parameter types
-specification defined by C<param_types>. If you define this method in
-plugin package be sure to call C<$self->SUPER::validate_params($test)>.
-
-=head3 Parameters
-
-=over 4
-
-=item * $params
-
-A reference on hash which contains test parameters.
-
-=back
-
-=head3 Returns
-
-This test should return hash with test parameter names as keys and
-L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects as
-values.
-
-=head3 Example
-
-This example adds check for test parameter C<my_test_param>. It must
-be equal to 'BlaBla' if this test parameter is specified.
-
-    sub validate_params {
-        my $self = shift;
-        my $params = shift;
-
-        # run default checks
-        my %checks = $self->SUPER::validate_params($params);
-
-        if($checks{my_test_param}) {
-            my $ok = $params->{my_test_param} eq 'BlaBla';
-            $checks{my_test_param} =
-                $self->test_result($ok, 'Parameter my_test_param is not ' .
-                                        'equal to BlaBla');
-        }
-
-	return %checks;
-    }
+Each plugin package may provide following methods:
 
 =head2 start_tests ()
 
@@ -161,7 +119,7 @@ L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> object.
 
 =head1 EXAMPLES
 
-Well, why anybody need examples when source code of internal
+Well, why anybody need examples when source code of all
 L<HTTP::WebTest|HTTP::WebTest> plugins is available.
 
 Some good examples are:

@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.1.1.1 2002/01/24 12:26:28 m_ilya Exp $
+# $Id: ReportPlugin.pm,v 1.2 2002/02/02 04:08:19 m_ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -112,12 +112,13 @@ Name of user under which test script runs.
 
 # declare some supported test params
 sub param_types {
-    return { qw(output_ref     stringref
-                fh_out         anything
-                mail_addresses list
-                mail           string
-                mail_server    string
-                mail_from      string) };
+    return q(output_ref     stringref
+             fh_out         anything
+             mail_addresses list('scalar','...')
+             mail           scalar
+             mail_server    scalar
+             mail_from      scalar
+             test_name      scalar);
 }
 
 =head1 CLASS METHODS
@@ -146,6 +147,8 @@ Also stores this data into buffer accessible via method C<test_output>.
 
 sub print {
     my $self = shift;
+
+    $self->global_validate_params(qw(output_ref fh_out));
 
     my $output_ref = $self->global_test_param('output_ref');
     my $fh_out     = $self->global_test_param('fh_out');
@@ -212,6 +215,9 @@ it in new method:
 
 sub end_tests {
     my $self = shift;
+
+    $self->global_validate_params(qw(mail_addresses mail
+                                     mail_server mail_from));
 
     my $mail_addresses = $self->global_test_param('mail_addresses');
     my $mail           = $self->global_test_param('mail');
