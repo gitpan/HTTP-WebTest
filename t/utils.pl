@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: utils.pl,v 1.3 2002/02/17 14:15:29 m_ilya Exp $
+# $Id: utils.pl,v 1.4 2002/02/21 01:02:10 m_ilya Exp $
 
 # some subs common for all tests are defined here
 
@@ -64,8 +64,8 @@ sub check_webtest {
     compare_output(%param, output_ref => \$output);
 }
 
-# generate wt scripts from template
-sub generate_wscript {
+# generate test file from template
+sub generate_testfile {
     my %param = @_;
 
     my $file = $param{file};

@@ -3,6 +3,7 @@
 #            lib/HTTP/WebTest.pm.in
 #            lib/HTTP/WebTest.pm.in
 #            lib/HTTP/WebTest/Plugin/Apache.pm
+#            lib/HTTP/WebTest/Plugin/Click.pm
 #            lib/HTTP/WebTest/Plugin/ContentSizeTest.pm
 #            lib/HTTP/WebTest/Plugin/Cookies.pm
 #            lib/HTTP/WebTest/Plugin/DefaultReport.pm
@@ -24,7 +25,9 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_04';
+$VERSION = '1.99_05';
+# workaround for warning caused by underscore char in $VERSION
+$VERSION = eval $VERSION;
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -601,6 +604,11 @@ See Apache documentation
 
 A list which contains two elements: userid/password pair to be used
 for web page access authorization.
+
+=head2 click_button
+
+=head2 click_link
+
 
 =head2 cookie
 
@@ -1249,7 +1257,7 @@ http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
 
 =head1 AUTHORS
 
-Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
+Richard Anderson <richard@richard-anderson.org> have wrote
 C<HTTP::WebTest 1.xx>.
 
 Ilya Martynov <ilya@martynov.org> made rewrite of

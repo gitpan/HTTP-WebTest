@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.5 2002/02/07 23:34:25 m_ilya Exp $
+# $Id: 01-api.t,v 1.6 2002/02/21 01:02:10 m_ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
@@ -85,7 +85,7 @@ my $WEBTEST = HTTP::WebTest->new;
 
 # 11: run tests defined in wt script
 {
-    generate_wscript(file => 't/real.wt', server_url => $URL);
+    generate_testfile(file => 't/real.wt', server_url => $URL);
 
     my $output = '';
 

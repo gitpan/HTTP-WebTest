@@ -1,4 +1,4 @@
-# $Id: HarnessReport.pm,v 1.3 2002/02/15 13:12:55 m_ilya Exp $
+# $Id: HarnessReport.pm,v 1.4 2002/04/08 06:50:26 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::HarnessReport;
 
@@ -78,7 +78,7 @@ sub report_test {
 	for my $subresult (@$result[1 .. @$result - 1]) {
 	    my $comment = $subresult->comment;
 	    my $ok      = $subresult->ok ? 'SUCCEED' : 'FAIL';
-	    $all_ok   &&= $ok;
+	    $all_ok   &&= $subresult->ok;
 
 	    $self->print("#   $comment: $ok\n");
 	}

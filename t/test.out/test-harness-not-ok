@@ -10,10 +10,10 @@ ok
 # URL: http://http.web.test/non-existent
 # STATUS CODE CHECK
 #   404 Not Found: FAIL
-ok
+not ok
 
 # URL: http://http.web.test/non-existent
 # Test Name: BlaBla
 # STATUS CODE CHECK
 #   404 Not Found: FAIL
-ok
+not ok

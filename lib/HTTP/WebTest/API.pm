@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.5 2002/02/15 10:38:33 m_ilya Exp $
+# $Id: API.pm,v 1.9 2002/03/24 11:01:36 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API. That's right
 package HTTP::WebTest;
@@ -110,7 +110,9 @@ sub run_tests {
     }
 
     # run all tests
-    for my $test (@{$self->tests}) {
+    for my $i (0 .. @{$self->tests} - 1) {
+	my $test = $self->tests->[$i];
+	$self->last_test_num($i);
 	$self->run_test($test, $self->_global_test_params);
     }
 
@@ -253,7 +255,7 @@ It can be passed directly to C<run_tests>.
 
 =head3 Example
 
-    $webtest->run_tests($parse->parse($data));
+    $webtest->run_tests($webtest->parse($data));
 
 =cut
 
@@ -421,6 +423,16 @@ sub global_test_param {
     return $self->_global_test_params->{$param};
 }
 
+=head2 last_test_num ()
+
+=head3 Returns
+
+A number of last test being or been run.
+
+=cut
+
+*last_test_num = make_access_method('LAST_TEST_NUM');
+
 =head2 last_test ()
 
 =head3 Returns
@@ -504,9 +516,9 @@ sub run_test {
 
     $self->_global_test_params($params);
 
-    # create request (note that actual url is more likely to be
+    # create request (note that actual uri is more likely to be
     # set in plugins)
-    my $request = HTTP::Request->new('GET' => 'http://localhost/');
+    my $request = HTTP::Request->new('GET' => 'http://MISSING_HOSTNAME/');
     $self->last_request($request);
 
     # set request object with plugins
@@ -514,6 +526,11 @@ sub run_test {
 	if($plugin->can('prepare_request')) {
 	    $plugin->prepare_request;
 	}
+    }
+
+    # check if one of plugins did change request uri
+    if($request->uri eq 'http://MISSING_HOSTNAME/') {
+	die "HTTP::WebTest: request uri is not set";
     }
 
     # measure current time
@@ -575,7 +592,7 @@ sub convert_tests {
 =head1 BACKWARD COMPATIBILITY
 
 C<HTTP::WebTest 2.xx> offers more rich API than its predecessor
-C<HTTP::WebTest 1.xx>. However while deprecated old API is still
+C<HTTP::WebTest 1.xx>. However while old API is deprecated it is still
 supported.
 
 It is not recommended to use it in new applications.

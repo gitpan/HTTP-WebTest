@@ -1,10 +1,12 @@
 # This is a -*-perl-*- source file
 
-# $Id: WebTest.pm.in,v 1.5 2002/02/17 10:48:51 m_ilya Exp $
+# $Id: WebTest.pm.in,v 1.9 2002/04/08 21:51:57 m_ilya Exp $
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_04';
+$VERSION = '1.99_05';
+# workaround for warning caused by underscore char in $VERSION
+$VERSION = eval $VERSION;
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -535,7 +537,7 @@ http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
 
 =head1 AUTHORS
 
-Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
+Richard Anderson <richard@richard-anderson.org> have wrote
 C<HTTP::WebTest 1.xx>.
 
 Ilya Martynov <ilya@martynov.org> made rewrite of

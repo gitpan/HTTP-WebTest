@@ -8,7 +8,7 @@ URL: http://http.web.test/show-agent
   STATUS CODE CHECK
     200 OK                                                       SUCCEED
   REQUIRED TEXT
-    User agent: HTTP-WebTest/NN                             SUCCEED
+    User agent: HTTP-WebTest/NN                              SUCCEED
 
 
 URL: http://http.web.test/show-agent

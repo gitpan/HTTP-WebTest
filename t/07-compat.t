@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 07-compat.t,v 1.1.1.1 2002/01/24 12:26:10 m_ilya Exp $
+# $Id: 07-compat.t,v 1.2 2002/02/21 01:02:10 m_ilya Exp $
 
 # This script tests backward compatiblity with HTTP::WebTest 1.xx
 
@@ -24,7 +24,7 @@ my $WEBTEST = HTTP::WebTest->new;
 
 # 1-4: run tests defined in wt script (check web_test method)
 {
-    generate_wscript(file => 't/real.wt', server_url => $URL);
+    generate_testfile(file => 't/real.wt', server_url => $URL);
 
     my $output = '';
     my ($num_fail, $num_succeed);
@@ -45,7 +45,7 @@ my $WEBTEST = HTTP::WebTest->new;
 
 # 5: check web_test method
 {
-    generate_wscript(file => 't/good.wt', server_url => $URL);
+    generate_testfile(file => 't/good.wt', server_url => $URL);
 
     my $output = '';
 

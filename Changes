@@ -1,10 +1,24 @@
-$Id: Changes,v 1.16 2002/02/17 10:57:03 m_ilya Exp $
+$Id: Changes,v 1.22 2002/04/08 07:36:48 m_ilya Exp $
 
 THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS
 PROBABLY NOT AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be
 downloaded at http://search.cpan.org/search?dist=HTTP-WebTest-1.07
 
 Revision history for Perl module HTTP::WebTest.
+
+1.99_05 Mon Apr  8 2002
+
+BUG FIXES:
+
+* Fixed bug in HTTP::WebTest::Plugin::check_list. It affected test
+parameter 'mail_addresses'. Thanks to Duncan Cameron for patch.
+
+* Fixed bug in HTTP::WebTest::Plugin::HarnessReport. This report
+plugin printed 'ok' even for failed tests. Thanks to Martin Langhoff
+for patch.
+
+* Updated email address of Richard Anderson in POD docs and in
+Makefile.PL.
 
 1.99_04 Sun Feb 17 2002
 

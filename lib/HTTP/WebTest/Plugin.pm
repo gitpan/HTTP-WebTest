@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.8 2002/02/16 00:36:35 m_ilya Exp $
+# $Id: Plugin.pm,v 1.9 2002/03/24 12:11:18 m_ilya Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -323,7 +323,7 @@ sub param_types { '' }
 Method which checks test parameter if it is value is of C<anything>
 type.
 
-This is NOOP operation.
+This is NOOP operation. It always succeed.
 
 =cut
 
@@ -391,7 +391,7 @@ sub check_list {
 	$prev_type = $type;
     }
 
-    shift @spec if defined $spec[1] and $spec[1] eq '...';
+    shift @spec if defined $spec[0] and $spec[0] eq '...';
 
     die "HTTP::WebTest: too few elements in list parameter '$param'"
 	if @spec;

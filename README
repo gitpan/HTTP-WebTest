@@ -97,8 +97,8 @@ SUPPORT
     http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
 
 AUTHORS
-    Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
-    "HTTP::WebTest 1.xx".
+    Richard Anderson <richard@richard-anderson.org> have wrote "HTTP::WebTest
+    1.xx".
 
     Ilya Martynov <ilya@martynov.org> made rewrite of "HTTP::WebTest". New
     version of "HTTP::WebTest" have introduced extended API and plugin based

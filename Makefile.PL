@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.3 2002/02/17 14:19:25 m_ilya Exp $
+# $Id: Makefile.PL,v 1.5 2002/04/08 21:51:58 m_ilya Exp $
 
 use 5.005;
 
@@ -15,7 +15,7 @@ my @PROGRAMS = qw(wt);
 # what do we need to delete on realclean?
 my $REALCLEAN = '.config';
 # list of authors
-my $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>, ' .
+my $AUTHOR = 'Richard Anderson <richard@richard-anderson.org>, ' .
              'Ilya Martynov <ilya@martynov.org>';
 
 WriteMakefile( NAME         => 'HTTP::WebTest',

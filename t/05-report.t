@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.2 2002/02/12 12:47:35 m_ilya Exp $
+# $Id: 05-report.t,v 1.3 2002/04/08 06:52:00 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -18,7 +18,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL $TEST);
 
-BEGIN { plan tests => 11 }
+BEGIN { plan tests => 12 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -139,7 +139,8 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
     }
 }
 
-# 10: test HTTP::WebTest::Plugin::HarnessReport plugin
+# 10: test HTTP::WebTest::Plugin::HarnessReport plugin (with some
+# tests failing)
 {
     my $tests = [ $TEST,
 		  { url => abs_url($URL, '/non-existent') },
@@ -154,10 +155,25 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 		  server_url => $URL,
 		  opts => $opts,
 		  tests => $tests,
-		  check_file => 't/test.out/test-harness')
+		  check_file => 't/test.out/test-harness-not-ok')
 }
 
-# 11: test show_headers parameter
+# 11: test HTTP::WebTest::Plugin::HarnessReport plugin (with all tests
+# passing)
+{
+    my $tests = [ $TEST, $TEST ];
+
+    my $opts = { plugins => [ '::HarnessReport' ],
+		 default_report => 'no' };
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  opts => $opts,
+		  tests => $tests,
+		  check_file => 't/test.out/test-harness-ok')
+}
+
+# 12: test show_headers parameter
 {
     # remove cookies from cookie jar - it affects output of report plugin
     $WEBTEST->reset_user_agent;

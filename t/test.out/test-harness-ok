@@ -1,0 +1,15 @@
+1..2
+
+# URL: http://http.web.test/test-file1
+# STATUS CODE CHECK
+#   200 OK: SUCCEED
+# REQUIRED TEXT
+#   987654: SUCCEED
+ok
+
+# URL: http://http.web.test/test-file1
+# STATUS CODE CHECK
+#   200 OK: SUCCEED
+# REQUIRED TEXT
+#   987654: SUCCEED
+ok
