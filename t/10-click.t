@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 10-click.t,v 1.7 2002/08/20 20:57:51 m_ilya Exp $
+# $Id: 10-click.t,v 1.10 2002/12/12 21:43:11 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Click plugin
 
@@ -9,11 +9,7 @@ use HTTP::Status;
 use Test;
 
 use HTTP::WebTest;
-
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL $TEST);
+use HTTP::WebTest::SelfTest;
 
 BEGIN { plan tests => 9 }
 

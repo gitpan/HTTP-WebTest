@@ -1,22 +1,16 @@
 #!/usr/bin/perl -w
 
-# $Id: 09-hooks.t,v 1.3 2002/08/22 08:36:13 m_ilya Exp $
+# $Id: 09-hooks.t,v 1.7 2002/12/13 00:50:45 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Hooks plugin
 
 use strict;
 use CGI::Cookie;
-use HTTP::Response;
 use HTTP::Status;
-use IO::File;
 use Test;
 
 use HTTP::WebTest;
-
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL $TEST);
+use HTTP::WebTest::SelfTest;
 
 BEGIN { plan tests => 13 }
 

@@ -1,16 +1,14 @@
 #!/usr/bin/perl -w
 
-# $Id: 06-parser.t,v 1.15 2002/06/22 20:08:38 m_ilya Exp $
+# $Id: 06-parser.t,v 1.17 2002/12/13 00:50:45 m_ilya Exp $
 
 # This script tests wt scripts parser
 
 use strict;
-use IO::File;
 use Test;
 
 use HTTP::WebTest::Parser;
-
-require 't/utils.pl';
+use HTTP::WebTest::SelfTest;
 
 BEGIN { plan tests => 68 }
 

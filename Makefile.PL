@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.9 2002/07/31 15:18:47 m_ilya Exp $
+# $Id: Makefile.PL,v 1.14 2002/12/14 16:56:31 m_ilya Exp $
 
 use 5.005;
 
@@ -13,21 +13,21 @@ my $AUTHOR = 'Richard Anderson <richard@richard-anderson.org>, ' .
 
 WriteMakefile( NAME         => 'HTTP::WebTest',
 	       VERSION_FROM => 'lib/HTTP/WebTest.pm.in',
-	       PREREQ_PM    => { 'Algorithm::Diff'   => 0,
-				 'CGI::Cookie'       => 0,
-				 'File::Temp'        => 0,
-				 'LWP'               => 5.60,
-				 'MIME::Base64'      => 0,
-				 'Net::SMTP'         => 0,
-				 'Text::Balanced'    => 0,
-				 'Pod::Usage'        => 0,
-				 'Pod::Man'          => 1.14,
-				 'Time::HiRes'       => 0,
-				 'URI'               => 0 },
-	       realclean    => { FILES => '.config' },
+	       PREREQ_PM    => { 'Algorithm::Diff'       => 0,
+				 'CGI::Cookie'           => 0,
+				 'LWP'                   => 5.60,
+				 'MIME::Base64'          => 0,
+				 'Net::SMTP'             => 0,
+				 'Text::Balanced'        => 0,
+				 'Pod::Usage'            => 0,
+				 'Pod::Man'              => 1.14,
+				 'Time::HiRes'           => 0,
+				 'Test::Builder'         => 0,
+                                 'Test::Builder::Tester' => 0,
+				 'URI'                   => 0 },
 	       EXE_FILES    => [ File::Spec->catfile(qw(bin wt)) ],
 	       AUTHOR       => $AUTHOR,
-	       ABSTRACT     => 'Run tests on remote URLs or local web files');
+	       ABSTRACT     => 'Testing static and dynamic web content');
 
 package MY;
 
@@ -39,17 +39,6 @@ sub libscan {
     return undef if $path =~ /~/;
 
     return $self->SUPER::libscan($path);
-}
-
-sub test {
-    my $self = shift;
-
-    my $make = $self->SUPER::test(@_);
-
-    # add dependencies for test targets
-    $make =~ s/(test(?:db)? :: )(.*)/$1test_config $2/g;
-
-    return $make;
 }
 
 sub dist_core {
@@ -65,13 +54,6 @@ sub dist_core {
 
 sub postamble {
     my $make = '';
-
-    # verify standard input and output are attached to a terminal
-    if(-t STDIN and -t STDOUT) {
-	$make .= apache_dir_setup();
-
-	print STDOUT "\n";
-    }
 
     # add pod merge target
     my $webtest_pm = File::Spec->catfile(qw(lib HTTP WebTest.pm));
@@ -101,74 +83,5 @@ distprepare :: $webtest_pm
 \t\@\$(NOOP)
 MAKE
 
-    # add test_config target (test and testdb targets depend on it)
-    my $test_config_pl = File::Spec->catfile(qw(scripts test_config.PL));
-    $make .= <<MAKE;
-
-test_config:
-\t\$(PERL) $test_config_pl .config
-MAKE
-
     return $make;
-}
-
-# asks if http-webtest directory should be installed and adds to
-# makefile target to install http-webtest directory if required
-sub apache_dir_setup {
-    my $apache_dir = undef;
-
-    # verify that we don't run on Win32 system. Local web files
-    # test mode is not supported on that platform
-    if($^O ne 'MSWin32') {
-	while(1) {
-	    print_prompt(<<TEXT);
-
-HTTP-WebTest requires installation of the http-webtest directory for
-running local file tests. If you do not use local file tests you can
-skip installation of this directory.
-
-Install http-webtest directory? [Y/n]:
-TEXT
-
-	    my $response = <STDIN>;
-	    chomp($response);
-	    if($response =~ /^(?:y(?:es)?|)$/i) {
-		# user asked for directory installation
-		$apache_dir = '/usr/local/etc';
-
-		print_prompt(<<TEXT);
-
-Enter directory that will contain http-webtest directory.
-
-Directory? [$apache_dir]:
-TEXT
-
-		my $response = <STDIN>;
-		chomp($response);
-		$apache_dir = $response if $response;
-		last if -d $apache_dir;
-		print STDOUT <<TEXT;
-
-ERROR: $apache_dir is not a valid directory
-TEXT
-	    } else {
-		last;
-	    }
-	}
-    }
-
-    my $make = defined $apache_dir ? <<TEXT : '';
-
-pure_install ::
-\t-\@\$(CP) -r http-webtest $apache_dir
-
-TEXT
-
-    return $make;
-}
-
-sub print_prompt {
-    my $text = shift;
-    chomp $text;
-    print STDOUT $text, ' ';
 }

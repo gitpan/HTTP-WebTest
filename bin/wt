@@ -1,10 +1,10 @@
 #!perl -w
 
-# $Id: wt,v 1.2 2002/05/17 20:54:09 m_ilya Exp $
+# $Id: wt,v 1.3 2002/10/19 23:14:16 m_ilya Exp $
 
 =head1 NAME
 
-wt - test one or more web pages, either remotely or locally
+wt - test one or more web pages
 
 =head1 SYNOPSIS
 
@@ -40,9 +40,8 @@ Prints version number of L<HTTP::WebTest|HTTP::WebTest> and exits.
 =head1 DESCRIPTION
 
 This program runs tests using Perl module
-L<HTTP::WebTest|HTTP::WebTest> on remote URLs or local web files
-containing Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
-report.
+L<HTTP::WebTest|HTTP::WebTest> on web pages containing
+Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.
 
 This program expects given input file(s) to be in format of wtscript
 file.  If no files are given then it expects test specification to be

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 03-proxy.t,v 1.1.1.1 2002/01/24 12:26:17 m_ilya Exp $
+# $Id: 03-proxy.t,v 1.4 2002/12/12 21:43:12 m_ilya Exp $
 
 # This script tests proxy support in HTTP::WebTest.
 
@@ -10,11 +10,7 @@ use HTTP::Status;
 use Test;
 
 use HTTP::WebTest;
-
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL);
+use HTTP::WebTest::SelfTest;
 
 BEGIN { plan tests => 2 }
 

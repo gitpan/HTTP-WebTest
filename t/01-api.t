@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.7 2002/06/07 08:57:50 m_ilya Exp $
+# $Id: 01-api.t,v 1.12 2002/12/12 23:22:09 m_ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
@@ -9,13 +9,9 @@ use HTTP::Status;
 use Test;
 
 use HTTP::WebTest;
+use HTTP::WebTest::SelfTest;
 
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL);
-
-BEGIN { plan tests => 14 }
+BEGIN { plan tests => 15 }
 
 # init test
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -50,8 +46,8 @@ my $WEBTEST = HTTP::WebTest->new;
     my $url = abs_url($URL, '/test-file1');
     my $test = { url => $url };
     $WEBTEST->run_test($test);
-    my $request = $WEBTEST->last_request;
-    my $response = $WEBTEST->last_response;
+    my $request = $WEBTEST->current_request;
+    my $response = $WEBTEST->current_response;
     ok($request->uri eq $url);
     ok($response->is_success);
 }
@@ -129,6 +125,17 @@ WTSCRIPT
     $WEBTEST->run_tests($tests, { output_ref => \$output });
     ok($WEBTEST->num_fail == 2);
     ok($WEBTEST->num_succeed == 1);
+}
+
+# 15: test current_test after running $WEBTEST->run_tests
+{
+    my $tests = [ { url => abs_url($URL, '/test-file1') },
+		  { url => abs_url($URL, '/doesnt-exist') } ];
+
+    my $output = '';
+
+    $WEBTEST->run_tests($tests, { output_ref => \$output });
+    ok($WEBTEST->current_test->request->uri eq abs_url($URL, '/doesnt-exist'));
 }
 
 # try to stop server even we have been crashed

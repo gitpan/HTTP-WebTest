@@ -1,4 +1,4 @@
-# $Id: ContentSizeTest.pm,v 1.7 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: ContentSizeTest.pm,v 1.8 2002/12/12 23:22:14 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ContentSizeTest;
 
@@ -52,7 +52,7 @@ sub check_response {
     my $self = shift;
 
     # response content length
-    my $nbytes = length $self->webtest->last_response->content;
+    my $nbytes = length $self->webtest->current_response->content;
 
     $self->validate_params(qw(min_bytes max_bytes));
 

@@ -1,6 +1,48 @@
-$Id: Changes,v 1.52 2002/08/22 09:08:26 m_ilya Exp $
+$Id: Changes,v 1.64 2002/12/14 17:31:11 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
+
+2.00 Sat Dec 14 2002
+
+ENHANCEMENTS:
+
+* Allow plugins to insert tests into the test queue during test
+sequence runtime.  Inspired by Paul Hamingson's patch.
+
+* New core test parameter 'relative_urls' which enables HTTP-WebTest
+to use relative URLs in tests.
+
+* New core test parameter 'timeout' which allows to control user agent
+timeout settings while running test sequence.
+
+* Moved self-test suite support code into module
+HTTP::WebTest::SelfTest to allow reusing it in self-test suites for
+plugins maintained outside of HTTP-WebTest.
+
+INCOMPATIBILITIES:
+
+* HTTP::WebTest::Plugin::Apache plugin have been removed from
+HTTP::WebTest and will be released as independent CPAN module.  It
+will no longer be loaded by default even if it is available.
+
+* Renamed all last_xxx methods to current_xxx since the latest naming
+schema is less confusing.
+
+* HTTP::WebTest::Plugin::HarnessReport is rewritten using
+Test::Builder. As side effect now you can freely intermix
+HTTP::WebTest based tests with tests written using other testing
+libraries like Test::More or Test::Differences. Unfortunately this
+change breaks existing test scripts which were using
+HTTP::WebTest::Plugin::HarnessReport because now number of tests in
+test scripts should be declared explictly with 'use Test::More plan =>
+NN' or 'use Test::More qw(no_plan)'.
+
+BUG FIXES:
+
+* Fixed some minor documentation bugs.  Thanks to William McKee.
+
+* Allow to use $webtest->last_xxx method calls after running test
+sequence with $webtest->run_tests.  Thanks to Kevin Baker for patch.
 
 1.99_09 Thu Aug 22 2002
 
@@ -28,7 +70,7 @@ William McKee.
 
 BUG FIXES:
 
-* Previously comments inside of list parameters in wtscript files was
+* Previously comments inside of list parameters in wtscript files were
 not allowed.  Reported by William McKee.
 
 * Fixed 'make test' failure on Perl 5.8.0.

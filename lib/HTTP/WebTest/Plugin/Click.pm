@@ -1,4 +1,4 @@
-# $Id: Click.pm,v 1.14 2002/08/20 20:58:36 m_ilya Exp $
+# $Id: Click.pm,v 1.15 2002/12/12 23:22:14 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Click;
 
@@ -79,10 +79,10 @@ sub prepare_request {
     $self->validate_params(qw(click_button click_link form_name));
 
     # get current request object
-    my $request = $self->webtest->last_request;
+    my $request = $self->webtest->current_request;
 
     # get number of previous test if any
-    my $prev_test_num = $self->webtest->last_test_num - 1;
+    my $prev_test_num = $self->webtest->current_test_num - 1;
     return if $prev_test_num < 0;
 
     # get previous response object

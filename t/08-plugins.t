@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 08-plugins.t,v 1.2 2002/05/26 20:03:16 m_ilya Exp $
+# $Id: 08-plugins.t,v 1.5 2002/12/12 21:43:11 m_ilya Exp $
 
 # This script tests external plugin support in HTTP::WebTest.
 
@@ -9,13 +9,9 @@ use HTTP::Status;
 use Test;
 
 use HTTP::WebTest;
-
-require 't/config.pl';
-require 't/utils.pl';
+use HTTP::WebTest::SelfTest;
 
 use lib 't';
-
-use vars qw($HOSTNAME $PORT $URL);
 
 BEGIN { plan tests => 4 }
 

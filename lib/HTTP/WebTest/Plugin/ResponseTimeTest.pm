@@ -1,4 +1,4 @@
-# $Id: ResponseTimeTest.pm,v 1.5 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: ResponseTimeTest.pm,v 1.6 2002/12/12 23:22:12 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ResponseTimeTest;
 
@@ -52,7 +52,7 @@ sub check_response {
     my $self = shift;
 
     # response time
-    my $rtime = $self->webtest->last_response_time;
+    my $rtime = $self->webtest->current_response_time;
 
     $self->validate_params(qw(min_rtime max_rtime));
 

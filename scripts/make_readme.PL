@@ -1,12 +1,13 @@
 #!/usr/bin/perl -w
 
-# $Id: make_readme.PL,v 1.1.1.1 2002/01/24 12:26:33 m_ilya Exp $
+# $Id: make_readme.PL,v 1.2 2002/12/13 01:35:27 m_ilya Exp $
 
 use strict;
 
 use Pod::Text;
 
-require 't/utils.pl';
+use lib qw(lib);
+use HTTP::WebTest::SelfTest;
 
 my($webtest_pm, $readme) = @ARGV;
 
@@ -20,7 +21,7 @@ my $data = read_file($readme);
 # kill SYNOPSIS
 $data =~ s/\nSYNOPSIS.*?DESCRIPTION/\nDESCRIPTION/s;
 # kill all from Getting Started until RESTRICTIONS section
-$data =~ s/\n\s*Getting Started.*?RESTRICTIONS/\n\nRESTRICTIONS/s;
+$data =~ s/\n\s*Getting started.*?RESTRICTIONS/\n\nRESTRICTIONS/s;
 # kill SEE ALSO section
 $data =~ s/\nSEE ALSO.*//s;
 

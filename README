@@ -1,9 +1,9 @@
 NAME
-    HTTP::WebTest - Test remote URLs or local web files
+    HTTP::WebTest - Testing static and dynamic web content
 
 DESCRIPTION
   Introduction
-    This module runs tests on remote URLs or local web files containing
+    This module runs tests on remote URLs containing
     Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report. This
     module can be used "as-is" or its functionality can be extended using
     plugins. Plugins can define test types and provide additional report
@@ -14,13 +14,10 @@ DESCRIPTION
     line.
 
     The test specifications can be read from a parameter file in wtscript
-    format or input as method arguments. If you are testing a local file,
-    Apache is started on a private/dynamic port with a configuration file in a
-    temporary directory.
-
-    The test results can be displayed on the terminal, directed to a file,
-    stored in a scalar variable. The test results can also be emailed. The
-    report can be modified and extended using report plugins.
+    format or input as method arguments. The test results can be displayed on
+    the terminal, directed to a file, stored in a scalar variable. The test
+    results can also be emailed. The report can be modified and extended using
+    report plugins.
 
     Each URL/web file is tested by fetching it from the web server using a
     local instance of an HTTP user agent. The basic test is simply whether or
@@ -30,7 +27,7 @@ DESCRIPTION
     maximum number of bytes in the returned page. You may also specify tests
     for the minimum and maximum web server response time.
 
-    Data flow for "HTTP::WebTest" using a remote URL:
+    Data flow for "HTTP::WebTest":
 
               --------------              -------------
               |            |              |           |
@@ -48,40 +45,13 @@ DESCRIPTION
               -------------               |          |
                                           ------------
 
-    Data flow diagram for "HTTP::WebTest" using a local web file:
-
-              --------------           ---------------------
-              |            |           |                   |
-              | Input      |           |  Web page code    |
-              | parameters |           |  (Perl/HTML/etc.) |
-              |            |           |                   |
-              --------------           ---------------------
-                  |                              |
-                  |  -----------------------------
-                  |  |
-                  V  V                ------------------------
-              -------------           |                      |
-              |           |---------->| Temporary Apache     |
-              |  WebTest  |           | directories (htdocs, |
-              |           |<----------| conf, logs)          |
-              -------------           |                      |
-                  |  ^                ------------------------
-                  |  |                        |    ^
-                  V  |                        V    |
-              ------------             ----------------------
-              |          |   request   |                    |
-              |   HTTP   |------------>| Temporary local    |
-              |   user   |             | instance of Apache |
-              |   agent  |<------------|                    |
-              |          |   response  ----------------------
-              ------------
-
 RESTRICTIONS / BUGS
     This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
-    etc.) but it should work on Win32 systems. (Exception: local file tests
-    don't work on Win32 systems.) The module's HTTP requests time out after 3
-    minutes (the default value for LWP::UserAgent). If the "file_path"
-    parameter is specified, Apache must be installed.
+    etc.) but it should work on Win32 systems.
+
+    If you want to test https:// web sites you may have to install additional
+    modules to enable SSL support in LWP. In short you may have to install
+    Crypt::SSLeay module. For details see README.SSL file in LWP distro.
 
 AUTHORS
     Richard Anderson <richard@richard-anderson.org> wrote "HTTP::WebTest
@@ -96,7 +66,7 @@ AUTHORS
 SUPPORT
     Please email bug reports, suggestions, questions, etc. to the SourceForge
     "HTTP::WebTest" maillist. You can sign up at
-    http://lists.sourceforge.net/lists/listinfo/http-webtest-general. The
+    http://lists.sourceforge.net/lists/listinfo/http-webtest-general . The
     email address is "http-webtest-general@lists.sourceforge.net".
 
 COPYRIGHT

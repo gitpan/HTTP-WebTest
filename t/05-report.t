@@ -1,24 +1,19 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.4 2002/07/31 09:07:46 m_ilya Exp $
+# $Id: 05-report.t,v 1.8 2002/12/13 00:53:42 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
 use strict;
 use CGI::Cookie;
-use HTTP::Response;
-use HTTP::Status;
 use IO::File;
+use HTTP::Status;
 use Test;
 
 use HTTP::WebTest;
+use HTTP::WebTest::SelfTest;
 
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL $TEST);
-
-BEGIN { plan tests => 14 }
+BEGIN { plan tests => 12 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -138,41 +133,7 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
     }
 }
 
-# 10: test HTTP::WebTest::Plugin::HarnessReport plugin (with some
-# tests failing)
-{
-    my $tests = [ $TEST,
-		  { url       => abs_url($URL, '/non-existent') },
-		  { test_name => 'BlaBla',
-		    url       => abs_url($URL, '/non-existent') },
-		];
-
-    my $opts = { plugins => [ '::HarnessReport' ],
-		 default_report => 'no' };
-
-    check_webtest(webtest    => $WEBTEST,
-		  server_url => $URL,
-		  opts       => $opts,
-		  tests      => $tests,
-		  check_file => 't/test.out/test-harness-not-ok')
-}
-
-# 11: test HTTP::WebTest::Plugin::HarnessReport plugin (with all tests
-# passing)
-{
-    my $tests = [ $TEST, $TEST ];
-
-    my $opts = { plugins => [ '::HarnessReport' ],
-		 default_report => 'no' };
-
-    check_webtest(webtest    => $WEBTEST,
-		  server_url => $URL,
-		  opts       => $opts,
-		  tests      => $tests,
-		  check_file => 't/test.out/test-harness-ok')
-}
-
-# 12: test show_headers parameter
+# 10: test show_headers parameter
 {
     # remove cookies from cookie jar - it affects output of report plugin
     $WEBTEST->reset_user_agent;
@@ -196,7 +157,7 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 		  check_file => 't/test.out/show-headers')
 }
 
-# 13-14: test show_html, show_cookie, show_headers with terse parameter
+# 11-12: test show_html, show_cookie, show_headers with terse parameter
 {
      my $skip = $HOSTNAME !~ /\..*\./ ?
 	       'skip: cannot test cookies - ' .

@@ -2,7 +2,6 @@
 #
 #            lib/HTTP/WebTest.pm.in
 #            lib/HTTP/WebTest.pm.in
-#            lib/HTTP/WebTest/Plugin/Apache.pm
 #            lib/HTTP/WebTest/Plugin/Click.pm
 #            lib/HTTP/WebTest/Plugin/ContentSizeTest.pm
 #            lib/HTTP/WebTest/Plugin/Cookies.pm
@@ -26,16 +25,14 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_09';
-# workaround for warning caused by underscore char in $VERSION
-$VERSION = eval $VERSION;
+$VERSION = '2.00';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
 
 =head1 NAME
 
-HTTP::WebTest - Test remote URLs or local web files
+HTTP::WebTest - Testing static and dynamic web content
 
 =head1 SYNOPSIS
 
@@ -53,7 +50,7 @@ HTTP::WebTest - Test remote URLs or local web files
 
 =head2 Introduction
 
-This module runs tests on remote URLs or local web files containing
+This module runs tests on remote URLs containing
 Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.
 This module can be used "as-is" or its functionality can be extended
 using plugins.  Plugins can define test types and provide additional
@@ -64,13 +61,10 @@ The L<wt|wt> script is provided for running C<HTTP::WebTest> from the
 command line.
 
 The test specifications can be read from a parameter file in wtscript
-format or input as method arguments.  If you are testing a local file,
-Apache is started on a private/dynamic port with a configuration file
-in a temporary directory.
-
-The test results can be displayed on the terminal, directed to a file,
-stored in a scalar variable.  The test results can also be emailed.
-The report can be modified and extended using report plugins.
+format or input as method arguments.  The test results can be
+displayed on the terminal, directed to a file, stored in a scalar
+variable.  The test results can also be emailed.  The report can be
+modified and extended using report plugins.
 
 Each URL/web file is tested by fetching it from the web server using a
 local instance of an HTTP user agent.  The basic test is simply
@@ -81,7 +75,7 @@ tests for the minimum and maximum number of bytes in the returned
 page.  You may also specify tests for the minimum and maximum web
 server response time.
 
-Data flow for C<HTTP::WebTest> using a remote URL:
+Data flow for C<HTTP::WebTest>:
 
           --------------              -------------
           |            |              |           |
@@ -99,35 +93,7 @@ Data flow for C<HTTP::WebTest> using a remote URL:
           -------------               |          |
                                       ------------
 
-Data flow diagram for C<HTTP::WebTest> using a local web file:
-
-          --------------           ---------------------
-          |            |           |                   |
-          | Input      |           |  Web page code    |
-          | parameters |           |  (Perl/HTML/etc.) |
-          |            |           |                   |
-          --------------           ---------------------
-              |                              |
-              |  -----------------------------
-              |  |
-              V  V                ------------------------
-          -------------           |                      |
-          |           |---------->| Temporary Apache     |
-          |  WebTest  |           | directories (htdocs, |
-          |           |<----------| conf, logs)          |
-          -------------           |                      |
-              |  ^                ------------------------
-              |  |                        |    ^
-              V  |                        V    |
-          ------------             ----------------------
-          |          |   request   |                    |
-          |   HTTP   |------------>| Temporary local    |
-          |   user   |             | instance of Apache |
-          |   agent  |<------------|                    |
-          |          |   response  ----------------------
-          ------------
-
-=head2 Getting Started
+=head2 Getting started
 
 This module has complex functionality, but using it to run simple
 tests is simple.  Create a file of test parameters in the
@@ -321,12 +287,12 @@ Some examples of syntax:
 
 =head3 Examples of wtscript files
 
-The parameters below specify tests of a local file and a remote URL.
-The tests specified by the C<text_forbid> parameter apply to both the
-"MyCompany home page" and the "Yahoo home page" tests.  Hence, if
-either returned page contains one of the case-insensitive strings in
-text_forbid, the test fails.  If any test fails or the fetch of the URL
-fails, an e-mail will be sent to tester@mycompany.com.
+The parameters below specify tests.  The tests specified by the
+C<text_forbid> parameter apply to both the "MyCompany home page" and
+the "Yahoo home page" tests.  Hence, if either returned page contains
+one of the case-insensitive strings in text_forbid, the test fails.
+If any test fails or the fetch of the URL fails, an e-mail will be
+sent to tester@mycompany.com.
 
 
     apache_exec = /usr/sbin/apache
@@ -355,41 +321,15 @@ fails, an e-mail will be sent to tester@mycompany.com.
         max_rtime = 30.0
     end_test
 
-The parameters below specify a test of a local file containing Perl
-code using the L<Apache::ASP|Apache::ASP> module.  The C<includes.htm>
-file requires five include files and two Perl modules, which are
-copied using the C<include_file_path> parameter.
-
-    apache_exec = /usr/sbin/apache
-    ignore_case = yes
-    include_file_path = ( footer.inc => htdocs/apps/myapp/inc
-                          header.inc => htdocs/apps/myapp/inc
-                          head.inc   => htdocs/apps/myapp/inc
-                          go.script  => htdocs/shared/includes
-                          go.include => htdocs/shared/includes
-                          ../utils/DBconn.pm  => lib/perl/utils
-                          ../utils/Window.pm  => lib/perl/utils
-                        )
-
-    test_name = includes.htm
-        file_path = ( includes.htm => apps/myapp )
-        min_bytes = 33000
-        max_bytes = 35000
-        text_require = ( input type=hidden name=control value= )
-        text_forbid  = ( Premature end of script headers
-                         an error occurred while processing this directive
-                       )
-    end_test
-
 =head2 Calling HTTP::WebTest from a Perl program
 
 If you are using the Perl API of C<HTTP::WebTest>, the test parameters
 can be defined as an array of hashes.
 
-Each hash in the array defines tests for one URL or local web file.  Keys
-in the hashes are test parameter names and values in hashes are values of
-test parameters.  Optional global test parameters can be
-passed in a hash passed as the second argument.
+Each hash in the array defines tests for one URL.  Keys in the hashes
+are test parameter names and values in hashes are values of test
+parameters.  Optional global test parameters can be passed in a hash
+passed as the second argument.
 
 Subroutine references can be specified instead of test parameter values.
 Referenced subroutines are called during test run when
@@ -422,7 +362,7 @@ C<tester@mycompany.com>.
     use HTTP::WebTest;
 
     my $tests = [
-                 { name         => 'Yahoo home page',
+                 { test_name    => 'Yahoo home page',
                    url          => 'http://www.yahoo.com',
                    text_require => [ '<a href=r/qt>Quotations</a>...<br>' ],
                    min_bytes    => 13000,
@@ -436,11 +376,12 @@ C<tester@mycompany.com>.
                    ignore_case    => 'yes',
                  };
 
+    my $webtest = new HTTP::WebTest;
     $webtest->run_tests($tests, $params);
 
 =head1 PLUGIN MODULES
 
-=head2 Core Plugin Modules
+=head2 Core plugin modules
 
 C<HTTP::WebTest> is implemented in a modular structure that allows programmers
 to easily add modules to run additional tests or define additional simple
@@ -449,10 +390,6 @@ C<HTTP::WebTest> provides a number of core plugin modules which are
 loaded by default:
 
 =over 4
-
-=item L<HTTP::WebTest::Plugin::Apache|HTTP::WebTest::Plugin::Apache>
-
-This plugin supports testing web files using a local instance of Apache.
 
 =item L<HTTP::WebTest::Plugin::ContentSizeTest|HTTP::WebTest::Plugin::ContentSizeTest>
 
@@ -492,7 +429,7 @@ match selected text or regular expressions.
 Information about test parameters supported by core plugins is
 summarized below in the section L<TEST PARAMETERS|TEST PARAMETERS>.
 
-=head2 Other Plugin Modules Bundled With HTTP::WebTest
+=head2 Other plugin modules bundled with HTTP::WebTest
 
 Following plugin modules come with HTTP::WebTest but they are not
 loaded by default.  To use such plugin module load it using global
@@ -525,7 +462,20 @@ without writing a plugin module.
 Information about test parameters supported by add-on plugin modules
 is summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
 
-=head2 Writing Plugin Modules
+=head2 Plugin modules released separately from HTTP::WebTest
+
+Following additional C<HTTP::WebTest> plugins are avialable separately
+from CPAN.
+
+=over 4
+
+=item L<HTTP::WebTest::Plugin::Apache|HTTP::WebTest::Plugin::Apache>
+
+This plugin supports testing web files using a local instance of Apache.
+
+=back
+
+=head2 Writing plugin modules
 
 See L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> for
 information about writing L<HTTP::WebTest|HTTP::WebTest> plugin modules.
@@ -563,73 +513,6 @@ C<yes>, C<no>
 =head3 Default value
 
 C<yes>
-
-=head2 apache_dir
-
-I<GLOBAL PARAMETER>
-
-Absolute or relative path name of directory containing Apache files.
-See the L<APACHE DIRECTORY AND FILES|/"APACHE DIRECTORY AND FILES">
-section.  This parameter is ignored unless the C<file_path> parameter
-is specified.
-
-=head3 Default value
-
-C</usr/local/etc/http-webtest>
-
-=head2 apache_exec
-
-I<GLOBAL PARAMETER>
-
-Absolute or relative path name of Apache executable.  This command can
-be in your C<$PATH>.  This parameter is ignored unless the
-C<file_path> parameter is specified.
-
-=head3 Default value
-
-C</usr/sbin/apache>
-
-=head2 apache_loglevel
-
-I<GLOBAL PARAMETER>
-
-Apache logging level.  If you use a level less than C<warn> (i.e.,
-C<debug>, C<info>, or C<notice>), the program may generate irrelevant
-errors.  This parameter is ignored unless the C<file_path> parameter
-is specified.  See also the C<ignore_error_log> parameter.
-
-=head3 Allowed values
-
-C<debug>, C<info>, C<notice>, C<warn>, C<error>, C<crit>, C<alert>,
-C<emerg>
-
-=head3 Default value
-
-C<warn>
-
-=head2 apache_max_wait
-
-I<GLOBAL PARAMETER>
-
-Maximum number of seconds to wait for Apache to start.  This parameter
-is ignored unless the C<file_path> parameter is specified.
-
-=head3 Default value
-
-C<60>
-
-=head2 apache_options
-
-I<GLOBAL PARAMETER>
-
-Additional Apache command line options.  Many of the options cause
-Apache to exit immediately after starting, so the web page tests will
-not run.  This parameter is ignored unless the C<file_path> parameter
-is specified.
-
-=head3 Allowed values
-
-See Apache documentation
 
 =head2 auth
 
@@ -1001,19 +884,6 @@ This is not really a parameter, it is part of
 L<wtscript format|Running HTTP::WebTest using a parameter file>.
 It marks the end of test block.
 
-=head2 error_log
-
-I<GLOBAL PARAMETER>
-
-The pathname of a local web server error log.  The module counts the
-number of lines in the error log before and after each request.  If
-the number of lines increases, an error is counted and the additional
-lines are listed in the report.  This argument should be used only
-when the local web server is running in single-process mode.
-Otherwise, requests generated by other processes/users may add lines
-to the error log that are not related to the requests generated by
-this module.  See also parameter C<ignore_error_log>.
-
 =head2 fh_out
 
 I<GLOBAL PARAMETER>
@@ -1024,22 +894,6 @@ C<output_ref> is specified also.
 
 This parameter can be used only when passing the test parameters
 as arguments from a calling Perl script.
-
-=head2 file_path
-
-If L<HTTP::WebTest|HTTP::WebTest> encounters parameter C<file_path> it
-switches in local web file test mode.  In local web file test mode it
-launches an instance of Apache daemon, copies local test file(s) under
-DocumentRoot of this Apache and performs test checks against it.
-
-=head3 Allowed values
-
-Two-element list.  First element is the file to test, either an
-absolute or a relative pathname.  Second element is the subdirectory
-pathname, relative to the Apache htdocs directory, to copy the file
-to.  The copied file will have the same basename as the first element
-and the relative pathname of the second element.  To copy the file
-directly to the htdocs directory, use a pathname of C<.> or C<./.>.
 
 =head2 form_name
 
@@ -1086,48 +940,6 @@ C<yes>, C<no>
 =head3 Default value
 
 C<no>
-
-=head2 ignore_error_log
-
-Option to ignore any errors found in the Apache error log.  The
-default behavior is to flag an error if the fetch causes any errors to
-be added to the error log and echo the errors to the program output.
-This check is available only if C<error_log> parameter is specified.
-See also the C<apache_loglevel> parameter.
-
-=head3 Allowed values
-
-C<yes>, C<no>
-
-=head3 Default value
-
-C<no>
-
-=head2 include_file_path
-
-List with an even number of elements.  Odd-numbered elements are files
-to copy to the the temporary Apache directory before running the
-tests.  These files can be specified using either an absolute or a
-relative pathname.  Even-numbered elements are the subdirectory
-pathname, relative to the Apache ServerRoot directory, to copy the
-corresponding file to.  The copied file will have the same basename as
-the odd-numbered element and the relative pathname of the
-corresponding even-numbered element.  To copy the file directly to the
-ServerRoot directory, use a pathname of C<.> or C<./.>.
-
-For example:
-
-    include_file_path = (/home/tester/inc/header.inc => htdocs/includes)
-
-will copy the file to htdocs/includes/header.inc.
-
-This parameter is also useful for adding Perl modules that are needed
-by the web page specified by the file_path parameter.  For example:
-
-    include_file_path = ( ../apps/myapp/DBconn.pm => lib/perl/apps )
-
-will copy the Perl module DBconn.pm to a directory that is in the
-Perl @INC array.
 
 =head2 mail
 
@@ -1329,8 +1141,7 @@ If the method key is set to C<POST>, some values may be defined as
 lists.  In this case L<HTTP::WebTest|HTTP::WebTest> uses
 C<multipart/form-data> content type used for C<Form-based File Upload>
 as specified in RFC 1867.  Each parameter with list value is treated
-as file part specification specification with the following
-interpretation:
+as file part specification with the following interpretation:
 
     ( FILE, FILENAME, HEADER => VALUE... )
 
@@ -1352,6 +1163,8 @@ specified than basename of C<FILE> is used.
 
 Additional optional headers for file part.
 
+=back
+
 Example (wtscript file):
 
     url = http://www.server.com/upload.pl
@@ -1361,8 +1174,6 @@ Example (wtscript file):
 
 It generates HTTP request with C</home/ilya/file.txt> file included
 and reported under name C<myfile.txt>.
-
-=back
 
 =head2 pauth
 
@@ -1412,6 +1223,19 @@ For more information, see L<perldoc perlre|perlre> or see Programming Perl,
 3rd edition, Chapter 5.
 
 See also the C<text_require> and C<ignore_case> parameters.
+
+=head2 relative_urls
+
+If set to C<yes> than C<HTTP-WebTest> supports relative URLs.  See
+test parameter C<url> for more information.
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<no>
 
 =head2 send_cookies
 
@@ -1520,10 +1344,26 @@ page.
 
 See also the C<regex_require> and C<ignore_case> parameters.
 
+=head2 timeout
+
+Set the timeout value in seconds.
+
+=head3 Default value
+
+C<180>
+
 =head2 url
 
-URL to test.  If schema part of URL is omitted (i.e. URL doesn't start
-with C<http://>, C<ftp://>, etc) then C<http://> is implied.
+URL to test.
+
+If test parameter C<relative_urls> is set to C<yes> than URL for each
+test is treated as relative to the URL in the previous test.  URL in
+the first test is treated as relative to C<http://localhost>.
+
+If test parameter C<relative_urls> is set to C<no> than each URL is
+treated as absolute.  In this case if schema part of URL is omitted
+(i.e. URL doesn't start with C<http://>, C<ftp://>, etc) then
+C<http://> is implied.
 
 =head2 user_agent
 
@@ -1539,56 +1379,15 @@ where C<NN> is version number of HTTP-WebTest.
 
 =cut
 
-
-
-=head1 APACHE DIRECTORY AND FILES
-
-A tree of directories with templates of Apache config files is
-required to run local web file tests.
-
-The C<apache_dir> parameter must be set to the name of a directory
-that contains the subdirectories C<conf>, C<logs> and C<htdocs>.  The
-C<conf> subdirectory must contain a file named C<httpd.conf-dist>.
-The C<htdocs> subdirectory must contain a subdirectory named
-C<webtest> that contains a file named C<is_apache_responding.html>.
-If your installation of Apache has the Perl module
-L<Apache::ASP|Apache::ASP> configured, the C<apache_dir> directory
-must also contain a subdirectory named C<asp_tmp>.
-
-The file C<httpd.conf-dist> is used as template for the Apache config
-file.  It contains tags which are replaced with the values needed by
-the Apache server that the program starts at runtime.
-
-=over 4
-
-=item * Please_do_not_modify_PORT
-
-To be replaced with port number on which Apache runs during tests.
-
-=item * Please_do_not_modify_HOST_NAME
-
-To be replace with Apache host name.
-
-=item * Please_do_not_modify_SERVER_ROOT
-
-To be replaced with Apache server root.
-
-=item * Please_do_not_modify_LOG_LEVEL
-
-To be replaced with Apache log level.
-
-=back
-
-=cut
-
 =head1 RESTRICTIONS / BUGS
 
 This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
-etc.) but it should work on Win32 systems.  (Exception: local file tests
-don't work on Win32 systems.)
-The module's HTTP requests time out after 3 minutes (the default value
-for L<LWP::UserAgent|LWP::UserAgent>).  If the C<file_path> parameter is
-specified, Apache must be installed.
+etc.) but it should work on Win32 systems.
+
+If you want to test https:// web sites you may have to install
+additional modules to enable SSL support in L<LWP>.  In short you may
+have to install L<Crypt::SSLeay> module.  For details see README.SSL
+file in L<LWP> distro.
 
 =head1 AUTHORS
 
@@ -1606,7 +1405,7 @@ C<HTTP::WebTest> mail list (see SUPPORT, next section).
 Please email bug reports, suggestions, questions, etc. to the SourceForge
 C<HTTP::WebTest> maillist.
 You can sign up at
-http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
+http://lists.sourceforge.net/lists/listinfo/http-webtest-general .
 The email address is C<http-webtest-general@lists.sourceforge.net>.
 
 =head1 COPYRIGHT

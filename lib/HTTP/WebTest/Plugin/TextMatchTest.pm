@@ -1,4 +1,4 @@
-# $Id: TextMatchTest.pm,v 1.6 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: TextMatchTest.pm,v 1.7 2002/12/12 23:22:10 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::TextMatchTest;
 
@@ -86,7 +86,7 @@ sub check_response {
     my $self = shift;
 
     # response content
-    my $content = $self->webtest->last_response->content;
+    my $content = $self->webtest->current_response->content;
 
     $self->validate_params(qw(ignore_case
                               text_forbid text_require

@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.12 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: Plugin.pm,v 1.13 2002/12/12 23:22:15 m_ilya Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -100,8 +100,8 @@ sub test_param {
     my $global_value = $self->webtest->global_test_param($param);
 
     my $value;
-    if(defined $self->webtest->last_test) {
-	$value = $self->webtest->last_test->param($param);
+    if(defined $self->webtest->current_test) {
+	$value = $self->webtest->current_test->param($param);
 	$value = defined $value ? $value : $global_value;
     } else {
 	$value = $global_value;

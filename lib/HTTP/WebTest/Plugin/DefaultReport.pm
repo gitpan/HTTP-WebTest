@@ -1,4 +1,4 @@
-# $Id: DefaultReport.pm,v 1.8 2002/07/31 09:07:12 m_ilya Exp $
+# $Id: DefaultReport.pm,v 1.9 2002/12/12 23:22:14 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::DefaultReport;
 
@@ -155,8 +155,8 @@ sub report_test {
     my $terse        = lc $self->test_param('terse', 'no');
 
     my $url = 'N/A';
-    if($self->webtest->last_request) {
-	$url = $self->webtest->last_request->uri;
+    if($self->webtest->current_request) {
+	$url = $self->webtest->current_request->uri;
     }
 
     return if $terse eq 'summary';
@@ -170,7 +170,7 @@ sub report_test {
 
     my $not_ok_num = 0;
 
-    for my $result (@{$self->webtest->last_results}) {
+    for my $result (@{$self->webtest->current_results}) {
 	# test results
 	my $group_comment = $$result[0];
 
@@ -202,8 +202,8 @@ FORMAT
     # true if show_*** parameters should take effect
     my $show_xxx = $terse eq 'failed_only' ? $not_ok_num > 0 : 1;
 
-    my $response = $self->webtest->last_response;
-    my $request = $self->webtest->last_request;
+    my $response = $self->webtest->current_response;
+    my $request = $self->webtest->current_request;
 
     if($show_headers and $show_xxx) {
 	# show all headers

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: pod_merge.PL,v 1.3 2002/06/20 18:18:40 m_ilya Exp $
+# $Id: pod_merge.PL,v 1.5 2002/12/13 01:35:27 m_ilya Exp $
 
 use 5.006;
 
@@ -9,7 +9,8 @@ use strict;
 use File::Find;
 use File::Spec;
 
-require 't/utils.pl';
+use lib qw(lib);
+use HTTP::WebTest::SelfTest;
 
 my ($sourcedir, $in_file, $out_file) = @ARGV;
 
@@ -71,12 +72,8 @@ s/\s*$/\n\n/ for @sections;
             @sections;
 $sections{params} = join '', @sections;
 
-# find Apache Directory and Files section
-my $apache_pm = File::Spec->catfile($sourcedir, qw(HTTP WebTest Plugin Apache.pm));
-$sections{apache} = file_scan($apache_pm, 'apache');
-
 # replace sections in out file
-for my $type (qw(params apache)) {
+for my $type (qw(params)) {
     my $regex = section_replace_re($type);
     $merged_data =~ s/$regex/$sections{$type}/xs;
 }

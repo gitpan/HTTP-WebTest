@@ -1,4 +1,4 @@
-# $Id: StatusTest.pm,v 1.7 2002/08/17 12:40:17 m_ilya Exp $
+# $Id: StatusTest.pm,v 1.8 2002/12/12 23:22:11 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::StatusTest;
 
@@ -45,8 +45,8 @@ sub check_response {
 
     $self->validate_params(qw(status_code));
 
-    my $code = $self->webtest->last_response->code;
-    my $status_line = $self->webtest->last_response->status_line;
+    my $code = $self->webtest->current_response->code;
+    my $status_line = $self->webtest->current_response->status_line;
 
     my $expected_code = $self->test_param('status_code', RC_OK);
     my $ok = $code eq $expected_code;

@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.21 2002/08/17 10:24:20 m_ilya Exp $
+# $Id: API.pm,v 1.26 2002/12/12 23:22:16 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API.  That's right
 package HTTP::WebTest;
@@ -91,8 +91,8 @@ sub run_tests {
 
     $self->reset_plugins;
 
-    # reset last test object
-    $self->last_test(undef);
+    # reset current test object
+    $self->current_test(undef);
 
     # convert tests to canonic representation
     my @tests = $self->convert_tests(@$tests);
@@ -122,15 +122,14 @@ sub run_tests {
 	redo unless $done;
     }
 
-    # run all tests
-    for my $i (0 .. @{$self->tests} - 1) {
+    # run all tests: note that content and length of @{$self->tests}
+    # may change inside the loop so idiomatic "for my $i (...)"
+    # doesn't work here
+    for(my $i = 0; $i < @{$self->tests}; $i ++) {
 	my $test = $self->tests->[$i];
-	$self->last_test_num($i);
+	$self->current_test_num($i);
 	$self->run_test($test, $self->_global_test_params);
     }
-
-    # reset last test object
-    $self->last_test(undef);
 
     # end tests hook
     for my $plugin (@{$self->plugins}) {
@@ -409,8 +408,7 @@ sub default_plugins {
 
     my @plugins = ();
 
-    for my $sn_package (qw(Loader
-                           SetRequest Cookies Apache
+    for my $sn_package (qw(Loader SetRequest Cookies
                            StatusTest TextMatchTest
                            ContentSizeTest ResponseTimeTest
                            DefaultReport)) {
@@ -442,67 +440,67 @@ sub global_test_param {
     return $self->_global_test_params->{$param};
 }
 
-=head2 last_test_num ()
+=head2 current_test_num ()
 
 =head3 Returns
 
-The number of the current test or, if no test is running, the last test run.
+The number of the current test or, if no test is running, the current test run.
 
 =cut
 
-*last_test_num = make_access_method('LAST_TEST_NUM');
+*current_test_num = make_access_method('CURRENT_TEST_NUM');
 
-=head2 last_test ()
+=head2 current_test ()
 
 =head3 Returns
 
 The L<HTTP::WebTest::Test|HTTP::WebTest::Test> object which corresponds
-to the current test or, if no test is running, the last test run.
+to the current test or, if no test is running, the current test run.
 
 =cut
 
-*last_test = make_access_method('LAST_TEST');
+*current_test = make_access_method('CURRENT_TEST');
 
-=head2 last_request ()
+=head2 current_request ()
 
 =head3 Returns
 
-The L<HTTP::WebTest::Request|HTTP::WebTest::Request> object used in last test.
+The L<HTTP::WebTest::Request|HTTP::WebTest::Request> object used in current test.
 
 =cut
 
-sub last_request { shift->last_test->request(@_) }
+sub current_request { shift->current_test->request(@_) }
 
-=head2 last_response ()
+=head2 current_response ()
 
 =head3 Returns
 
-The L<HTTP::Response|HTTP::Response> object used in last test.
+The L<HTTP::Response|HTTP::Response> object used in current test.
 
 =cut
 
-sub last_response { shift->last_test->response(@_) }
+sub current_response { shift->current_test->response(@_) }
 
-=head2 last_response_time ()
+=head2 current_response_time ()
 
 =head3 Returns
 
-The response time for the last request.
+The response time for the HTTP request used in current test.
 
 =cut
 
-sub last_response_time { shift->last_test->response_time(@_) }
+sub current_response_time { shift->current_test->response_time(@_) }
 
-=head2 last_results ()
+=head2 current_results ()
 
 =head3 Returns
 
 A reference to an array that contains the results of checks made by plugins
-for the last test.
+for the current test.
 
 =cut
 
-sub last_results { shift->last_test->results(@_) }
+sub current_results { shift->current_test->results(@_) }
 
 =head2 run_test ($test, $optional_params)
 
@@ -531,7 +529,7 @@ sub run_test {
 
     # convert test to canonic representation
     $test = $self->convert_tests($test);
-    $self->last_test($test);
+    $self->current_test($test);
 
     $self->_global_test_params($params);
 
@@ -539,7 +537,7 @@ sub run_test {
     # set in plugins)
     my $request = HTTP::WebTest::Request->new('GET' =>
 					      'http://MISSING_HOSTNAME/');
-    $self->last_request($request);
+    $self->current_request($request);
 
     # set request object with plugins
     for my $plugin (@{$self->plugins}) {
@@ -558,13 +556,13 @@ sub run_test {
 
     # get response
     my $response = $self->user_agent->request($request);
-    $self->last_response($response);
+    $self->current_response($response);
 
     # measure current time
     my $time2 = time;
 
     # calculate response time
-    $self->last_response_time($time2 - $time1);
+    $self->current_response_time($time2 - $time1);
 
     # init results
     my @results = ();
@@ -575,8 +573,7 @@ sub run_test {
 	    push @results, $plugin->check_response;
 	}
     }
-
-    $self->last_results(\@results);
+    $self->current_results(\@results);
 
     # report test results
     for my $plugin (@{$self->plugins}) {

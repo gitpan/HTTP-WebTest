@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.14 2002/08/22 07:39:38 m_ilya Exp $
+# $Id: 02-generic.t,v 1.22 2002/12/12 23:22:08 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -11,13 +11,9 @@ use HTTP::Status;
 use Test;
 
 use HTTP::WebTest;
+use HTTP::WebTest::SelfTest;
 
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL);
-
-BEGIN { plan tests => 32 }
+BEGIN { plan tests => 35 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -593,6 +589,87 @@ my $WEBTEST = HTTP::WebTest->new;
 		      server_url => $URL,
 		      tests => $tests,
 		      check_file => "t/test.out/handle-redirects-$bool");
+    }
+}
+
+# 33: test adding new tests in runtime
+{
+    # sub to tweak test queue in runtime
+    my $sub = sub {
+	my $webtest = shift;
+
+	# append a new test at the end of the queue
+	push @{$webtest->tests},
+	     $webtest->convert_tests({ url => abs_url($URL, '/test-file2'),
+				       text_require => [ qw(begin 644) ],
+				     });
+
+	# insert a new test after the current test
+	splice @{$webtest->tests}, $webtest->current_test_num + 1,
+	       0, $webtest->convert_tests({ url => abs_url($URL, '/status-forbidden') });
+
+	# formally this sub is used to calculate URL param in runtime
+	return abs_url($URL, '/test-file1');
+    };
+
+    my $tests = [ { url => $sub,
+		    text_require => [ qw(abcde) ],
+		  }
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/runtime-insert');
+}
+
+# 34: test relative_urls parameter
+{
+    my $opts = { relative_urls => 'yes' };
+
+    my $tests = [ { url => abs_url($URL, '/test-file1') },
+		  { url => '/test-file1' },
+		  { url => 'test-file2' },
+		  { url => 'yyy/zzz' },
+		  { url => 'aaa' },
+		  { url => '../ccc' },
+		  { url => './test-file1' } ];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  opts => $opts,
+		  check_file => 't/test.out/relative_urls');
+}
+
+# 35: run timeout tests
+{
+    if(defined $ENV{TEST_FAST}) {
+	skip('skip: long response time tests are disabled', 1);
+    } else {
+	my $tests = [ { url => abs_url($URL, '/sleep-2'),
+			max_rtime => 10,
+			timeout => 4 },
+		      { url => abs_url($URL, '/sleep-3'),
+			max_rtime => 10,
+			timeout => 2 },
+		      { url => abs_url($URL, '/sleep-4'),
+			max_rtime => 10,
+			timeout => 1 },
+		    ];
+
+	my $out_filter = sub {
+	    $_[0] =~ s|( Response \s+ time \s+ \( \s+ )
+                       ( \d+ \. ) ( \d+ )
+                       ( \s+ \) )
+                      |"$1$2" . ('0' x length($3)) . "$4"|xge;
+	};
+
+	check_webtest(webtest => $WEBTEST,
+		      server_url => $URL,
+		      tests => $tests,
+		      check_file => 't/test.out/timeout',
+		      out_filter => $out_filter);
     }
 }
 

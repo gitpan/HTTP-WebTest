@@ -1,20 +1,16 @@
 #!/usr/bin/perl -w
 
-# $Id: 11-delay.t,v 1.2 2002/07/25 08:33:16 m_ilya Exp $
+# $Id: 11-delay.t,v 1.5 2002/12/12 21:43:10 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Delay plugin
 
 use strict;
 use HTTP::Status;
 use Test;
-
-use HTTP::WebTest;
 use Time::HiRes qw(gettimeofday);
 
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL $TEST);
+use HTTP::WebTest;
+use HTTP::WebTest::SelfTest;
 
 BEGIN { plan tests => 4 }
 

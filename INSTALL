@@ -1,19 +1,27 @@
-$Id: INSTALL,v 1.5 2002/06/15 21:44:06 m_ilya Exp $
+$Id: INSTALL,v 1.10 2002/12/14 16:57:08 m_ilya Exp $
 
 PREREQUISITES
 
 * Perl 5.005 or later
-* File::Temp (is included in Perl 5.6.1 and later)
 * libwww 5.60 or later
-* libnet
-* Text::Balanced
+* libnet (is included in Perl 5.8.0 and later)
+* Test::Builder (is included in Perl 5.8.0 and later)
+* Text::Balanced (is included in Perl 5.8.0 and later)
 * Pod::Usage (is included in Perl 5.6.1 and later)
 * Pod::Man 1.14 (is included in Perl 5.6.1 and later)
-* Time::HiRes
+* Time::HiRes (is included in Perl 5.8.0 and later)
+
+If you want SSL support you need one of these modules
+
+* Crypt::SSLeay
+* IO::Socket::SSL
+
+See README.SSL file in libwww distro for details.
 
 If you want to run test suite ('make test') you need also
 
 * Algorithm::Diff
+* Test::Builder::Tester
 
 INSTALLATION
 

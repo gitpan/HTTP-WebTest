@@ -1,8 +1,8 @@
 package Bundle::HTTP::WebTest;
 
-# $Id: WebTest.pm,v 1.3 2002/06/19 10:28:21 m_ilya Exp $
+# $Id: WebTest.pm,v 1.7 2002/12/14 16:55:16 m_ilya Exp $
 
-$VERSION = '0.01';
+$VERSION = '0.03';
 
 =head1 NAME
 
@@ -18,7 +18,9 @@ Algorithm::Diff - only required to run C<make test>
 
 CGI::Cookie
 
-File::Temp
+Crypt::SSLeay - SSL support
+
+HTTP::WebTest
 
 LWP
 
@@ -33,6 +35,10 @@ Pod::Usage
 Pod::Man
 
 Time::HiRes
+
+Test::Builder
+
+Test::Builder::Tester - only required to run C<make test>
 
 URI
 

@@ -1,4 +1,4 @@
-# $Id: HelloWorld.pm,v 1.1.1.1 2002/01/24 12:26:18 m_ilya Exp $
+# $Id: HelloWorld.pm,v 1.2 2002/12/12 23:22:07 m_ilya Exp $
 
 package HelloWorld;
 
@@ -9,7 +9,7 @@ use base qw(HTTP::WebTest::Plugin);
 sub check_response {
     my $self = shift;
 
-    my $path = $self->webtest->last_request->uri->path;
+    my $path = $self->webtest->current_request->uri->path;
 
     my $ok = $path eq '/hello';
 

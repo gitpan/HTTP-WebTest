@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.14 2002/08/17 10:26:18 m_ilya Exp $
+# $Id: SetRequest.pm,v 1.19 2002/12/12 23:22:11 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -25,10 +25,31 @@ use base qw(HTTP::WebTest::Plugin);
 
 =for pod_merge copy params
 
+=head2 relative_urls
+
+If set to C<yes> than C<HTTP-WebTest> supports relative URLs.  See
+test parameter C<url> for more information.
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<no>
+
 =head2 url
 
-URL to test.  If schema part of URL is omitted (i.e. URL doesn't start
-with C<http://>, C<ftp://>, etc) then C<http://> is implied.
+URL to test.
+
+If test parameter C<relative_urls> is set to C<yes> than URL for each
+test is treated as relative to the URL in the previous test.  URL in
+the first test is treated as relative to C<http://localhost>.
+
+If test parameter C<relative_urls> is set to C<no> than each URL is
+treated as absolute.  In this case if schema part of URL is omitted
+(i.e. URL doesn't start with C<http://>, C<ftp://>, etc) then
+C<http://> is implied.
 
 =head2 method
 
@@ -82,8 +103,7 @@ If the method key is set to C<POST>, some values may be defined as
 lists.  In this case L<HTTP::WebTest|HTTP::WebTest> uses
 C<multipart/form-data> content type used for C<Form-based File Upload>
 as specified in RFC 1867.  Each parameter with list value is treated
-as file part specification specification with the following
-interpretation:
+as file part specification with the following interpretation:
 
     ( FILE, FILENAME, HEADER => VALUE... )
 
@@ -105,6 +125,8 @@ specified than basename of C<FILE> is used.
 
 Additional optional headers for file part.
 
+=back
+
 Example (wtscript file):
 
     url = http://www.server.com/upload.pl
@@ -114,8 +136,6 @@ Example (wtscript file):
 
 It generates HTTP request with C</home/ilya/file.txt> file included
 and reported under name C<myfile.txt>.
-
-=back
 
 =head2 auth
 
@@ -162,10 +182,19 @@ C<yes>, C<no>
 
 C<yes>
 
+=head2 timeout
+
+Set the timeout value in seconds.
+
+=head3 Default value
+
+C<180>
+
 =cut
 
 sub param_types {
     return q(url              uri
+             relative_urls    yesno
 	     method           scalar('^(?:GET|POST)$')
  	     params           hashlist
 	     auth             list('scalar','scalar')
@@ -173,7 +202,8 @@ sub param_types {
 	     pauth            list('scalar','scalar')
 	     http_headers     hashlist
              user_agent       scalar
-             handle_redirects yesno);
+             handle_redirects yesno
+             timeout          scalar);
 }
 
 sub prepare_request {
@@ -183,14 +213,16 @@ sub prepare_request {
     my $user_agent = $self->webtest->user_agent;
 
     # get request object
-    my $request = $self->webtest->last_request;
+    my $request = $self->webtest->current_request;
 
-    $self->validate_params(qw(url method params
+    $self->validate_params(qw(url relative_urls method params
                               auth proxies pauth
-                              http_headers user_agent));
+                              http_headers user_agent
+                              handle_redirects timeout));
 
     # get various params we handle
     my $url              = $self->test_param('url');
+    my $relative_urls    = $self->yesno_test_param('relative_urls');
     my $method           = $self->test_param('method');
     my $params           = $self->test_param('params');
     my $auth             = $self->test_param('auth');
@@ -199,10 +231,25 @@ sub prepare_request {
     my $headers          = $self->test_param('http_headers');
     my $ua_name          = $self->test_param('user_agent');
     my $handle_redirects = $self->yesno_test_param('handle_redirects', 1);
+    my $timeout          = $self->test_param('timeout', 180);
 
-    # fix broken url
+    # set LWP's timeout
+    $self->webtest->user_agent->timeout($timeout);
+
+    # normalize uri
     if(defined $url) {
-	$url = "http://" . $url unless $url =~ m|^\w+://|;
+	if($relative_urls) {
+	    my $current_test_num = $self->webtest->current_test_num;
+
+	    my $prev_url = $current_test_num > 0 ?
+		           $self->webtest->tests->[$current_test_num - 1]->request->uri :
+			   'http://localhost/';
+
+	    $url = URI->new_abs($url, $prev_url);
+	} else {
+	    # add shema part if it is missing
+	    $url = "http://" . $url unless $url =~ m|^\w+://|;
+	}
     }
 
     # set request uri

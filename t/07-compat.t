@@ -1,20 +1,15 @@
 #!/usr/bin/perl -w
 
-# $Id: 07-compat.t,v 1.2 2002/02/21 01:02:10 m_ilya Exp $
+# $Id: 07-compat.t,v 1.6 2002/12/13 00:50:45 m_ilya Exp $
 
 # This script tests backward compatiblity with HTTP::WebTest 1.xx
 
 use strict;
 use HTTP::Status;
-use IO::File;
 use Test;
 
 use HTTP::WebTest qw(run_web_test);
-
-require 't/config.pl';
-require 't/utils.pl';
-
-use vars qw($HOSTNAME $PORT $URL);
+use HTTP::WebTest::SelfTest;
 
 BEGIN { plan tests => 10 }
 

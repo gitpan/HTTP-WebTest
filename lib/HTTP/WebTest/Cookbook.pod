@@ -134,6 +134,7 @@ C<click_button>:
 This Perl script reads a test specification from file C<test.wt> and
 generates L<Test::Harness|Test::Harness> compatible output:
 
+    use Test::More qw(no_plan);
     use HTTP::WebTest;
 
     my $webtest = new HTTP::WebTest;
@@ -142,6 +143,15 @@ generates L<Test::Harness|Test::Harness> compatible output:
                              default_report => 'no',
                              plugins        => [ '::HarnessReport' ]
                            });
+
+This script uses reporting plugin
+L<HTTP::WebTest::Plugin::HarnessReport|HTTP::WebTest::Plugin::HarnessReport>
+which internally uses L<Test::Builder|Test::Builder> module to
+generate L<Test::Harness|Test::Harness> compatible output.  It should
+be compatible with other testing libraries built using
+L<Test::Builder|Test::Builder> (like L<Test::More|Test::More> or
+L<Test::Differences|Test::Differences>) so you can freely intermix
+them in one test script.
 
 =head2 User-Defined Tests
 
@@ -208,7 +218,7 @@ the database record using the record ID from C<Add Record>.
             my $webtest = shift;
 
             # find ID in the returned page
-            ($ID) = $webtest->last_response->content =~ /ID=(\d+)/;
+            ($ID) = $webtest->current_response->content =~ /ID=(\d+)/;
 
             # because no checks are defined a reference on empty array
             # must be returned
