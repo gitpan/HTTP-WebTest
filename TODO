@@ -1,18 +1,16 @@
-$Id: TODO,v 1.1.2.62 2002/01/06 00:48:36 ilya Exp $
+$Id: TODO,v 1.1.2.73 2002/01/12 00:12:03 ilya Exp $
 
 My current TODO:
 
-* port .wt parsing code (somewhat finished - syntax checks are missing)
+* write cookbook
+
+* separate global and normal test parameters in reference
+
+* reread all docs to check if it makes any sense
 
 * polish local mode tests - they are *very* non portable now
 
 * add support for interactive queries for auth and pauth params
-
-* write tutorial
-
-* add test parameters which allows to load third party plugins
-
-* write plugin writer guide
 
 * test, test, test and test it with code and .wt files which were
   written for stable HTTP-WebTest
@@ -21,7 +19,7 @@ My current TODO:
 
 * automated tests for mail sending
 
-* plugin for page validation with HTML::Validate
+* plugin for page validation with HTML::Validator
 
 * report plugin with output compatible with Test::Harness (using
   Test::Builder ?)
@@ -31,3 +29,9 @@ My current TODO:
 * simple navigation using link names and button names (with HTML::Form)
 
 * HTTP proxy which autogenerates skeleton of test file
+
+* support for file upload tests
+
+* HTML formated reports
+
+* Report plugin which stores all responses as local files.

@@ -1,4 +1,4 @@
-# $Id: DefaultReport.pm,v 1.1.2.30 2002/01/05 23:19:55 ilya Exp $
+# $Id: DefaultReport.pm,v 1.1.2.33 2002/01/13 03:48:02 ilya Exp $
 
 package HTTP::WebTest::Plugin::DefaultReport;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin::DefaultReport;
 
 HTTP::WebTest::Plugin::DefaultReport - Default test report plugin.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not Applicable
 
@@ -104,10 +104,10 @@ sub validate_test {
 # accessor for temporary buffer
 *tempout_ref = make_access_method('TEMPOUT_REF', sub { my $s = ''; \$s } );
 
-sub report_header {
+sub start_tests {
     my $self = shift;
 
-    $self->SUPER::report_header;
+    $self->SUPER::start_tests;
 
     # reset temporary output storage
     $self->tempout_ref(undef);
@@ -142,8 +142,8 @@ sub report_test {
 
 	my @results = @$result[1 .. @$result - 1];
 
-	if(defined $terse and $terse eq 'failed_only') {
-	    @results = grep +(not $_), @results;
+	if(defined($terse) and $terse eq 'failed_only') {
+	    @results = grep +(not $_->ok), @results;
 	}
 
 	next unless @results;
@@ -204,7 +204,7 @@ FORMAT
     ${$self->tempout_ref} .= $out;
 }
 
-sub report_footer {
+sub end_tests {
     my $self = shift;
 
     $self->print("Failed  Succeeded  Test Name\n");
@@ -243,7 +243,7 @@ FORMAT
     $self->print("Total web tests failed: $total_fail_num ",
 		 " succeeded: $total_suc_num\n");
 
-    $self->SUPER::report_footer;
+    $self->SUPER::end_tests;
 }
 
 # formated output

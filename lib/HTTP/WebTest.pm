@@ -1,4 +1,4 @@
-# $Id: WebTest.pm,v 1.1.2.59 2002/01/06 01:53:31 ilya Exp $
+# $Id: WebTest.pm,v 1.1.2.70 2002/01/13 03:52:27 ilya Exp $
 
 package HTTP::WebTest;
 
@@ -87,16 +87,18 @@ Data flow diagram for C<HTTP::WebTest> using a local web file:
 
 If you are new to C<HTTP::WebTest 2.xx> you should read:
 
-L<HTTP::WebTest::Reference docs|HTTP::WebTest::Reference> -
+L<perldoc HTTP::WebTest::Reference|HTTP::WebTest::Reference> -
 description of test specification, list of test types and reports
 provided by default plugins.
 
-L<HTTP::WebTest::Plugins docs|HTTP::WebTest::Plugins> - for developers
-of C<HTTP::WebTest> plugins.
+L<perldoc HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook> - examples
+of wtscript files and example of C<HTTP::WebTest> API usage.
 
-Those documents cover basic usage of C<HTTP::WebTest>. Read this
-document further if you want to learn advanced capabilites provided by
-Perl API of C<HTTP::WebTest>.
+L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> - for
+developers of C<HTTP::WebTest> plugins.
+
+Those documents cover basic usage of C<HTTP::WebTest>. This document
+describes Perl API of C<HTTP::WebTest>.
 
 =head1 METHODS
 
@@ -118,7 +120,7 @@ use HTTP::WebTest::Test;
 
 use vars qw($VERSION);
 
-$VERSION = '1.99_00';
+$VERSION = '1.99_01';
 
 # BACKWARD COMPATIBILITY BITS - exported sub is from 1.xx API
 
@@ -241,7 +243,8 @@ sub default_plugins {
 
     my @plugins = ();
 
-    for my $sn_package (qw(SetRequest Cookies Apache
+    for my $sn_package (qw(Loader
+                           SetRequest Cookies Apache
                            StatusTest TextMatchTest
                            ContentSizeTest ResponseTimeTest
                            DefaultReport)) {
@@ -291,7 +294,7 @@ A request object used in last test.
 
 =cut
 
-*last_request = make_access_method('LAST_REQUEST');
+sub last_request { shift->last_test->request(@_) }
 
 =head2 last_response
 
@@ -301,7 +304,7 @@ A response object returned for last request.
 
 =cut
 
-*last_response = make_access_method('LAST_RESPONSE');
+sub last_response { shift->last_test->response(@_) }
 
 =head2 last_response_time
 
@@ -311,7 +314,7 @@ A response time for last request.
 
 =cut
 
-*last_response_time = make_access_method('LAST_RESPONSE_TIME');
+sub last_response_time { shift->last_test->response_time(@_) }
 
 =head2 last_results
 
@@ -357,16 +360,12 @@ sub run_test {
 
     # check test params
     my %checks = $self->validate_test($test);
-    my $broken_test = grep { not $_->ok } values %checks;
+    # be sure that checks are sorted by param name
+    my @broken = grep { not $_->ok } map $checks{$_}, sort keys %checks;
 
-    if($broken_test) {
-	# be sure that checks are sorted by param name
-	my @checks = map $checks{$_}, sort keys %checks;
-
-	$self->last_request(undef);
-	$self->last_response(undef);
-	$self->last_response_time(undef);
-	$self->last_results([ [ 'Test parameters error', @checks ] ]);
+    if(@broken) {
+	$self->last_test->reset;
+	$self->last_results([ [ 'Test parameters error', @broken ] ]);
     } else {
 	# create request (note that actual url is more likely to be
 	# set in plugins)
@@ -439,16 +438,21 @@ sub run_tests {
     my $tests = shift;
     my $params = shift || {};
 
+    $self->reset_plugins;
+
+    # reset last test object
+    $self->last_test(undef);
+
     # convert tests to canonic representation
     my @tests = $self->convert_tests(@$tests);
 
     $self->tests([ @tests ]);
     $self->_global_test_params($params);
 
-    # report header
+    # start tests hook
     for my $plugin (@{$self->plugins}) {
-	if($plugin->can('report_header')) {
-	    $plugin->report_header;
+	if($plugin->can('start_tests')) {
+	    $plugin->start_tests;
 	}
     }
 
@@ -457,10 +461,13 @@ sub run_tests {
 	$self->run_test($test, $self->_global_test_params);
     }
 
-    # report footer
+    # reset last test object
+    $self->last_test(undef);
+
+    # end tests hook
     for my $plugin (@{$self->plugins}) {
-	if($plugin->can('report_footer')) {
-	    $plugin->report_footer;
+	if($plugin->can('end_tests')) {
+	    $plugin->end_tests;
 	}
     }
 }
@@ -786,9 +793,9 @@ modified under the terms of the Perl Artistic License.
 
 =head1 SEE ALSO
 
-L<HTTP::WebTest::Tutorial|HTTP::WebTest::Tutorial>
-
 L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
+
+L<HTTP::WebTest::Reference|HTTP::WebTest::Cookbook>
 
 L<HTTP::WebTest::Plugins|HTTP::WebTest::Plugins>
 

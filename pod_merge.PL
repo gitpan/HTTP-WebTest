@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: pod_merge.PL,v 1.1.2.2 2002/01/05 23:20:07 ilya Exp $
+# $Id: pod_merge.PL,v 1.1.2.3 2002/01/13 02:38:16 ilya Exp $
 
 use strict;
 
@@ -18,10 +18,10 @@ my $out_ref_file = File::Spec->catfile($libdir, qw(HTTP WebTest Reference.pod));
 
 # get list of plugins
 my @plugins = (File::Spec->catfile($sourcedir, qw(HTTP WebTest ReportPlugin.pm)));
-find({ no_chdir => 1,
-       wanted => sub {
-	   return unless -f and /\.pm$/;
-	   push @plugins, $_;
+find({ wanted => sub {
+	   my $name = $File::Find::name;
+	   return unless -f $name and $name =~ /\.pm$/;
+	   push @plugins, $name;
        } },
     $plugin_dir);
 

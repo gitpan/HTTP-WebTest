@@ -16,7 +16,7 @@ $Config{'startperl'} -w
 !GROK!THIS!
 
 print OUT <<'!NO!SUBS!';
-# $Id: wt.PL,v 1.1.2.7 2002/01/06 01:47:19 ilya Exp $
+# $Id: wt.PL,v 1.1.2.10 2002/01/12 00:16:51 ilya Exp $
 
 =head1 NAME
 
@@ -93,6 +93,8 @@ L<HTTP::WebTest|HTTP::WebTest>
 
 L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
 
+L<HTTP::WebTest::Reference|HTTP::WebTest::Cookbook>
+
 =cut
 
 use strict;
@@ -101,9 +103,7 @@ use Pod::Usage;
 use Getopt::Long;
 use HTTP::WebTest 1.96;
 
-use sigtrap qw(die normal-signals);
-
-my $VERSION = 1.00;
+my $VERSION = '1.00';
 
 my $man = 0;
 my $help = 0;

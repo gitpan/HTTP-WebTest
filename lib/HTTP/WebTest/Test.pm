@@ -1,4 +1,4 @@
-# $Id: Test.pm,v 1.1.2.9 2002/01/02 15:27:16 ilya Exp $
+# $Id: Test.pm,v 1.1.2.10 2002/01/07 01:16:43 ilya Exp $
 
 package HTTP::WebTest::Test;
 
@@ -20,6 +20,12 @@ HTTP::WebTest::Test - Test object class
     $test->result->[0] = $result;
     $test->results([ @results ]);
 
+    my $request = $test->request;
+    $test->request($request);
+    my $response = $test->response;
+    $test->response($response);
+    my $response_time = $test->response_time;
+    $test->response_time($response_time);
 
 =head1 DESCRIPTION
 
@@ -97,6 +103,47 @@ L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects.
 
 *results = make_access_method('RESULTS', sub { [] });
 
+=head2 request ($optional_request)
+
+Can set L<HTTP::Request|HTTP::Request> object for this
+C<HTTP::WebTest::Test> object if parameter C<$optional_request> is
+passed.
+
+=head3 Returns
+
+A L<HTTP::Request|HTTP::Request> object.
+
+=cut
+
+*request = make_access_method('REQUEST');
+
+=head2 response ($optional_response)
+
+Can set L<HTTP::Response|HTTP::Response> object for this
+C<HTTP::WebTest::Test> object if parameter C<$optional_response> is
+passed.
+
+=head3 Returns
+
+A L<HTTP::Response|HTTP::Response> object.
+
+=cut
+
+*response = make_access_method('RESPONSE');
+
+=head2 response_time ($optional_response_time)
+
+Can set response time for this C<HTTP::WebTest::Test> object if
+parameter C<$optional_response_time> is passed.
+
+=head3 Returns
+
+A response time.
+
+=cut
+
+*response_time = make_access_method('RESPONSE_TIME');
+
 =head2 convert ($test)
 
 Tries to convert test definition in some form into
@@ -123,6 +170,21 @@ sub convert {
     return $conv_test;
 }
 
+=head2 reset
+
+Resets test object
+
+=cut
+
+sub reset {
+    my $self = shift;
+
+    $self->request(undef);
+    $self->response(undef);
+    $self->response_time(undef);
+    $self->results(undef);
+}
+
 =head1 COPYRIGHT
 
 Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
@@ -135,6 +197,10 @@ modified under the terms of the Perl Artistic License.
 L<HTTP::WebTest|HTTP::WebTest>
 
 L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult>
+
+L<HTTP::Request|HTTP::Request>
+
+L<HTTP::Response|HTTP::Response>
 
 =cut
 

@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.1.2.14 2002/01/05 23:19:55 ilya Exp $
+# $Id: ReportPlugin.pm,v 1.1.2.16 2002/01/07 00:42:58 ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -141,18 +141,19 @@ sub print {
     }
 }
 
-=head2 report_header
+=head2 start_tests
 
 This method is called by L<HTTP::WebTest|HTTP::WebTest> at the begin
-of test run. It inits output buffer for test report.
+of test run. Its implementation in this class inits output buffer for
+test report.
 
 If you redefine this method in subclass be sure to call
 it in new method:
 
-    sub report_header {
+    sub start_tests {
         my $self = shift;
 
-        $self->SUPER::report_header;
+        $self->SUPER::start_tests;
 
         # your code here
         ....
@@ -160,34 +161,34 @@ it in new method:
 
 =cut
 
-sub report_header {
+sub start_tests {
     my $self = shift;
 
     # reset temporary output storage
     $self->test_output(undef);
 }
 
-=head2 report_footer
+=head2 end_tests
 
 This method is called by L<HTTP::WebTest|HTTP::WebTest> at the end of
-test run. It can mail test report according test parameters
-C<mail***>.
+test run. Its implementation in this class can email test report
+according test parameters C<mail***>.
 
 If you redefine this method in subclass be sure to call
 it in new method:
 
-    sub report_footer {
+    sub end_tests {
         my $self = shift;
 
         # your code here
         ....
 
-        $self->SUPER::report_footer;
+        $self->SUPER::end_tests;
     }
 
 =cut
 
-sub report_footer {
+sub end_tests {
     my $self = shift;
 
     my $mail_addresses = $self->test_param('mail_addresses');

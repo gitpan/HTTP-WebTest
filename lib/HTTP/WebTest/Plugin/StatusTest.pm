@@ -1,4 +1,4 @@
-# $Id: StatusTest.pm,v 1.1.2.5 2002/01/02 15:50:37 ilya Exp $
+# $Id: StatusTest.pm,v 1.1.2.6 2002/01/13 02:46:15 ilya Exp $
 
 package HTTP::WebTest::Plugin::StatusTest;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin::StatusTest;
 
 HTTP::WebTest::Plugin::StatusTest - Checks HTTP response status
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not Applicable
 

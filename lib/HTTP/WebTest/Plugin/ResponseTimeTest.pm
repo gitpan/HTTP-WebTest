@@ -1,4 +1,4 @@
-# $Id: ResponseTimeTest.pm,v 1.1.2.8 2002/01/03 18:25:53 ilya Exp $
+# $Id: ResponseTimeTest.pm,v 1.1.2.9 2002/01/13 02:47:58 ilya Exp $
 
 package HTTP::WebTest::Plugin::ResponseTimeTest;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin::ResponseTimeTest;
 
 HTTP::WebTest::Plugin::ResponseTimeTest - Tests for response time
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not Applicable
 

@@ -10,12 +10,12 @@ URL: http://http.web.test/show-cookies
     <webtest>=<This is the cookie value>                         SUCCEED
 
   PAGE CONTENT:
-<c6>=<v6>
-<c7>=<v7>
 <c1>=<v1>
 <c3>=<v3>
 <c4>=<v4>
 <c5>=<v5>
+<c6>=<v6>
+<c7>=<v7>
 <webtest>=<This is the cookie value>
 
 

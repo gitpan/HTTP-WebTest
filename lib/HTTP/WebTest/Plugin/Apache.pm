@@ -1,4 +1,4 @@
-# $Id: Apache.pm,v 1.1.2.24 2002/01/03 16:13:20 ilya Exp $
+# $Id: Apache.pm,v 1.1.2.25 2002/01/13 02:47:58 ilya Exp $
 
 package HTTP::WebTest::Plugin::Apache;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin::Apache;
 
 HTTP::WebTest::Plugin::Apache - Local web file tests plugin
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not Applicable
 

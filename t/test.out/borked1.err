@@ -1,0 +1,2 @@
+HTTP::WebTest: wtscript parsing error
+Line 6: Test parameter or test block is expected near ( borked test )

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 04-apache.t,v 1.1.2.25 2001/08/17 10:22:45 ilya Exp $
+# $Id: 04-apache.t,v 1.1.2.26 2002/01/07 02:02:45 ilya Exp $
 
 # This script tests local web files test mode
 
@@ -134,7 +134,7 @@ unless(defined $APACHE_EXEC) {
 		  tests => [ $TEST ],
 		  server_hostname => 'localhost',
 		  check_file => 't/test.out/apache1');
-    my $response = $WEBTEST->last_response;
+    my $response = $WEBTEST->tests->[-1]->response;
     ok($response->header('Server') eq 'Apache');
 }
 
@@ -148,7 +148,7 @@ unless(defined $APACHE_EXEC) {
 		  tests => [ $TEST ],
 		  server_hostname => 'localhost',
 		  check_file => 't/test.out/apache1');
-    my $response = $WEBTEST->last_response;
+    my $response = $WEBTEST->tests->[-1]->response;
     ok($response->header('Server') =~ m|^Apache/\d+(?:\.\d+)*$|x);
 }
 

@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.1.2.20 2002/01/03 16:13:20 ilya Exp $
+# $Id: SetRequest.pm,v 1.1.2.21 2002/01/13 02:47:58 ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin::SetRequest;
 
 HTTP::WebTest::Plugin::SetRequest - Initializes test HTTP request
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not Applicable
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.1.2.4 2001/11/20 01:34:44 ilya Exp $
+# $Id: 02-generic.t,v 1.1.2.5 2002/01/13 03:14:16 ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -375,8 +375,19 @@ sub server_sub {
 
 	# find all cookies in headers
 	for my $cookie_list ($request->header('Cookie')) {
+	    my @cookies = ();
 	    for my $cookie (split /;\s*/, $cookie_list) {
 		my($name, $value) = split /=/, $cookie;
+		push @cookies, [ $name, $value ];
+	    }
+
+	    # ensure same order of cookies by sorting them; otherwise
+	    # it could return different results for different versions
+	    # of Perl
+	    @cookies = sort { $a->[0] cmp $b->[0] } @cookies;
+
+	    for my $cookie (@cookies) {
+		my($name, $value) = @$cookie;
 		$content .= "<$name>=<$value>\n";
 	    }
 	}

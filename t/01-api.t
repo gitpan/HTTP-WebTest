@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.1.2.16 2001/11/24 16:00:54 ilya Exp $
+# $Id: 01-api.t,v 1.1.2.18 2002/01/13 03:07:49 ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
@@ -79,7 +79,8 @@ my $WEBTEST = HTTP::WebTest->new;
     my $tests = [ { url => [] },
 		  { url => 'http://test.org',
 		    method => 'invalid' },
-		  { method => 'GET' },
+		  { url => 'http://this.uri.is/good',
+		    method => 'GET' },
 		  { method => 'post' },
 		  { auth => [1, 2] },
 		  { pauth => {} },
@@ -94,7 +95,11 @@ my $WEBTEST = HTTP::WebTest->new;
     for my $test (@$tests) {
 	my %checks = $WEBTEST->validate_test($test);
 
-	while(my($param, $result) = each %checks) {
+	# order of keys in hashes is different in various versions of
+	# Perl so we sort hash values by key to make sure that this
+	# test works on all versions of Perl
+	for my $param (sort keys %checks) {
+	    my $result = $checks{$param};
 	    $res .= "$param\n";
 	    $res .= "Comment: " . $result->comment . "\n";
 	    $res .= "Ok: " . ($result->ok ? 'yes' : 'no') . "\n";

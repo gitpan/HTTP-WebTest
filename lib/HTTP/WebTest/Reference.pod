@@ -1,4 +1,4 @@
-# $Id: Reference.pod,v 1.1.2.8 2002/01/06 01:52:48 ilya Exp $
+# $Id: Reference.pod,v 1.1.2.9 2002/01/12 00:16:51 ilya Exp $
 
 =head1 NAME
 
@@ -280,6 +280,8 @@ modified under the terms of the Perl Artistic License.
 =head1 SEE ALSO
 
 L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::Reference|HTTP::WebTest::Cookbook>
 
 L<wt|wt>
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 06-parser.t,v 1.1.2.5 2001/11/20 01:55:16 ilya Exp $
+# $Id: 06-parser.t,v 1.1.2.6 2002/01/08 03:30:57 ilya Exp $
 
 # This script tests wt scripts parser
 
@@ -12,7 +12,7 @@ use HTTP::WebTest::Parser;
 
 require 't/utils.pl';
 
-BEGIN { plan tests => 24 }
+BEGIN { plan tests => 27 }
 
 # 1-24: check parsing wt script (contain all syntax variants)
 {
@@ -48,4 +48,25 @@ BEGIN { plan tests => 24 }
     ok($opts->{text_forbid}[1] eq 'syntax');
     ok($opts->{text_forbid}[2] eq 'for list');
     ok($opts->{text_forbid}[3] eq 'elements');
+}
+
+# 25-27: check error handling for borked wtscript files
+parse_error_check('t/borked1.wt', 't/test.out/borked1.err');
+parse_error_check('t/borked2.wt', 't/test.out/borked2.err');
+parse_error_check('t/borked3.wt', 't/test.out/borked3.err');
+
+sub parse_error_check {
+    my $wtscript = shift;
+    my $check_file = shift;
+
+    eval {
+	my $data = read_file($wtscript);
+	my ($tests, $opts) = HTTP::WebTest::Parser->parse($data);
+    };
+    if($@) {
+	my $text = $@;
+	compare_output(check_file => $check_file, output_ref => \$text);
+    } else {
+	ok(0);
+    }
 }

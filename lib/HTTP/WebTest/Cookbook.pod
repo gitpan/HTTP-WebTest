@@ -1,0 +1,28 @@
+=head1 NAME
+
+HTTP::WebTest::Cookbook - recipes of tests for every day
+
+=head1 SYNOPSIS
+
+Not Applicable
+
+=head1 DESCRIPTION
+
+TODO
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+
+This module is free software.  It may be used, redistributed and/or
+modified under the terms of the Perl Artistic License.
+
+=head1 SEE ALSO
+
+L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
+
+L<wt|wt>
+
+=cut

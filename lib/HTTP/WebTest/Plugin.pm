@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.1.2.28 2002/01/02 15:27:16 ilya Exp $
+# $Id: Plugin.pm,v 1.1.2.31 2002/01/13 02:47:58 ilya Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin;
 
 HTTP::WebTest::Plugin - Base class for HTTP::WebTest plugins.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not applicable.
 
@@ -75,9 +75,14 @@ sub test_param {
     my $default = shift;
 
     my $global_value = $self->webtest->global_test_param($param);
-    my $value = $self->webtest->last_test->param($param);
 
-    $value = $self->merge_param($value, $global_value);
+    my $value;
+    if(defined $self->webtest->last_test) {
+	$value = $self->webtest->last_test->param($param);
+	$value = $self->merge_param($value, $global_value);
+    } else {
+	$value = $global_value;
+    }
 
     return $default unless defined $value;
     return $value;
@@ -192,6 +197,9 @@ sub param_types { {} }
 
 =head2 check_anything ($value)
 
+Method which checks test parameter if it is value is of C<anything>
+type.
+
 =head3 Returns
 
 Always true.
@@ -201,6 +209,9 @@ Always true.
 sub check_anything { 1 }
 
 =head2 check_list ($value)
+
+Method which checks test parameter if it is value is of C<list>
+type.
 
 =head3 Returns
 
@@ -217,6 +228,9 @@ sub check_list {
 
 =head2 check_string ($value)
 
+Method which checks test parameter if it is value is of C<string>
+type.
+
 =head3 Returns
 
 True if C<$value> is a string. False otherwise.
@@ -232,6 +246,9 @@ sub check_string {
 
 =head2 check_stringref ($value)
 
+Method which checks test parameter if it is value is of C<stringref>
+type.
+
 =head3 Returns
 
 True if C<$value> is a string reference. False otherwise.
@@ -246,6 +263,9 @@ sub check_stringref {
 }
 
 =head2 check_uri ($value)
+
+Method which checks test parameter if it is value is of C<uri>
+type.
 
 =head3 Returns
 
@@ -264,6 +284,9 @@ sub check_uri {
 }
 
 =head2 check_hashlist ($value)
+
+Method which checks test parameter if it is value is of C<hashlist>
+type.
 
 =head3 Returns
 
@@ -284,6 +307,9 @@ sub check_hashlist {
 }
 
 =head2 check_yesno ($value)
+
+Method which checks test parameter if it is value is of C<yesno>
+type.
 
 =head3 Returns
 

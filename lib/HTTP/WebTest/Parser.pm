@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.1.2.8 2002/01/02 15:27:16 ilya Exp $
+# $Id: Parser.pm,v 1.1.2.10 2002/01/08 03:41:19 ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -25,20 +25,38 @@ use strict;
 use IO::File;
 use Parse::RecDescent;
 
+use vars qw(@ERRORS);
+
+# array where parser stores error messages
+@ERRORS = ();
+
 # wtscript grammar
 my $parser = new Parse::RecDescent (q{
     file: chunk(s) eofile { [ @{$item[1]} ] }
+          | {
+                for my $error (@{$thisparser->{errors}}) {
+                    my ($text, $line) = @$error;
+                    push @HTTP::WebTest::Parser::ERRORS,
+                         "Line $line:$text\n";
+                }
+                $thisparser->{errors} = undef;
+            }
+
+    chunk: <rulevar: $short_text>
 
     chunk: comment
          | test
          | param
+         | <error: Test parameter or test block is expected near @{[$text =~ /(.*)/]}>
 
     comment: /#.*/ { [ 'comment', $item[1] ] }
 
     test: starttest testchunk(s) endtest
         { [ 'test', [ [ 'param', 'name', $item[1] ], @{$item[2]} ] ] }
 
-    testchunk: comment | param
+    testchunk: comment
+             | param
+             | <error: Test parameter or end of test block is expected near @{[$text =~ /(.*)/]}>
 
     starttest: 'test_name' '=' scalar { $item[3] }
 
@@ -84,8 +102,18 @@ sub parse {
     my $class = shift;
     my $content = shift;
 
+    # reset errors
+    @ERRORS = ();
+
+    # parse data
     my $data = $parser->file($content);
 
+    # check if we have any errors
+    if(@ERRORS) {
+	die "HTTP::WebTest: wtscript parsing error\n$ERRORS[0]";
+    }
+
+    # convert parsed data to test specification
     my @data = grep $_->[0] ne 'comment', @$data;
     my @params = grep $_->[0] eq 'param', @data;
     my @tests = grep $_->[0] eq 'test', @data;

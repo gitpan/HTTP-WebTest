@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.1.1.1.2.32 2002/01/05 23:59:20 ilya Exp $
+# $Id: Makefile.PL,v 1.1.1.1.2.34 2002/01/13 02:44:13 ilya Exp $
 
 use 5.005;
 
@@ -20,19 +20,21 @@ my $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>, ' .
 
 WriteMakefile( NAME         => 'HTTP::WebTest',
 	       VERSION_FROM => 'lib/HTTP/WebTest.pm',
-	       PREREQ_PM    => { 'Algorithm::Diff' => 0,
-				 'CGI::Cookie'     => 0,
-				 'File::Temp'      => 0,
-				 'HTTP::Cookies'   => 0,
-				 'HTTP::Daemon'    => 0,
-				 'HTTP::Request'   => 0,
-				 'HTTP::Status'    => 0,
-				 'LWP::UserAgent'  => 0,
-				 'MIME::Base64'    => 0,
-				 'Net::SMTP'       => 0,
-				 'Pod::Usage'      => 0,
-				 'Time::HiRes'     => 0,
-				 'URI'             => 0 },
+	       PREREQ_PM    => { 'Algorithm::Diff'   => 0,
+				 'CGI::Cookie'       => 0,
+				 'File::Temp'        => 0,
+				 'HTTP::Cookies'     => 0,
+				 'HTTP::Daemon'      => 0,
+				 'HTTP::Request'     => 0,
+				 'HTTP::Status'      => 0,
+				 'LWP::UserAgent'    => 0,
+				 'MIME::Base64'      => 0,
+				 'Net::SMTP'         => 0,
+				 'Parse::RecDescent' => 0,
+				 'Pod::Usage'        => 0,
+				 'Pod::Man'          => 1.14,
+				 'Time::HiRes'       => 0,
+				 'URI'               => 0 },
 	       realclean    => { FILES => $REALCLEAN },
 	       PL_FILES     => { map +("bin/$_.PL" => "bin/$_"), @PROGRAMS },
 	       EXE_FILES    => [ map {"bin/$_"} @PROGRAMS ],

@@ -1,4 +1,4 @@
-# $Id: ContentSizeTest.pm,v 1.1.2.10 2002/01/03 16:13:20 ilya Exp $
+# $Id: ContentSizeTest.pm,v 1.1.2.11 2002/01/13 02:47:58 ilya Exp $
 
 package HTTP::WebTest::Plugin::ContentSizeTest;
 
@@ -6,7 +6,7 @@ package HTTP::WebTest::Plugin::ContentSizeTest;
 
 HTTP::WebTest::Plugin::ContentSizeTest - Response body size checks
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Not Applicable
 

@@ -2,15 +2,18 @@ url
 Comment: Parameter url should be of uri type.
 Ok: no
 
-url
-Comment: Parameter url should be of uri type.
-Ok: yes
 method
 Comment: Request method should be either GET or POST.
 Ok: no
+url
+Comment: Parameter url should be of uri type.
+Ok: yes
 
 method
 Comment: Request method should be either GET or POST.
+Ok: yes
+url
+Comment: Parameter url should be of uri type.
 Ok: yes
 
 method
