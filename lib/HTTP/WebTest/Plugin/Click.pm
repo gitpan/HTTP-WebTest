@@ -1,4 +1,4 @@
-# $Id: Click.pm,v 1.17 2003/03/02 11:52:09 m_ilya Exp $
+# $Id: Click.pm,v 1.18 2003/09/05 20:01:51 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Click;
 
@@ -60,7 +60,7 @@ See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 =head2 form_name
 
 Give form name attribute (i.e. C<<form name="foo"E<gt>>) on previously
- requested HTML page, builds test request to the submitted page.
+requested HTML page, builds test request to the submitted page.
 
 Note that you still need to pass all form parameters yourself using
 C<params> test parameter.

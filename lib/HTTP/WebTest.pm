@@ -25,7 +25,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '2.03';
+$VERSION = '2.04';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -490,6 +490,18 @@ Report plugin for HTTP::WebTest, generates output in XML format.
 See L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> for
 information about writing L<HTTP::WebTest|HTTP::WebTest> plugin modules.
 
+=head1 ADD-ONS
+
+Besides L<additional plugins|Plugin modules released separately from HTTP::WebTest> other L<HTTP::WebTest|HTTP::WebTest> add-ons are available from CPAN:
+
+=over 4
+
+=item L<HTTP::WebTest::XMLParser|HTTP::WebTest::XMLParser>
+
+Parser of XML representation of wtscript.
+
+=back
+
 =head1 TEST PARAMETERS
 
 Most parameters can be used as both global and test block
@@ -910,7 +922,7 @@ as arguments from a calling Perl script.
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
 
 Give form name attribute (i.e. C<<form name="foo"E<gt>>) on previously
- requested HTML page, builds test request to the submitted page.
+requested HTML page, builds test request to the submitted page.
 
 Note that you still need to pass all form parameters yourself using
 C<params> test parameter.

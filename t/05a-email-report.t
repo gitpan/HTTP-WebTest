@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05a-email-report.t,v 1.1 2003/04/26 15:11:06 m_ilya Exp $
+# $Id: 05a-email-report.t,v 1.2 2003/09/05 19:33:40 m_ilya Exp $
 
 # Unit tests for HTTP::WebTest::ReportPlugin (email sending functionality)
 
@@ -46,7 +46,7 @@ my $REPORT_PLUGIN;
        "'mail' param is 'all' - always send email report");
 
     $GLOBAL_PARAMS{mail} = 'errors';
-    $WEBTEST->set_series(have_succeed => 0, 1);
+    $WEBTEST->set_series(have_succeed => 1, 0);
     ok(!$REPORT_PLUGIN->_email_report_is_expected(),
        "'mail' param is 'errors' - only send email report if failed tests");
     ok($REPORT_PLUGIN->_email_report_is_expected(),

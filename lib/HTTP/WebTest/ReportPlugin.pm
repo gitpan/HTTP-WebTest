@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.9 2003/04/26 15:13:26 m_ilya Exp $
+# $Id: ReportPlugin.pm,v 1.10 2003/09/05 19:32:18 m_ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -276,7 +276,7 @@ sub _email_report_is_expected {
 
     return unless defined $mail;
     return unless $mail eq 'all' or $mail eq 'errors';
-    return if $mail eq 'errors' and !$self->webtest->have_succeed;
+    return if $mail eq 'errors' and $self->webtest->have_succeed;
 
     return 1;
 }

@@ -1,6 +1,14 @@
-$Id: Changes,v 1.81 2003/07/14 19:20:43 m_ilya Exp $
+$Id: Changes,v 1.83 2003/09/05 20:06:12 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
+
+2.04 Fri Sep  5 2003
+
+BUG FIXES:
+
+* ReportPlugin.pm had a bug that it sended out email report even if
+mail parameter was set to "errors" and all tests passed.  Thanks to
+Naoki Shima for a patch.
 
 2.03 Mon Jul 14 2003
 
