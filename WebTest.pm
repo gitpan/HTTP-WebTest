@@ -153,7 +153,7 @@ use URI::URL;
 use vars qw($AUTHOR $Debug $VERSION);
 $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
-$VERSION = 0.20;
+$VERSION = 0.31;
  
 #############################
 # Constants (magic numbers) #
@@ -3718,7 +3718,7 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 0.20, release date 22 January 2001.
+This document describes version 0.31, release date 04 June 2001
 
 =head1 TODO
 

@@ -747,7 +747,7 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 0.20, release date 22 January 2001.
+This document describes version 0.31, release date 04 June 2001
 
 =head1 TODO
 

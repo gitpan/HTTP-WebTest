@@ -1080,7 +1080,7 @@ RESTRICTIONS / BUGS
     file must be stored on a local disk.
 
 VERSION
-    This document describes version 0.20, release date 22 January 2001.
+    This document describes version 0.31, release date 04 June 2001
 
 TODO
     Add option to validate HTML syntax using HTML::Validator. Add option to

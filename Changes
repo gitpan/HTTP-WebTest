@@ -23,3 +23,6 @@ Revision history for Perl extension HTTP::WebTest.
 
     * Improved clarity of documentation and program output.
 
+0.31  
+
+    * Corrected minor documentation error.
