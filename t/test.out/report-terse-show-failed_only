@@ -12,7 +12,7 @@ Test Name: N/A
 URL: http://http.web.test/non-existent
 
   STATUS CODE CHECK
-    404 Not Found                                                FAIL
+    Expected '200' and got: 404 Not Found                        FAIL
 
   REQUEST HEADERS:
 GET http://http.web.test/non-existent

@@ -6,7 +6,7 @@ Test Name: N/A
 URL: http://http.web.test/show-cookies
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     <webtest>=<This is the cookie value>                         SUCCEED
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.11 2002/07/24 22:17:47 m_ilya Exp $
+# $Id: 02-generic.t,v 1.14 2002/08/22 07:39:38 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -17,7 +17,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 29 }
+BEGIN { plan tests => 32 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -408,7 +408,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/subparam2');
 
     $tests = [ { url => abs_url($URL, '/show-request'),
-		 params => sub { my %h = ( qw(a b c d) ); \%h },
+		 params => sub { my @h = ( qw(a b c d) ); \@h },
 		 text_require => [ 'Query: <a=b&c=d>',
 				    sub { 'Method: <GET>' } ] }
 	     ];
@@ -558,6 +558,44 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/file-upload');
 }
 
+# 30: test 'status_code' test parameter
+{
+    my $tests = [ { url => abs_url($URL, '/status-code-200') },
+		  { url => abs_url($URL, '/status-code-400') },
+		  { url => abs_url($URL, '/status-code-200'),
+		    status_code => 400 },
+		  { url => abs_url($URL, '/status-code-400'),
+		    status_code => 400 },
+		  { url => abs_url($URL, '/status-code-401'),
+		    status_code => 401 },
+		  { url => abs_url($URL, '/status-code-401'),
+		    status_code => 400 },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/status-code');
+}
+
+# 31-32: test 'handle_redirects' test parameter
+{
+    for my $bool (qw(yes no)) {
+	my $tests = [ { url => abs_url($URL, '/redirect'),
+			handle_redirects => $bool,
+			method => 'get' },
+		      { url => abs_url($URL, '/redirect'),
+			handle_redirects => $bool,
+			method => 'post' },
+		    ];
+
+	check_webtest(webtest => $WEBTEST,
+		      server_url => $URL,
+		      tests => $tests,
+		      check_file => "t/test.out/handle-redirects-$bool");
+    }
+}
+
 # try to stop server even we have been crashed
 END { stop_webserver($PID) if defined $PID }
 
@@ -582,12 +620,10 @@ sub server_sub {
 	$content .= 'Query: <' . ($request->url->query || '') . ">\n";
 	$content .= 'Content: <' . $request->content . ">\n";
 
-	# create response object
 	my $response = new HTTP::Response(RC_OK);
 	$response->header(Content_Type => 'text/plain');
 	$response->content($content);
 
-	# send it to browser
 	$connect->send_response($response);
     } elsif($path =~ m|^/sleep-(\d+(?:\.\d+)?)$|) {
 	my $sleep = $1;
@@ -597,19 +633,16 @@ sub server_sub {
 	my $name = $1;
 	my $value = $2;
 
-	# create cookie
 	my $cookie = new CGI::Cookie(-name => $name,
 				     -value => $value,
 				     -path => '/',
 				     -expires => '+1M' );
 
-	# create response object
 	my $response = new HTTP::Response(RC_OK);
 	$response->header(Content_Type => 'text/plain');
 	$response->header(Set_Cookie => $cookie->as_string);
 	$response->content('Set cookie test');
 
-	# send it to browser
 	$connect->send_response($response);
     } elsif($path eq '/show-cookies') {
 	my $content = '';
@@ -633,39 +666,31 @@ sub server_sub {
 	    }
 	}
 
-	# create response object
 	my $response = new HTTP::Response(RC_OK);
 	$response->header(Content_Type => 'text/plain');
 	$response->content($content);
 
-	# send it to browser
 	$connect->send_response($response);
     } elsif($path eq '/show-headers') {
 	my $content = $request->headers_as_string;
 
-	# create response object
 	my $response = new HTTP::Response(RC_OK);
 	$response->header(Content_Type => 'text/plain');
 	$response->content($content);
 
-	# send it to browser
 	$connect->send_response($response);
     } elsif($path eq '/show-agent') {
 	my $content = 'User agent: ' . $request->user_agent;
 
-	# create response object
 	my $response = new HTTP::Response(RC_OK);
 	$response->header(Content_Type => 'text/plain');
 	$response->content($content);
 
-	# send it to browser
 	$connect->send_response($response);
     } elsif($path eq '/redirect') {
-	# create response object
 	my $response = new HTTP::Response(RC_FOUND);
 	$response->header(Location => '/test-file1');
 
-	# send it to browser
 	$connect->send_response($response);
     } elsif($path =~ m|/auth-(\w+)-(\w+)-(\w+)|) {
 	my $realm = $1;
@@ -681,14 +706,17 @@ sub server_sub {
 	    $connect->send_file_response('t/test1.txt');
 	} else {
 	    # authorization is either missing or wrong
-
-	    # create response object
 	    my $response = new HTTP::Response(RC_UNAUTHORIZED);
 	    $response->header(WWW_Authenticate => "Basic realm=\"$realm\"");
 
-	    # send it to browser
 	    $connect->send_response($response);
 	}
+    } elsif($path =~ m|/status-code-(\d+)|) {
+	my $status_code = $1;
+
+	my $response = new HTTP::Response($status_code);
+
+	$connect->send_response($response);
     } else {
 	$connect->send_error(RC_NOT_FOUND);
     }

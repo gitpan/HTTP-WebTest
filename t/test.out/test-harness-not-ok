@@ -2,18 +2,18 @@
 
 # URL: http://http.web.test/test-file1
 # STATUS CODE CHECK
-#   200 OK: SUCCEED
+#   Expected '200' and got: 200 OK: SUCCEED
 # REQUIRED TEXT
 #   987654: SUCCEED
 ok
 
 # URL: http://http.web.test/non-existent
 # STATUS CODE CHECK
-#   404 Not Found: FAIL
+#   Expected '200' and got: 404 Not Found: FAIL
 not ok
 
 # URL: http://http.web.test/non-existent
 # Test Name: BlaBla
 # STATUS CODE CHECK
-#   404 Not Found: FAIL
+#   Expected '200' and got: 404 Not Found: FAIL
 not ok

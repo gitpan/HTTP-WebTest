@@ -1,6 +1,6 @@
 Failed  Succeeded  Test Name
-   0          2    *** no name ***
-   0          2    *** no name ***
+   0          1    *** no name ***
+   0          1    *** no name ***
 
 
 Test Name: N/A
@@ -8,8 +8,6 @@ URL: http://http.web.test/redirect
 
   STATUS CODE CHECK
     Expected '200' and got: 200 OK                               SUCCEED
-  REQUIRED TEXT
-    abcde                                                        SUCCEED
 
 
 Test Name: N/A
@@ -17,8 +15,6 @@ URL: http://http.web.test/redirect
 
   STATUS CODE CHECK
     Expected '200' and got: 200 OK                               SUCCEED
-  REQUIRED TEXT
-    abcde                                                        SUCCEED
 
 
-Total web tests failed: 0  succeeded: 4
+Total web tests failed: 0  succeeded: 2

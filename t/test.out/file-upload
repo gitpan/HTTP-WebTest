@@ -8,7 +8,7 @@ Test Name: N/A
 URL: http://http.web.test/show-request
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     Method: <POST>                                               SUCCEED
     Query: <>                                                    SUCCEED
@@ -21,7 +21,7 @@ Test Name: N/A
 URL: http://http.web.test/show-request
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     Method: <POST>                                               SUCCEED
     Query: <>                                                    SUCCEED
@@ -34,7 +34,7 @@ Test Name: N/A
 URL: http://http.web.test/show-request
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     Method: <POST>                                               SUCCEED
     Query: <>                                                    SUCCEED

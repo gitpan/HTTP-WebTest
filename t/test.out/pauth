@@ -9,28 +9,28 @@ Test Name: N/A
 URL: http://proxy.test/pauth-test-user-passwd
 
   STATUS CODE CHECK
-    407 Proxy Authentication Required                            FAIL
+    Expected '200' and got: 407 Proxy Authentication Required    FAIL
 
 
 Test Name: N/A
 URL: http://proxy.test/pauth-test-user-passwd
 
   STATUS CODE CHECK
-    407 Proxy Authentication Required                            FAIL
+    Expected '200' and got: 407 Proxy Authentication Required    FAIL
 
 
 Test Name: N/A
 URL: http://proxy.test/pauth-test-user-passwd
 
   STATUS CODE CHECK
-    407 Proxy Authentication Required                            FAIL
+    Expected '200' and got: 407 Proxy Authentication Required    FAIL
 
 
 Test Name: N/A
 URL: http://proxy.test/pauth-test-user-passwd
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     URL: <http://proxy.test/pauth-test-user-passwd>              SUCCEED
 

@@ -1,4 +1,4 @@
-# $Id: simple.wt,v 1.9 2002/06/22 20:08:38 m_ilya Exp $
+# $Id: simple.wt,v 1.10 2002/08/22 07:21:12 m_ilya Exp $
 
 # some comments here
 
@@ -19,6 +19,7 @@ test_name = Some name here
     url = www.dot.com
     regex_require = (
                       'Quoted text " test'
+                      # comment inside of list parameter
                       "We can => quote '"
                       "test \""
                       'test \''

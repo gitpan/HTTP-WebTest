@@ -89,6 +89,7 @@ t/test.out/click_button1
 t/test.out/click_button2
 t/test.out/click_button3
 t/test.out/click_button4
+t/test.out/click_button_image
 t/test.out/click_link1
 t/test.out/click_link2
 t/test.out/click_link3
@@ -100,6 +101,9 @@ t/test.out/cookie3
 t/test.out/default-report-yes
 t/test.out/delay
 t/test.out/file-upload
+t/test.out/form_name
+t/test.out/handle-redirects-no
+t/test.out/handle-redirects-yes
 t/test.out/http-headers
 t/test.out/on_response
 t/test.out/pauth
@@ -124,6 +128,7 @@ t/test.out/short-url
 t/test.out/show-headers
 t/test.out/size
 t/test.out/status
+t/test.out/status-code
 t/test.out/subparam1
 t/test.out/subparam2
 t/test.out/test-harness-not-ok
@@ -141,4 +146,6 @@ t/test2.txt
 t/test3.html
 t/test3.txt
 t/test4.html
+t/test5.html
+t/test6.html
 t/utils.pl

@@ -1,4 +1,4 @@
-# $Id: Hooks.pm,v 1.9 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: Hooks.pm,v 1.10 2002/08/22 08:37:41 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Hooks;
 
@@ -10,10 +10,16 @@ HTTP::WebTest::Plugin::Hooks - Provides callbacks called during test run
 
     plugins = ( ::Hooks )
 
+    # do some test sequence initialization
+    on_start = { My::init() }
+
+    # do some test sequence deinitialization
+    on_finish = { My::stop() }
+
     test_name = Name1
         ....
         # do some test initialization
-        on_request = { My::init() }
+        on_request = { My::local_init() }
     end_test
 
     test_name = Name2
@@ -47,10 +53,30 @@ use base qw(HTTP::WebTest::Plugin);
 
 =for pod_merge copy opt_params
 
+=head2 on_start
+
+The value of this test parameter is ignored.  However, it is evaluted
+before the test sequence is run, so it can be used to do initalization
+before the test sequence run.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
+=head2 on_finish
+
+The value of this test parameter is ignored.  However, it is evaluted
+before the test sequence is run, so it can be used to run finalization
+code when the test sequence is finished.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
 =head2 on_request
 
 The value of this test parameter is ignored.  However, it is evaluted
-before the HTTP request is done, so it can be used to do 
+before the HTTP request is done, so it can be used to do
 initalization before the request.
 
 =head2 on_response
@@ -80,8 +106,10 @@ See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 =cut
 
 sub param_types {
-    return q(on_request  anything
- 	     on_response test_results);
+    return q(on_start    anything
+             on_request  anything
+ 	     on_response test_results
+             on_finish   anything);
 }
 
 # implements check for parameter type 'test_results'
@@ -106,10 +134,24 @@ sub check_test_results {
     }
 }
 
+sub start_tests {
+    my $self = shift;
+
+    # both checks and evaluates test parameter
+    $self->validate_params(qw(on_start));
+}
+
+sub end_tests {
+    my $self = shift;
+
+    # both checks and evaluates test parameter
+    $self->validate_params(qw(on_finish));
+}
+
 sub prepare_request {
     my $self = shift;
 
-    # this both checks and evaluates test parameter
+    # both checks and evaluates test parameter
     $self->validate_params(qw(on_request));
 }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 09-hooks.t,v 1.2 2002/02/15 15:42:20 m_ilya Exp $
+# $Id: 09-hooks.t,v 1.3 2002/08/22 08:36:13 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Hooks plugin
 
@@ -18,7 +18,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL $TEST);
 
-BEGIN { plan tests => 7 }
+BEGIN { plan tests => 13 }
 
 # init tests
 my $COUNTER_FILE = 't/counter';
@@ -56,7 +56,8 @@ my $OPTS = { plugins => [ '::Hooks' ], default_report => 'no' };
     my $counter_value = undef;
 
     my $tests1 = [ { url => abs_url($URL, '/inc_counter'),
-		     on_response => sub { $counter_value = counter(); [] } } ];
+		     on_response => sub { $counter_value = counter(); [] } }
+		 ];
 
     $WEBTEST->run_tests($tests1, $OPTS);
     ok($counter_value == 1);
@@ -71,7 +72,7 @@ my $OPTS = { plugins => [ '::Hooks' ], default_report => 'no' };
     ok(counter() == 2);
 }
 
-# 7: test response parameter which returns some test results
+# 7: test on_response parameter returning some test results
 {
     my $tests = [ { url => abs_url($URL, '/inc_counter'),
 		    on_response => [ 'yes', 'Test 1' ] },
@@ -90,6 +91,58 @@ my $OPTS = { plugins => [ '::Hooks' ], default_report => 'no' };
 		  check_file => 't/test.out/on_response');
 }
 
+# 8-10: test on_start parameter
+{
+    init_counter();
+
+    my $counter_value1 = undef;
+    my $counter_value2 = undef;
+
+    my $opts = { %$OPTS,
+	         on_start => sub { inc_counter() } };
+
+    my $tests1 = [ { url => abs_url($URL, '/inc_counter'),
+		     on_request => sub { $counter_value1 = counter() } },
+		   { url => abs_url($URL, '/inc_counter'),
+		     on_request => sub { $counter_value2 = counter() } }
+		 ];
+
+    $WEBTEST->run_tests($tests1, $opts);
+    # this counter is set to one as it is increased by on_start hook
+    ok($counter_value1 == 1);
+    # this counter get ++ because it is increased by '/inc_counter' request
+    ok($counter_value2 == 2);
+    # this counter get ++ because it is increased by second
+    # '/inc_counter' request
+    ok(counter() == 3);
+}
+
+# 11-13: test on_finish parameter
+{
+    init_counter();
+
+    my $counter_value1 = undef;
+    my $counter_value2 = undef;
+
+    my $opts = { %$OPTS,
+	         on_finish => sub { inc_counter() } };
+
+    my $tests1 = [ { url => abs_url($URL, '/inc_counter'),
+		     on_request => sub { $counter_value1 = counter() } },
+		   { url => abs_url($URL, '/inc_counter'),
+		     on_request => sub { $counter_value2 = counter() } }
+		 ];
+
+    $WEBTEST->run_tests($tests1, $opts);
+    # this counter is set to zero as no '/inc_counter' request and no
+    # hook that increase counter are run
+    ok($counter_value1 == 0);
+    # this counter get ++ because it is increased by '/inc_counter' request
+    ok($counter_value2 == 1);
+    # this counter get += 2 because it is increased by second
+    # '/inc_counter' request and by on_finish hook
+    ok(counter() == 3);
+}
 
 # try to stop server even we have been crashed
 END { stop_webserver($PID) if defined $PID }

@@ -1,18 +1,18 @@
-$Id: TODO,v 1.20 2002/07/31 14:44:32 m_ilya Exp $
+$Id: TODO,v 1.27 2002/08/22 08:36:13 m_ilya Exp $
 
 My current TODO:
 
-* Add start/end test sequence hooks into Hook plugin
+* Consider using XPath expressions (in Click plugin and on their own)
 
 * rewrite HarnessReport plugin using Test::Builder
 
-* do not fail in make test if Algorithm::Diff is missing
-
 * support hidden fields in Click plugin
 
-* polish local mode tests - they are *very* non portable now
+* polish local mode tests - they are *very* non portable now (or just
+move Apache plugin in separate distro for the starters)
 
-* automated tests for mail sending
+* automated tests for mail sending (even better unit tests for all
+code)
 
 * plugin for page validation with HTML::Validator (HTML::Lint ? or both ?)
 
@@ -27,5 +27,7 @@ HTTP::RecorderSession framework)
 
 * Support including of test scripts into other test scripts
 
-* More work on cookbook. Example with $Test::dbh should be
-clarified. Probably I need one example of very simple plugin.
+* More work on cookbook. Probably I need one example of very simple
+plugin.
+
+* Add test name into errors text

@@ -8,7 +8,7 @@ URL: http://http.web.test/test.shtml
   APACHE ERROR LOG TEST
     Number of messages in Apache error log is zero ?             SUCCEED
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
 
 
 Total web tests failed: 0  succeeded: 2

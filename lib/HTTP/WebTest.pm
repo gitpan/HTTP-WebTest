@@ -26,7 +26,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_08';
+$VERSION = '1.99_09';
 # workaround for warning caused by underscore char in $VERSION
 $VERSION = eval $VERSION;
 
@@ -640,9 +640,9 @@ for web page access authorization.
 
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
 
-Given name of submit button (i.e. C<<input type="submit"E<gt>> tag
-inside of C<<formE<gt>> tag) on previosly requested HTML page, builds
-test request to the submitted page.
+Given name of submit button (i.e. C<<input type="submit"E<gt>> tag or
+C<<input type="image"E<gt>> inside of C<<formE<gt>> tag) on previously
+requested HTML page, builds test request to the submitted page.
 
 Note that you still need to pass all form parameters yourself using
 C<params> test parameter.
@@ -1041,6 +1041,30 @@ to.  The copied file will have the same basename as the first element
 and the relative pathname of the second element.  To copy the file
 directly to the htdocs directory, use a pathname of C<.> or C<./.>.
 
+=head2 form_name
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
+
+Give form name attribute (i.e. C<<form name="foo"E<gt>>) on previously
+ requested HTML page, builds test request to the submitted page.
+
+Note that you still need to pass all form parameters yourself using
+C<params> test parameter.
+
+=head2 handle_redirects
+
+If set to C<yes> then HTTP-WebTest automatically follows redirects.
+It means that you never see HTTP responses with status codes 301 and
+302.  This feature is disabled if this test parameter is set to C<no>.
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<yes>
+
 =head2 http_headers
 
 A list of HTTP header/value pairs.  Can be used to override default
@@ -1207,12 +1231,24 @@ Minimum web server response time (seconds) expected.
 
 Any number less than C<max_rtime> (if C<max_rtime> is specified).
 
+=head2 on_finish
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
+
+The value of this test parameter is ignored.  However, it is evaluted
+before the test sequence is run, so it can be used to run finalization
+code when the test sequence is finished.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
 =head2 on_request
 
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
 
 The value of this test parameter is ignored.  However, it is evaluted
-before the HTTP request is done, so it can be used to do 
+before the HTTP request is done, so it can be used to do
 initalization before the request.
 
 =head2 on_response
@@ -1236,6 +1272,18 @@ request is received.
 Here C<YESNO>, C<COMMENT> is a test result.  C<YESNO> is either
 C<yes> if test is successful or C<no> if it is not.  C<COMMENT> is a
 comment associated with this test.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
+=head2 on_start
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
+
+The value of this test parameter is ignored.  However, it is evaluted
+before the test sequence is run, so it can be used to do initalization
+before the test sequence run.
 
 =head3 Example
 
@@ -1421,6 +1469,14 @@ C<yes>, C<no>
 =head3 Default value
 
 C<no>
+
+=head2 status_code
+
+Given numeric HTTP Status Code, tests response returned that value.
+
+=head3 Default value
+
+C<200> (OK).
 
 =head2 terse
 

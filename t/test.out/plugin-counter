@@ -7,7 +7,7 @@ Test Name: N/A
 URL: http://http.web.test/hello
 
   STATUS CODE CHECK
-    404 Not Found                                                FAIL
+    Expected '200' and got: 404 Not Found                        FAIL
   COUNTER
     Counter value is a '11'                                      SUCCEED
 
@@ -16,7 +16,7 @@ Test Name: N/A
 URL: http://http.web.test/no-hello
 
   STATUS CODE CHECK
-    404 Not Found                                                FAIL
+    Expected '200' and got: 404 Not Found                        FAIL
   COUNTER
     Counter value is a '12'                                      SUCCEED
 

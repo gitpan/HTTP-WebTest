@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.20 2002/07/24 21:14:52 m_ilya Exp $
+# $Id: API.pm,v 1.21 2002/08/17 10:24:20 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API.  That's right
 package HTTP::WebTest;
@@ -368,9 +368,6 @@ sub create_user_agent {
 
     # create cookie jar
     $user_agent->cookie_jar(new HTTP::WebTest::Cookies);
-
-    # allow redirects after POST
-    push @{ $user_agent->requests_redirectable }, 'POST';
 
     return $user_agent;
 }

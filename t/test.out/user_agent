@@ -7,7 +7,7 @@ Test Name: N/A
 URL: http://http.web.test/show-agent
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     User agent: HTTP-WebTest/NN                              SUCCEED
 
@@ -16,7 +16,7 @@ Test Name: N/A
 URL: http://http.web.test/show-agent
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     User agent: Test Test                                        SUCCEED
 

@@ -9,7 +9,7 @@ Test Name: N/A
 URL: http://http.web.test/sleep-2
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   RESPONSE TIME CHECK
     Response time (  2.00 ) is > or =  1.00 ?                    SUCCEED
     Response time (  2.00 ) is < or =  3.00 ?                    SUCCEED
@@ -19,7 +19,7 @@ Test Name: N/A
 URL: http://http.web.test/sleep-4
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   RESPONSE TIME CHECK
     Response time (  4.00 ) is > or =  1.00 ?                    SUCCEED
     Response time (  4.00 ) is < or =  3.00 ?                    FAIL
@@ -29,7 +29,7 @@ Test Name: N/A
 URL: http://http.web.test/sleep-2
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   RESPONSE TIME CHECK
     Response time (  2.00 ) is > or =  3.00 ?                    FAIL
     Response time (  2.00 ) is < or =  6.00 ?                    SUCCEED
@@ -39,7 +39,7 @@ Test Name: N/A
 URL: http://http.web.test/sleep-4
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   RESPONSE TIME CHECK
     Response time (  4.00 ) is > or =  3.00 ?                    SUCCEED
     Response time (  4.00 ) is < or =  6.00 ?                    SUCCEED

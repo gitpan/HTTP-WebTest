@@ -1,4 +1,4 @@
-# $Id: StatusTest.pm,v 1.4 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: StatusTest.pm,v 1.7 2002/08/17 12:40:17 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::StatusTest;
 
@@ -24,18 +24,34 @@ use HTTP::Status;
 
 =head1 TEST PARAMETERS
 
-None.
+=for pod_merge copy params
+
+=head2 status_code
+
+Given numeric HTTP Status Code, tests response returned that value.
+
+=head3 Default value
+
+C<200> (OK).
 
 =cut
+
+sub param_types {
+  return q(status_code scalar);
+}
 
 sub check_response {
     my $self = shift;
 
+    $self->validate_params(qw(status_code));
+
     my $code = $self->webtest->last_response->code;
     my $status_line = $self->webtest->last_response->status_line;
 
-    my $ok = $code eq RC_OK;
-    my $comment = $status_line;
+    my $expected_code = $self->test_param('status_code', RC_OK);
+    my $ok = $code eq $expected_code;
+
+    my $comment = "Expected '$expected_code' and got: " . $status_line;
 
     return ['Status code check', $self->test_result($ok, $comment)];
 }

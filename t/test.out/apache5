@@ -8,7 +8,7 @@ Test Name: N/A
 URL: http://http.web.test/test1.txt
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     abcde                                                        SUCCEED
     123                                                          SUCCEED
@@ -18,7 +18,7 @@ Test Name: N/A
 URL: http://http.web.test/test1.txt
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     abcde                                                        SUCCEED
     123                                                          SUCCEED
@@ -28,7 +28,7 @@ Test Name: N/A
 URL: http://http.web.test/test1.txt
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     abcde                                                        SUCCEED
     123                                                          SUCCEED

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 10-click.t,v 1.6 2002/04/27 22:01:47 m_ilya Exp $
+# $Id: 10-click.t,v 1.7 2002/08/20 20:57:51 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Click plugin
 
@@ -15,7 +15,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL $TEST);
 
-BEGIN { plan tests => 7 }
+BEGIN { plan tests => 9 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -134,7 +134,7 @@ my $OPTS = { plugins => [ '::Click' ] };
 {
     my $tests = [ { url => abs_url($URL, '/test4.html'),
 		    text_require => [ '<title>Test File 4</title>' ] },
-		  # click button to submit form to /test1.txt
+		  # click button to submit form to /show-request
 		  { click_button => 'Button',
 		    method => 'get',
 		    params => [ param1 => 'value1' ],
@@ -142,6 +142,7 @@ my $OPTS = { plugins => [ '::Click' ] };
 				      'Query: <param1=value1>',
 				      'Content: <>' ],
 		  },
+		  # click button to submit form to /show-request
 		  { url => abs_url($URL, '/test4.html'),
 		    text_require => [ '<title>Test File 4</title>' ] },
 		  { click_button => 'Button',
@@ -158,6 +159,76 @@ my $OPTS = { plugins => [ '::Click' ] };
 		  tests => $tests,
 		  opts => $OPTS,
 		  check_file => 't/test.out/click_button4');
+}
+
+# 8: test 'form_name' test parameter
+{
+    my $tests = [ { url => abs_url($URL, '/test5.html'),
+		    text_require => [ '<title>Test File 5</title>' ] },
+		  # click button to submit form to /show-request
+		  { form_name => 'yy',
+		    params => [ param1 => 'value1' ],
+		    text_require => [ 'Method: <GET>',
+				      'Query: <param1=value1>',
+				      'Content: <>' ],
+		  },
+		  { url => abs_url($URL, '/test5.html'),
+		    text_require => [ '<title>Test File 5</title>' ] },
+		  # click button to submit form to /bad-request
+		  { form_name => 'xx',
+		    params => [ param1 => 'value1' ],
+		    status_code => 404,
+		  },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  opts => $OPTS,
+		  check_file => 't/test.out/form_name');
+}
+
+# 9: test 'click_button' with images
+{
+    my $tests = [ { url => abs_url($URL, '/test6.html'),
+		    text_require => [ '<title>Test File 6</title>' ] },
+		  # click button to submit form to /show-request
+		  { click_button => 'Button2',
+		    params => [ param1 => 'value1' ],
+		    text_require => [ 'Method: <GET>',
+				      'Query: <param1=value1>',
+				      'Content: <>' ],
+		  },
+		  { url => abs_url($URL, '/test6.html'),
+		    text_require => [ '<title>Test File 6</title>' ] },
+		  # click button to submit form to /show-request
+		  { click_button => 'y.gif',
+		    params => [ param1 => 'value1' ],
+		    text_require => [ 'Method: <GET>',
+				      'Query: <param1=value1>',
+				      'Content: <>' ],
+		  },
+		  { url => abs_url($URL, '/test6.html'),
+		    text_require => [ '<title>Test File 6</title>' ] },
+		  # click button to submit form to /bad-request
+		  { click_button => 'Button1',
+		    params => [ param1 => 'value1' ],
+		    status_code => 404,
+		  },
+		  { url => abs_url($URL, '/test6.html'),
+		    text_require => [ '<title>Test File 6</title>' ] },
+		  # click button to submit form to /bad-request
+		  { click_button => 'x.gif',
+		    params => [ param1 => 'value1' ],
+		    status_code => 404,
+		  },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  opts => $OPTS,
+		  check_file => 't/test.out/click_button_image');
 }
 
 # try to stop server even we have been crashed

@@ -7,7 +7,7 @@ Test Name: N/A
 URL: http://proxy.test/show-url
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     URL: <http://proxy.test/show-url>                            SUCCEED
 
@@ -16,7 +16,7 @@ Test Name: N/A
 URL: ftp://proxy.test/show-url
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     URL: <ftp://proxy.test/show-url>                             SUCCEED
 

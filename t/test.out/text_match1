@@ -9,7 +9,7 @@ Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   FORBIDDEN TEXT
     123456                                                       SUCCEED
     test test                                                    SUCCEED
@@ -19,7 +19,7 @@ Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     987654                                                       SUCCEED
     failed test                                                  FAIL
@@ -29,7 +29,7 @@ Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   FORBIDDEN REGEX
     (?-xism:\d{400})                                             SUCCEED
     \s1\s2\s3\s\w{20}                                            SUCCEED
@@ -41,7 +41,7 @@ Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED REGEX
     (?-xism:\w+)                                                 SUCCEED
     \s\d{3}\s                                                    SUCCEED

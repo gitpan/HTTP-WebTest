@@ -2,16 +2,16 @@ Failed  Succeeded  Test Name
    0          2    *** no name ***
    0          4    *** no name ***
    0          2    *** no name ***
-   0          4    *** no name ***
+   0          1    *** no name ***
 
 
 Test Name: N/A
-URL: http://http.web.test/test4.html
+URL: http://http.web.test/test5.html
 
   STATUS CODE CHECK
     Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
-    <title>Test File 4</title>                                   SUCCEED
+    <title>Test File 5</title>                                   SUCCEED
 
 
 Test Name: N/A
@@ -26,23 +26,19 @@ URL: http://http.web.test/show-request?param1=value1
 
 
 Test Name: N/A
-URL: http://http.web.test/test4.html
+URL: http://http.web.test/test5.html
 
   STATUS CODE CHECK
     Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
-    <title>Test File 4</title>                                   SUCCEED
+    <title>Test File 5</title>                                   SUCCEED
 
 
 Test Name: N/A
-URL: http://http.web.test/show-request
+URL: http://http.web.test/bad-request?param1=value1
 
   STATUS CODE CHECK
-    Expected '200' and got: 200 OK                               SUCCEED
-  REQUIRED TEXT
-    Method: <POST>                                               SUCCEED
-    Query: <>                                                    SUCCEED
-    Content: <param1=value1>                                     SUCCEED
+    Expected '404' and got: 404 Not Found                        SUCCEED
 
 
-Total web tests failed: 0  succeeded: 12
+Total web tests failed: 0  succeeded: 9

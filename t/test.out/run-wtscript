@@ -7,7 +7,7 @@ Test Name: Some name here
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   FORBIDDEN TEXT
     FAILED TEST                                                  FAIL
   REQUIRED REGEX
@@ -18,7 +18,7 @@ Test Name: Another name
 URL: http://http.web.test/no-such-file
 
   STATUS CODE CHECK
-    404 Not Found                                                FAIL
+    Expected '200' and got: 404 Not Found                        FAIL
   FORBIDDEN TEXT
     FAILED TEST                                                  SUCCEED
 

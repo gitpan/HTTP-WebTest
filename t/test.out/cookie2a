@@ -7,7 +7,7 @@ Test Name: N/A
 URL: http://http.web.test/show-cookies
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     <N001>=<V001>                                                SUCCEED
     <N002>=<V002>                                                SUCCEED
@@ -17,7 +17,7 @@ Test Name: N/A
 URL: http://http.web.test/show-cookies
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   FORBIDDEN TEXT
     <N003>=<V003>                                                SUCCEED
     <N004>=<V004>                                                SUCCEED

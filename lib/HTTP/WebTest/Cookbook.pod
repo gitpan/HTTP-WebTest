@@ -150,8 +150,19 @@ module.  This is a fragment of a wtscript file that checks if a new record
 has been inserted into a database as a result of the Add Record test.
 
     # load HTTP::WebTest::Plugin::Hooks module which provides test
-    # parameter 'on_response'
+    # parameters 'on_start', 'on_finish' and 'on_response'
     plugins = ( ::Hooks )
+
+    on_start = {
+        # initialize a database handle used later in the tests
+        require DBI;
+        $dbh = DBI->connect('dbi:mysql:test', 'login', 'password');
+    }
+
+    on_finish = {
+        # disconnect from the database
+        $dbh->disconnect;
+    }
 
     ....
 
@@ -162,8 +173,7 @@ has been inserted into a database as a result of the Add Record test.
 
         # define check
         on_response = {
-            # it is assumed that $Test::dbh is database handler
-            my $has_record = $Test::dbh->selectrow_array(
+            my $has_record = $dbh->selectrow_array(
                                  'SELECT COUNT(*) FROM USERS ' .
                                  'WHERE NAME = ?',
                                  undef, 'John'

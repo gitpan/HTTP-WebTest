@@ -1,6 +1,37 @@
-$Id: Changes,v 1.43 2002/07/31 15:37:05 m_ilya Exp $
+$Id: Changes,v 1.52 2002/08/22 09:08:26 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
+
+1.99_09 Thu Aug 22 2002
+
+ENHANCEMENTS:
+
+* New core test parameter 'status_code' which allows to test HTTP
+responses for non-OK (200) status codes.  Thanks to Paul Hamingson for
+implementation.
+
+* New core test parameter 'handle_redirects' which allows to disable
+optionally automatic handling of redirects by HTTP-WebTest.
+
+* New test parameter 'form_name' in HTTP::WebTest::Plugin::Click
+plugin.  Thanks to Paul Hamingson for patch.
+
+* Test parameter 'click_button' in HTTP::WebTest::Plugin::Click plugin
+now supports image buttons (i.e. <input type="image" ...>).  Thanks to
+Paul Hamingson for patch.
+
+* Added two test parameters 'on_start' and 'on_finish' to
+HTTP::WebTest::Plugin::Hook plugin.
+
+* Extended example 'User-Defined Tests' in Cookbook.  Suggested by
+William McKee.
+
+BUG FIXES:
+
+* Previously comments inside of list parameters in wtscript files was
+not allowed.  Reported by William McKee.
+
+* Fixed 'make test' failure on Perl 5.8.0.
 
 1.99_08 Wed Jul 31 2002
 

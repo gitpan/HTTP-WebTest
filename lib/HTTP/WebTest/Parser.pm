@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.17 2002/06/22 20:08:38 m_ilya Exp $
+# $Id: Parser.pm,v 1.18 2002/08/22 07:21:50 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -33,6 +33,8 @@ use constant ST_TEST_BLOCK => 1;
 my $reHS = qr/[\t ]/;
 # sequence of any chars which doesn't contain ')', space chars and '=>'
 my $reWORD = qr/(?: (?: [^=)\s] | [^)\s] (?!>) )+ )/x;
+# eat comments regexp
+my $reCOMMENT = qr/(?: \s*? ^ \s* \# .* )+/mx;
 
 =head2 parse ($data)
 
@@ -55,7 +57,7 @@ sub parse {
 	my $exc = $@;
 	chomp $exc;
 
-	my $parse_pos = pos $data;
+	my $parse_pos = pos($data) || 0;
 
 	# find reminder of string near error (without surrounding
 	# whitespace)
@@ -90,13 +92,11 @@ sub _parse {
 
   PARSER:
     while(1) {
+	# eat whitespace and comments
+	$_[0] =~ /\G $reCOMMENT /gcx;
+
 	# eat whitespace
 	$_[0] =~ /\G \s+/gcx;
-
-	if($_[0] =~ /\G \#.*/gcx) {
-	    # found comment - just ignore it
-	    next;
-	}
 
 	if($state == ST_FILE) {
 	    if($_[0] =~ /\G \z/gcx) {
@@ -192,6 +192,9 @@ sub _parse_value {
 	my @list = ();
 
 	while(1) {
+	    # eat whitespace and comments
+	    $_[0] =~ /\G $reCOMMENT /gcx;
+
 	    # eat whitespace
 	    $_[0] =~ /\G \s+/gcx;
 

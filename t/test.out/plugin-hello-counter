@@ -7,7 +7,7 @@ Test Name: N/A
 URL: http://http.web.test/hello
 
   STATUS CODE CHECK
-    404 Not Found                                                FAIL
+    Expected '200' and got: 404 Not Found                        FAIL
   ARE WE WELCOME?
     Hello, World!                                                SUCCEED
   COUNTER
@@ -18,7 +18,7 @@ Test Name: N/A
 URL: http://http.web.test/no-hello
 
   STATUS CODE CHECK
-    404 Not Found                                                FAIL
+    Expected '200' and got: 404 Not Found                        FAIL
   ARE WE WELCOME?
     Hello, World!                                                FAIL
   COUNTER

@@ -1,4 +1,4 @@
-# $Id: Click.pm,v 1.12 2002/07/24 21:16:33 m_ilya Exp $
+# $Id: Click.pm,v 1.14 2002/08/20 20:58:36 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Click;
 
@@ -37,9 +37,9 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head2 click_button
 
-Given name of submit button (i.e. C<<input type="submit"E<gt>> tag
-inside of C<<formE<gt>> tag) on previosly requested HTML page, builds
-test request to the submitted page.
+Given name of submit button (i.e. C<<input type="submit"E<gt>> tag or
+C<<input type="image"E<gt>> inside of C<<formE<gt>> tag) on previously
+requested HTML page, builds test request to the submitted page.
 
 Note that you still need to pass all form parameters yourself using
 C<params> test parameter.
@@ -57,17 +57,26 @@ page, builds test request to the linked page.
 
 See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 
+=head2 form_name
+
+Give form name attribute (i.e. C<<form name="foo"E<gt>>) on previously
+ requested HTML page, builds test request to the submitted page.
+
+Note that you still need to pass all form parameters yourself using
+C<params> test parameter.
+
 =cut
 
 sub param_types {
     return q(click_button scalar
-             click_link   scalar);
+             click_link   scalar
+             form_name    scalar);
 }
 
 sub prepare_request {
     my $self = shift;
 
-    $self->validate_params(qw(click_button click_link));
+    $self->validate_params(qw(click_button click_link form_name));
 
     # get current request object
     my $request = $self->webtest->last_request;
@@ -88,6 +97,7 @@ sub prepare_request {
     # get various params we handle
     my $click_button = $self->test_param('click_button');
     my $click_link   = $self->test_param('click_link');
+    my $form_name    = $self->test_param('form_name');
 
     if(defined $click_link) {
 	# find matching link
@@ -100,6 +110,13 @@ sub prepare_request {
 	# find action which corresponds to requested submit button
 	my $action = $self->find_form(response => $response,
 				      pattern  => $click_button);
+
+	$request->base_uri($action)
+	    if defined $action;
+    } elsif(defined $form_name) {
+	# find action which corresponds to requested form name
+	my $action = $self->find_form(response => $response,
+				      form_name  => $form_name);
 
 	$request->base_uri($action)
 	    if defined $action;
@@ -164,6 +181,7 @@ sub find_form {
 
     my $response = $param{response};
     my $pattern  = $param{pattern};
+    my $form_name = $param{form_name};
 
     my $base    = $self->find_base($response);
     my $content = $response->content;
@@ -176,6 +194,12 @@ sub find_form {
 	# get action from form tag param
 	my $action = $token->[1]{action} || $base;
 
+	if ( $token->[1]{name} and $form_name
+	     and ( $token->[1]{name} eq $form_name ) ){
+	  $uri = $action;
+	  last FORM;
+	}
+	next unless $pattern;
 	# find matching submit button or end of form
 	while(my $token = $parser->get_tag('input', '/form')) {
 	    my $tag = $token->[0];
@@ -186,11 +210,12 @@ sub find_form {
 	    }
 
 	    # check if right input control is found
-	    my $type = $token->[1]{type} || 'text';
-	    my $name = $token->[1]{name} || '';
+	    my $type  = $token->[1]{type} || 'text';
+	    my $name  = $token->[1]{name} || '';
 	    my $value = $token->[1]{value} || '';
-	    next if $type !~ /^submit$/i;
-	    next if $name !~ /$pattern/i and $value !~ /$pattern/i;
+	    my $src   = $token->[1]{src} || ''; # to handle image submit button
+	    next unless $type =~ /^(?:submit|image)$/i;
+	    next unless grep /$pattern/i, $name, $value, $src;
 
 	    # stop searching
 	    $uri = $action;

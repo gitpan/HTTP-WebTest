@@ -6,7 +6,7 @@ Test Name: N/A
 URL: http://http.web.test/show-headers
 
   STATUS CODE CHECK
-    200 OK                                                       SUCCEED
+    Expected '200' and got: 200 OK                               SUCCEED
   REQUIRED TEXT
     Content-Type: application/x-www-form-urlencoded              SUCCEED
 

@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.13 2002/07/24 22:18:36 m_ilya Exp $
+# $Id: SetRequest.pm,v 1.14 2002/08/17 10:26:18 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -148,17 +148,32 @@ C<HTTP-WebTest/NN>
 
 where C<NN> is version number of HTTP-WebTest.
 
+=head2 handle_redirects
+
+If set to C<yes> then HTTP-WebTest automatically follows redirects.
+It means that you never see HTTP responses with status codes 301 and
+302.  This feature is disabled if this test parameter is set to C<no>.
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<yes>
+
 =cut
 
 sub param_types {
-    return q(url          uri
-	     method       scalar('^(?:GET|POST)$')
- 	     params       hashlist
-	     auth         list('scalar','scalar')
-	     proxies      hashlist
-	     pauth        list('scalar','scalar')
-	     http_headers hashlist
-             user_agent   scalar);
+    return q(url              uri
+	     method           scalar('^(?:GET|POST)$')
+ 	     params           hashlist
+	     auth             list('scalar','scalar')
+	     proxies          hashlist
+	     pauth            list('scalar','scalar')
+	     http_headers     hashlist
+             user_agent       scalar
+             handle_redirects yesno);
 }
 
 sub prepare_request {
@@ -175,14 +190,15 @@ sub prepare_request {
                               http_headers user_agent));
 
     # get various params we handle
-    my $url     = $self->test_param('url');
-    my $method  = $self->test_param('method');
-    my $params  = $self->test_param('params');
-    my $auth    = $self->test_param('auth');
-    my $proxies = $self->test_param('proxies');
-    my $pauth   = $self->test_param('pauth');
-    my $headers = $self->test_param('http_headers');
-    my $ua_name = $self->test_param('user_agent');
+    my $url              = $self->test_param('url');
+    my $method           = $self->test_param('method');
+    my $params           = $self->test_param('params');
+    my $auth             = $self->test_param('auth');
+    my $proxies          = $self->test_param('proxies');
+    my $pauth            = $self->test_param('pauth');
+    my $headers          = $self->test_param('http_headers');
+    my $ua_name          = $self->test_param('user_agent');
+    my $handle_redirects = $self->yesno_test_param('handle_redirects', 1);
 
     # fix broken url
     if(defined $url) {
@@ -238,6 +254,13 @@ sub prepare_request {
     $ua_name = 'HTTP-WebTest/' . HTTP::WebTest->VERSION
 	unless defined $ua_name;
     $user_agent->agent($ua_name);
+
+    # define if requests are redirectable
+    if($handle_redirects) {
+	$user_agent->requests_redirectable([qw(GET POST)]);
+    } else {
+	$user_agent->requests_redirectable([]);
+    }
 }
 
 =head1 COPYRIGHT
