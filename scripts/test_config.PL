@@ -1,23 +1,12 @@
 #!/usr/bin/perl -w
 
-# $Id: test_config.PL,v 1.1 2002/06/15 21:33:38 m_ilya Exp $
+# $Id: test_config.PL,v 1.2 2002/07/31 15:18:16 m_ilya Exp $
 
 use strict;
 
 use Data::Dumper;
 
 my %CONFIG;
-
-eval { require Algorithm::Diff };
-
-if($@) {
-    print <<MSG;
-
-Algorithm::Diff module is required to run 'make test'.
-
-MSG
-    exit 1;
-}
 
 unless(check_config()) {
     # verify standard input and output are attached to a terminal

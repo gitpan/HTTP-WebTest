@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 06-parser.t,v 1.14 2002/06/15 23:09:22 m_ilya Exp $
+# $Id: 06-parser.t,v 1.15 2002/06/22 20:08:38 m_ilya Exp $
 
 # This script tests wt scripts parser
 
@@ -12,9 +12,9 @@ use HTTP::WebTest::Parser;
 
 require 't/utils.pl';
 
-BEGIN { plan tests => 59 }
+BEGIN { plan tests => 68 }
 
-# 1-51: check parsed wt script (which contains all variants of
+# 1-60: check parsed wt script (which contains all variants of
 # supported syntax)
 {
     {
@@ -30,7 +30,7 @@ BEGIN { plan tests => 59 }
     my ($tests, $opts) = HTTP::WebTest::Parser->parse($data);
 
     # check $tests
-    ok(@$tests == 3);
+    ok(@$tests == 4);
     ok($tests->[0]{test_name} eq 'Some name here');
     ok($tests->[0]{auth}[0] eq 'name');
     ok($tests->[0]{auth}[1] eq 'value');
@@ -75,6 +75,17 @@ BEGIN { plan tests => 59 }
     ok(@$aref == 2);
     ok($aref->[0] eq 'http');
     ok($aref->[1] eq 'http://some.proxy.com/');
+    $aref = $tests->[3]{params};
+    ok(@$aref == 2);
+    ok($aref->[0] eq 'upload');
+    $aref = $aref->[1];
+    ok(@$aref == 6);
+    ok($aref->[0] eq 'file');
+    ok($aref->[1] eq '/a/myfile');
+    ok($aref->[2] eq 'filename');
+    ok($aref->[3] eq 'myfile');
+    ok($aref->[4] eq 'Content-Type');
+    ok($aref->[5] eq 'text/plain');
 
     # check $opts
     ok($opts->{text_require}[0] eq 'Require some');
@@ -83,10 +94,10 @@ BEGIN { plan tests => 59 }
     ok($opts->{text_forbid}[1] eq 'syntax');
     ok($opts->{text_forbid}[2] eq 'for list');
     ok($opts->{text_forbid}[3] eq 'elements');
-    ok($opts->{ignore_case} eq 'no')
+    ok($opts->{ignore_case} eq 'no');
 }
 
-# 52-59: check error handling for borked wtscript files
+# 61-68: check error handling for borked wtscript files
 parse_error_check(wtscript   => 't/borked1.wt',
 		  check_file => 't/test.out/borked1.err');
 parse_error_check(wtscript   => 't/borked2.wt',

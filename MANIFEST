@@ -21,6 +21,7 @@ lib/HTTP/WebTest/Plugin/Click.pm
 lib/HTTP/WebTest/Plugin/ContentSizeTest.pm
 lib/HTTP/WebTest/Plugin/Cookies.pm
 lib/HTTP/WebTest/Plugin/DefaultReport.pm
+lib/HTTP/WebTest/Plugin/Delay.pm
 lib/HTTP/WebTest/Plugin/HarnessReport.pm
 lib/HTTP/WebTest/Plugin/Hooks.pm
 lib/HTTP/WebTest/Plugin/Loader.pm
@@ -30,6 +31,7 @@ lib/HTTP/WebTest/Plugin/StatusTest.pm
 lib/HTTP/WebTest/Plugin/TextMatchTest.pm
 lib/HTTP/WebTest/Plugins.pod
 lib/HTTP/WebTest/ReportPlugin.pm
+lib/HTTP/WebTest/Request.pm
 lib/HTTP/WebTest/Test.pm
 lib/HTTP/WebTest/TestResult.pm
 lib/HTTP/WebTest/Utils.pm
@@ -47,6 +49,8 @@ t/07-compat.t
 t/08-plugins.t
 t/09-hooks.t
 t/10-click.t
+t/11-delay.t
+t/12-request.t
 t/HTTP/WebTest/Plugin/Counter.pm
 t/HelloWorld.pm
 t/README
@@ -91,8 +95,11 @@ t/test.out/click_link3
 t/test.out/content-type
 t/test.out/cookie1
 t/test.out/cookie2
+t/test.out/cookie2a
 t/test.out/cookie3
 t/test.out/default-report-yes
+t/test.out/delay
+t/test.out/file-upload
 t/test.out/http-headers
 t/test.out/on_response
 t/test.out/pauth
@@ -107,6 +114,8 @@ t/test.out/report-fh
 t/test.out/report-html
 t/test.out/report-html-cookie
 t/test.out/report-terse-failed_only
+t/test.out/report-terse-show-failed_only
+t/test.out/report-terse-show-summary
 t/test.out/report-terse-summary
 t/test.out/request
 t/test.out/run-web-test

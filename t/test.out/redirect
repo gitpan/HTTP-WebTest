@@ -3,6 +3,7 @@ Failed  Succeeded  Test Name
    0          2    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/redirect
 
   STATUS CODE CHECK
@@ -11,6 +12,7 @@ URL: http://http.web.test/redirect
     abcde                                                        SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/redirect
 
   STATUS CODE CHECK

@@ -4,18 +4,21 @@ Failed  Succeeded  Test Name
    1          0    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
     200 OK                                                       SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/status-forbidden
 
   STATUS CODE CHECK
     403 Forbidden                                                FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/doesnt-exist
 
   STATUS CODE CHECK

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: pod_merge.PL,v 1.2 2002/05/15 19:27:16 m_ilya Exp $
+# $Id: pod_merge.PL,v 1.3 2002/06/20 18:18:40 m_ilya Exp $
 
 use 5.006;
 
@@ -61,7 +61,10 @@ for my $plugin (@plugins) {
 }
 
 # sort content of sections
-my @sections = map "=head2$_", grep /\S/, split '=head2', $sections{params};
+my @sections = map "=head2$_",
+               grep /\S/,
+               split '=head2', $sections{params};
+s/\s*$/\n\n/ for @sections;
 @sections = map $_->[1],
             sort { $a->[0] cmp $b->[0] }
             map { my($name) = $_ =~ /=head2\s+([a-z_]+)/; [ $name => $_ ] }

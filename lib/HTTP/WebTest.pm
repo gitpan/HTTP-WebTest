@@ -7,6 +7,7 @@
 #            lib/HTTP/WebTest/Plugin/ContentSizeTest.pm
 #            lib/HTTP/WebTest/Plugin/Cookies.pm
 #            lib/HTTP/WebTest/Plugin/DefaultReport.pm
+#            lib/HTTP/WebTest/Plugin/Delay.pm
 #            lib/HTTP/WebTest/Plugin/HarnessReport.pm
 #            lib/HTTP/WebTest/Plugin/Hooks.pm
 #            lib/HTTP/WebTest/Plugin/Loader.pm
@@ -25,7 +26,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_07';
+$VERSION = '1.99_08';
 # workaround for warning caused by underscore char in $VERSION
 $VERSION = eval $VERSION;
 
@@ -49,12 +50,6 @@ HTTP::WebTest - Test remote URLs or local web files
     $webtest->run_tests($tests);
 
 =head1 DESCRIPTION
-
-=head2 Beta software warning
-
-THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS
-PROBABLY NOT AS WELL DEBUGGED AS VERSION 1.07.  Version 1.07 can be
-downloaded at http://search.cpan.org/search?dist=HTTP-WebTest-1.07
 
 =head2 Introduction
 
@@ -112,10 +107,10 @@ Data flow diagram for C<HTTP::WebTest> using a local web file:
           | parameters |           |  (Perl/HTML/etc.) |
           |            |           |                   |
           --------------           ---------------------
-                |                            |
-                |  ---------------------------
-                |  |
-                V  V              ------------------------
+              |                              |
+              |  -----------------------------
+              |  |
+              V  V                ------------------------
           -------------           |                      |
           |           |---------->| Temporary Apache     |
           |  WebTest  |           | directories (htdocs, |
@@ -238,8 +233,8 @@ sign
 
 =back
 
-Parameters are either scalar (single-valued) or lists (single or
-multi-valued).
+Parameters are either scalar (single-valued) or lists (single-valued,
+multi-valued or nested).
 
 You can specify scalar parameters using forms such as:
 
@@ -272,39 +267,54 @@ You can specify list parameters using forms such as:
              'second value'
            )
 
+Lists can be nested. For example:
+
+    name = ( ( first value
+               second value ) )
+
+    name = ( 'third value'
+             ( fourth value => fifth value ) )
+
+    name = (
+             ( first value
+               second value )
+             third value
+             ( fourth value => fifth value )
+           )
+
 You can specify a null (placeholder) value using '' or "".  Within
 single or double quotes, the usual Perl string quoting rules apply.
 Thus, single quotes mean that all enclosed characters are interpreted
 literally: '\n' is backslash-n rather than a newline character.
 Double quotes mean that Perl metasymbols are interpreted: "\n\t" is a
 newline and a tab.  Double quoted strings can also contain Perl
-variables to be expanded: "$var" is string which contains value of
-Perl variable C<$var>.  Perl variables can be defined by plugin
-modules or in code sections described below.
+variables that will be evaluated by Perl.  For example, if the variable
+$myvar contains the string 'foobar', "$myvar" will be replaced by foobar
+at runtime.  Perl variables can be defined by plugin
+modules or in code sections in the parameter file as described below.
 
-Also it is possible to specify Perl code instead of scalar, instead of
-list parameter value or instead of element of list paramater.  Curly
-brackets are used to denote Perl code inside wtscript files.  This
-code will be evaluated during test run.
-
+It is also possible to specify a Perl expression in place of a scalar
+value, one of a list parameter's values or an entire list.  Curly
+brackets are used to denote Perl code inside wtscript files.
 C<HTTP::WebTest> compiles this Perl code as anonymous subroutines
-which are called during test run when value of corresponding test
-parameters are required.  When these subroutines are called
-C<HTTP::WebTest> object is passed to them.
+which are called when values of corresponding test
+parameters are required.  These subroutines are called in an object-oriented
+fashion, so the
+C<HTTP::WebTest> object is passed to them as the first argument.
 
 Some examples of syntax:
 
     # scalar value
     name = { 1 + 1 }
 
-    # list value (Perl code should return array reference)
-    name = { [ a => 'b', c => 'd' ] }
-
-    # element of list value
+    # element of a list
     name = (
              'first value'
              { "first " . "value" }
            )
+
+    # entire list (must be a reference to an array)
+    name = { [ a => 'b', c => 'd' ] }
 
     # accessing HTTP::WebTest object
     name = { my $webtest = shift; ..... }
@@ -313,22 +323,22 @@ Some examples of syntax:
 
 The parameters below specify tests of a local file and a remote URL.
 The tests specified by the C<text_forbid> parameter apply to both the
-"RayCosoft home page" and the "Yahoo home page" tests.  Hence, if
+"MyCompany home page" and the "Yahoo home page" tests.  Hence, if
 either returned page contains one of the case-insensitive strings in
 text_forbid, the test fails.  If any test fails or the fetch of the URL
-fails, an e-mail will be sent to tester@unixscripts.com.
+fails, an e-mail will be sent to tester@mycompany.com.
 
 
     apache_exec = /usr/sbin/apache
     ignore_case = yes
     mail = errors
-    mail_addresses = ( tester@unixscripts.com )
-    mail_server = mailhost.unixscripts.com
+    mail_addresses = ( tester@mycompany.com )
+    mail_server = mailhost.mycompany.com
     text_forbid = ( Premature end of script headers
                     an error occurred while processing this directive
                   )
 
-    test_name = 'RayCosoft home page (static)'
+    test_name = 'MyCompany home page (static)'
         file_path = ( raycosoft_home.html => . )
         text_require = (
             <a href="/dept/peopledev/new_employee/"><font color="#0033cc">
@@ -373,18 +383,19 @@ copied using the C<include_file_path> parameter.
 
 =head2 Calling HTTP::WebTest from a Perl program
 
-If you are using Perl API of C<HTTP::WebTest> then the test parameters
-can be defined in form of array of hashes.
+If you are using the Perl API of C<HTTP::WebTest>, the test parameters
+can be defined as an array of hashes.
 
-Each hash in array defines tests for one URL or local web file.  Keys
-in hashes are test parameter names and values in hashes are values of
-test parameters.  Additionally, optional global test parameters can be
+Each hash in the array defines tests for one URL or local web file.  Keys
+in the hashes are test parameter names and values in hashes are values of
+test parameters.  Optional global test parameters can be
 passed in a hash passed as the second argument.
 
-Instead of test parameter values subroutine references can be
-specified.  Referenced subroutines are called during test run when
-values of corresponding test parameters are required.  When called
-these subroutines get C<HTTP::WebTest> object passed to them.
+Subroutine references can be specified instead of test parameter values.
+Referenced subroutines are called during test run when
+values of corresponding test parameters are required.  These subroutines are
+called in an object-oriented fashion, so the C<HTTP::WebTest> object is passed
+as the first argument.
 
 Tests can be run as
 
@@ -406,7 +417,7 @@ Tests can be run as
 =head3 Example
 
 This Perl script tests Yahoo home page and sends full test report to
-C<tester@unixscripts.com>.
+C<tester@mycompany.com>.
 
     use HTTP::WebTest;
 
@@ -419,8 +430,8 @@ C<tester@unixscripts.com>.
                  }
                 ];
 
-    my $params = { mail_server    => 'mailhost.unixscripts.com',
-                   mail_addresses => [ 'tester@unixscripts.com' ],
+    my $params = { mail_server    => 'mailhost.mycompany.com',
+                   mail_addresses => [ 'tester@mycompany.com' ],
                    mail           => 'all',
                    ignore_case    => 'yes',
                  };
@@ -431,6 +442,9 @@ C<tester@unixscripts.com>.
 
 =head2 Core Plugin Modules
 
+C<HTTP::WebTest> is implemented in a modular structure that allows programmers
+to easily add modules to run additional tests or define additional simple
+tests without writing a module.
 C<HTTP::WebTest> provides a number of core plugin modules which are
 loaded by default:
 
@@ -438,94 +452,97 @@ loaded by default:
 
 =item L<HTTP::WebTest::Plugin::Apache|HTTP::WebTest::Plugin::Apache>
 
-This plugin provides support for local web file test mode.
+This plugin supports testing web files using a local instance of Apache.
 
 =item L<HTTP::WebTest::Plugin::ContentSizeTest|HTTP::WebTest::Plugin::ContentSizeTest>
 
-This plugin provides size checks of HTTP response bodies.
+This plugin checks the size of the fetched web page.
 
 =item L<HTTP::WebTest::Plugin::Cookies|HTTP::WebTest::Plugin::Cookies>
 
-This plugin provides means to control sending and recieve cookies.
+This plugin controls sending and receiving cookies.
 
 =item L<HTTP::WebTest::Plugin::DefaultReport|HTTP::WebTest::Plugin::DefaultReport>
 
-Default test report plugin.
+This plugin manages the test report.
 
 =item L<HTTP::WebTest::Plugin::Loader|HTTP::WebTest::Plugin::Loader>
 
-This plugin allows to load external plugin modules.
+This plugin supports adding external plugin modules.
 
 =item L<HTTP::WebTest::Plugin::ResponseTimeTest|HTTP::WebTest::Plugin::ResponseTimeTest>
 
-This plugin provides support for response time tests.
+This plugin tests the response times of the web server.
 
 =item L<HTTP::WebTest::Plugin::SetRequest|HTTP::WebTest::Plugin::SetRequest>
 
-This plugin initializes test HTTP requests.
+This plugin initializes the HTTP requests.
 
 =item L<HTTP::WebTest::Plugin::StatusTest|HTTP::WebTest::Plugin::StatusTest>
 
-This plugin checks HTTP response statuses.
+This plugin checks the status of the HTTP responses.
 
 =item L<HTTP::WebTest::Plugin::TextMatchTest|HTTP::WebTest::Plugin::TextMatchTest>
 
-This plugin provides test parameters which allow to check body of HTTP
-responses.
+This plugin tests whether the content of the HTTP response matches or doesn't
+match selected text or regular expressions.
 
 =back
 
 Information about test parameters supported by core plugins is
-summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
+summarized below in the section L<TEST PARAMETERS|TEST PARAMETERS>.
 
 =head2 Other Plugin Modules Bundled With HTTP::WebTest
 
 Following plugin modules come with HTTP::WebTest but they are not
-loaded by default.  They should be loaded using global test parameter
-C<plugins> when needed.
+loaded by default.  To use such plugin module load it using global
+test parameter C<plugins>.
 
 =over 4
 
 =item L<HTTP::WebTest::Plugin::Click|HTTP::WebTest::Plugin::Click>
 
-This plugin allows to use names of links and button on HTML pages to
-build test requests.
+This plugin supports using names of links and buttons on HTML pages to
+build additional tests.
+
+=item L<HTTP::WebTest::Plugin::Delay|HTTP::WebTest::Plugin::Delay>
+
+This plugin module allows the user to specify pauses in the test sequence.
 
 =item L<HTTP::WebTest::Plugin::HarnessReport|HTTP::WebTest::Plugin::HarnessReport>
 
-This report plugin can generate L<Test::Harness|Test::Harness>
-compatible test reports.
+This report plugin can generate test reports that are compatible with
+L<Test::Harness|Test::Harness>.
 
 =item L<HTTP::WebTest::Plugin::Hooks|HTTP::WebTest::Plugin::Hooks>
 
-This plugin allows to define callback test parameters which are
-evaluated at specific time of C<HTTP::WebTest> test run.  These test
-parameters can define user-defined checks.
+This plugin allows the user to define callback parameters that are
+evaluated at runtime.  This allows the user to define additional tests
+without writing a plugin module.
 
 =back
 
 Information about test parameters supported by add-on plugin modules
 is summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
 
-=head2 Writting Plugin Modules
+=head2 Writing Plugin Modules
 
-L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> contains
-information needed for L<HTTP::WebTest|HTTP::WebTest> plugin
-developers.
+See L<perldoc HTTP::WebTest::Plugins|HTTP::WebTest::Plugins> for
+information about writing L<HTTP::WebTest|HTTP::WebTest> plugin modules.
 
 =head1 TEST PARAMETERS
 
-Most parameters can be used both as global and as test block
-parameters.  If you specify such parameter as global its value applies
-to all test blocks.  Value of parameter specified as global can be
-overriden individually in each test block by specifying this parameter
-with different values in test blocks.
+Most parameters can be used as both global and test block
+parameters.  If you specify such parameter outside a test block, that value
+is the default value for all test blocks.  The global value can be
+overriden in each test block by specifying the parameter within the test
+block.
 
 Parameters marked as I<GLOBAL PARAMETER> can be used only as global
-and it cannot be overriden in test blocks.
+and cannot be overriden in test blocks.
 
 Parameters marked as I<NON-CORE PARAMETER> are defined in add-on
-plugin modules which must be loaded explicitly using test parameter
+plugin modules which must be loaded explicitly using the parameter
 C<plugins>.
 
 =head2 accept_cookies
@@ -624,7 +641,7 @@ for web page access authorization.
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
 
 Given name of submit button (i.e. C<<input type="submit"E<gt>> tag
-inside of C<<formE<gt>> tag) on previosly requested HTML page builds
+inside of C<<formE<gt>> tag) on previosly requested HTML page, builds
 test request to the submitted page.
 
 Note that you still need to pass all form parameters yourself using
@@ -639,76 +656,76 @@ See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
 
 Given name of link (i.e. C<<aE<gt>> tag) on previosly requested HTML
-page builds test request to the linked page.
+page, builds test request to the linked page.
 
 =head3 Example
 
 See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 
-
 =head2 cookie
 
 Synonym to C<cookies>.
 
+It is deprecated parameter and may be removed in future versions of
+L<HTTP::WebTest|HTTP::WebTest>.
+
 =head2 cookies
 
-Specifies a cookie(s) to send to the web server.
+This is a list parameter that specifies cookies to send to the web
+server:
 
-Each cookie is specified by following list:
+    cookies = ( cookie1_spec
+                cookie2_spec
+                ...
+                cookieN_spec )
 
-    ( version
-      name
-      value
-      path
-      domain
-      port
-      path_spec
-      secure
-      maxage
-      discard
-      name1
-      value1
-      name2
-      value2
-      ...
-    )
-
-
-Any element not marked below as REQUIRED may be defaulted by
-specifying a null value or ''.
+Currently there are two ways to specify a cookie.
 
 =over 4
 
-=item * version (REQUIRED)
+=item * Named style
+
+A cookie is specified by a set of C<param =E<gt> value> pairs:
+
+    (
+      param => value
+      ...
+    )
+
+List of all supported C<param =E<gt> value> pairs:
+
+=over 4
+
+=item version => VERSION
 
 Version number of cookie spec to use, usually 0.
 
-=item * name (REQUIRED)
+=item name => NAME (REQUIRED)
 
 Name of cookie.  Cannot begin with a $ character.
 
-=item * value (REQUIRED)
+=item value => VALUE (REQUIRED)
 
 Value of cookie.
 
-=item * path (REQUIRED)
+=item path => PATH (REQUIRED)
 
 URL path name for which this cookie applies.  Must begin with a /
 character.  See also path_spec.
 
-=item * domain (REQUIRED)
+=item domain => DOMAIN (REQUIRED)
 
-Domain for which cookie is valid.  (REQUIRED).  Should begin with a
-period.  Must either contain two periods or be equal to C<.local>.
+Domain for which cookie is valid.  Must either contain two periods or
+be equal to C<.local>.
 
-=item * port
+=item port => PORT
 
 List of allowed port numbers that the cookie may be returned to.  If
 not specified, cookie can be returned to any port.  Must be specified
 using the format C<N> or C<N, N, ..., N> where N is one or more
 digits.
 
-=item * path_spec
+=item path_spec => PATH_SPEC
 
 Ignored if version is less than 1.  Option to ignore the value of
 path.  Default value is 0.
@@ -725,7 +742,7 @@ Ignore the specified value of path.
 
 =back
 
-=item * secure
+=item secure => SECURE
 
 Option to require secure protocols for cookie transmission.  Default
 value is 0.
@@ -742,11 +759,170 @@ Secure protocols are not required for transmission.
 
 =back
 
-=item * maxage
+=item maxage => MAXAGE
 
 Number of seconds until cookie expires.
 
-=item * discard
+=item discard => DISCARD
+
+Option to discard cookie when the program finishes.  Default is 0.
+(The cookie will be discarded regardless of the value of this
+element.)
+
+=over 4
+
+=item * 1
+
+Discard cookie when the program finishes.
+
+=item * 0
+
+Don't discard cookie.
+
+=back
+
+=item rest => NAME_VALUE_LIST
+
+Defines additional cookie attributes.
+
+Zero, one or several name/value pairs may be specified.  The name
+parameters are words such as Comment or CommentURL and the value
+parameters are strings that may contain embedded blanks.
+
+=back
+
+Example (wtscript file):
+
+    cookies = ( ( name   => Cookie1
+                  value  => cookie value )
+
+                ( name   => Cookie2
+                  value  => cookie value
+                  path   => /
+                  domain => .company.com ) )
+
+                ( name   => Cookie2
+                  value  => cookie value
+                  rest   => ( Comment => this is a comment ) )
+
+Example (Perl script):
+
+    my $tests = [
+                  ...
+                  {
+                    test_name => 'cookie',
+                    cookies   => [ [
+                                     name  => 'Cookie1',
+                                     value => 'Value',
+                                   ],
+                                   [
+                                     name  => 'Cookie2',
+                                     value => 'Value',
+                                     path  => '/',
+                                   ] ],
+                    ...
+                  }
+                  ...
+                ]
+
+=item * Row list style
+
+This style of cookie specification is deprecated and may be removed in
+future versions of L<HTTP::WebTest|HTTP::WebTest>.
+
+Each cookie is specified by following list:
+
+    ( VERSION
+      NAME
+      VALUE
+      PATH
+      DOMAIN
+      PORT
+      PATH_SPEC
+      SECURE
+      MAXAGE
+      DISCARD
+      NAME1
+      VALUE1
+      NAME2
+      VALUE2
+      ...
+    )
+
+
+Any element not marked below as REQUIRED may be defaulted by
+specifying a null value or ''.
+
+=over 4
+
+=item * VERSION (REQUIRED)
+
+Version number of cookie spec to use, usually 0.
+
+=item * NAME (REQUIRED)
+
+Name of cookie.  Cannot begin with a $ character.
+
+=item * VALUE (REQUIRED)
+
+Value of cookie.
+
+=item * PATH (REQUIRED)
+
+URL path name for which this cookie applies.  Must begin with a /
+character.  See also path_spec.
+
+=item * DOMAIN (REQUIRED)
+
+Domain for which cookie is valid.  Must either contain two periods or
+be equal to C<.local>.
+
+=item * PORT
+
+List of allowed port numbers that the cookie may be returned to.  If
+not specified, cookie can be returned to any port.  Must be specified
+using the format C<N> or C<N, N, ..., N> where N is one or more
+digits.
+
+=item * PATH_SPEC
+
+Ignored if version is less than 1.  Option to ignore the value of
+path.  Default value is 0.
+
+=over 4
+
+=item * 1
+
+Use the value of path.
+
+=item * 0
+
+Ignore the specified value of path.
+
+=back
+
+=item * SECURE
+
+Option to require secure protocols for cookie transmission.  Default
+value is 0.
+
+=over 4
+
+=item * 1
+
+Use only secure protocols to transmit this cookie.
+
+=item * 0
+
+Secure protocols are not required for transmission.
+
+=back
+
+=item * MAXAGE
+
+Number of seconds until cookie expires.
+
+=item * DISCARD
 
 Option to discard cookie when the program finishes.  Default is 0.
 (The cookie will be discarded regardless of the value of this
@@ -774,43 +950,30 @@ parameters are strings that may contain embedded blanks.
 
 An example cookie would look like:
 
-    ( 0
-      WebTest cookie #1
-      expires&2592000&type&consumer
-      /
-      .unixscripts.com
-      ''
-      0
-      0
-      200
-      1
-    )
+    cookies = ( ( 0
+                  WebTest cookie #1
+                  cookie value
+                  /
+                  .mycompany.com
+                  ''
+                  0
+                  0
+                  200
+                  1
+                ) )
+
+=back
 
 See RFC 2965 for details (ftp://ftp.isi.edu/in-notes/rfc2965.txt).
-
-=head3 Usage in wtscript files
-
-You may specify multiple cookies within each test block by specifying
-multiple instances of the C<cookies> parameter.
-
-=head3 Usage in Perl scripts
-
-Use arrayref of arrayrefs containing cookies to pass with the HTTP
-request.
-
-Each array must have at least 5 elements; if the number of elements is
-over 10 it must have an even number of elements.
-
 
 =head2 default_report
 
 I<GLOBAL PARAMETER>
 
-This parameter defines if default report plugin should be used for
+This parameter controls whether the default report plugin is used for
 test report creation.  Value C<yes> means that default report plugin
-should be used, value C<no> means that it should not.  It can be
-useful if it is desired to use another non-default report for creation
-of test report.  It can be used to disable any output at all also
+will be used, value C<no> means that it will not.
+It can also be used to disable all output 
 (i.e. if this parameter has value C<no> and no other report plugins
 are loaded).
 
@@ -822,11 +985,22 @@ C<yes>, C<no>
 
 C<yes>
 
+=head2 delay
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Delay>
+
+Duration of pause (in seconds) before running test.
+
+=head3 Allowed values
+
+Any number greater that zero.
+
 =head2 end_test
 
-It is not really test parameter but a part of
+This is not really a parameter, it is part of
 L<wtscript format|Running HTTP::WebTest using a parameter file>.
-It marks end of test block.
+It marks the end of test block.
+
 =head2 error_log
 
 I<GLOBAL PARAMETER>
@@ -931,7 +1105,6 @@ by the web page specified by the file_path parameter.  For example:
 will copy the Perl module DBconn.pm to a directory that is in the
 Perl @INC array.
 
-
 =head2 mail
 
 I<GLOBAL PARAMETER>
@@ -976,7 +1149,6 @@ Sets From: header for test report e-mails.
 
 Name of user under which test script runs.
 
-
 =head2 mail_server
 
 I<GLOBAL PARAMETER>
@@ -996,7 +1168,6 @@ Maximum number of bytes expected in returned page.
 Any integer greater that zero and greater than C<min_bytes> (if
 C<min_bytes> is specified).
 
-
 =head2 max_rtime
 
 Maximum web server response time (seconds) expected.
@@ -1006,7 +1177,6 @@ Maximum web server response time (seconds) expected.
 Any number greater that zero and greater than C<min_rtime> (if
 C<min_rtime> is specified).
 
-
 =head2 method
 
 HTTP request method.
@@ -1015,7 +1185,7 @@ See RFC 2616 (HTTP/1.1 protocol).
 
 =head3 Allowed values
 
-C<GET>, C<PUT>
+C<GET>, C<POST>
 
 =head3 Default value
 
@@ -1041,8 +1211,8 @@ Any number less than C<max_rtime> (if C<max_rtime> is specified).
 
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
 
-Value of this test parameter is ignored.  However it is evaluted
-before test request to web page is done so it is useful to do some
+The value of this test parameter is ignored.  However, it is evaluted
+before the HTTP request is done, so it can be used to do 
 initalization before the request.
 
 =head2 on_response
@@ -1050,10 +1220,10 @@ initalization before the request.
 I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
 
 This is a list parameter which is treated as test result.  It is
-evaluted when response for the test request is received.
+evaluted when the HTTP response for the test request is received.
 
-It can be useful to define custom tests without writting new plugins
-and/or it can be useful to run some code when response for the test
+It can be used to define custom tests without writing new plugins.
+It can also be used to run some code when the HTTP response for the test
 request is received.
 
 =head3 Allowed values
@@ -1063,20 +1233,19 @@ request is received.
       ....
       YESNON, COMMENTN )
 
-Here C<YESNO>, C<COMMENT> - is a test result.  C<YESNO> - is either
+Here C<YESNO>, C<COMMENT> is a test result.  C<YESNO> is either
 C<yes> if test is successful or C<no> if it is not.  C<COMMENT> is a
-text of comment associated with this test.
+comment associated with this test.
 
 =head3 Example
 
 See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 
-
 =head2 output_ref
 
 I<GLOBAL PARAMETER>
 
-A reference on scalar which accumulates text of test report.  If this
+A reference to a scalar that accumulates text of test report.  If this
 test parameter is specified then value of test parameter C<fh_out> is
 ignore.
 
@@ -1087,12 +1256,11 @@ as arguments from a calling Perl script.
 
 A list of name/value pairs to be passed as parameters to the URL.
 (This element is used to test pages that process input from forms.)
-Unless the method key is set to C<POST>, these pairs are URI-escaped
-and appended to the requested URL.
 
-The names and values will be URI-escaped as defined by RFC 2396.
+If the method key is set to C<GET>, these pairs are URI-escaped and
+appended to the requested URL.
 
-=head3 Example
+Example (wtscript file):
 
     url = http://www.hotmail.com/cgi-bin/hmhome
     params = ( curmbox
@@ -1100,9 +1268,53 @@ The names and values will be URI-escaped as defined by RFC 2396.
                from
                HotMail )
 
-generates the HTTP request:
+generates the HTTP request with URI:
 
     http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
+
+If the method key is set to C<POST>, as long as all values are scalars
+they are URI-escaped and put into content of the HTTP request.
+C<application/x-www-form-urlencoded> content type is set for such HTTP
+request.
+
+If the method key is set to C<POST>, some values may be defined as
+lists.  In this case L<HTTP::WebTest|HTTP::WebTest> uses
+C<multipart/form-data> content type used for C<Form-based File Upload>
+as specified in RFC 1867.  Each parameter with list value is treated
+as file part specification specification with the following
+interpretation:
+
+    ( FILE, FILENAME, HEADER => VALUE... )
+
+where
+
+=over 4
+
+=item * FILE
+
+The name of a file to open. This file will be read and its content
+placed in the request.
+
+=item * FILENAME
+
+The optional filename to be reported in the request.  If it is not
+specified than basename of C<FILE> is used.
+
+=item * HEADER => VALUE
+
+Additional optional headers for file part.
+
+Example (wtscript file):
+
+    url = http://www.server.com/upload.pl
+    method = post
+    params = ( submit => ok
+               file   => ( '/home/ilya/file.txt', 'myfile.txt' ) )
+
+It generates HTTP request with C</home/ilya/file.txt> file included
+and reported under name C<myfile.txt>.
+
+=back
 
 =head2 pauth
 
@@ -1114,15 +1326,14 @@ for proxy server access authorization.
 I<GLOBAL PARAMETER>
 
 A list of module names.  Loads these modules and registers them as
-L<HTTP::WebTest|HTTP::WebTest> plugins.  If name of plugin starts with
-C<::> prepends it with C<HTTP::WebTest::Plugin>.  So
+L<HTTP::WebTest|HTTP::WebTest> plugins.  If the name of the plugin starts with
+C<::>, it is prepended with C<HTTP::WebTest::Plugin>.  So
 
     plugins = ( ::Click )
 
 is equal to
 
     plugins = ( HTTP::WebTest::Plugin::Click )
-
 
 =head2 proxies
 
@@ -1153,7 +1364,6 @@ For more information, see L<perldoc perlre|perlre> or see Programming Perl,
 3rd edition, Chapter 5.
 
 See also the C<text_require> and C<ignore_case> parameters.
-
 
 =head2 send_cookies
 
@@ -1236,21 +1446,20 @@ C<no>
 
 =back
 
-
 =head2 test_name
 
-Name associated with this url in the test report and error messages.
+Name associated with this URL in the test report and error messages.
 
 =head2 text_forbid
 
-List of text strings that are forbidden to use exist in the returned
+List of text strings that are forbidden to exist in the returned
 page.
 
 See also the C<regex_forbid> and C<ignore_case> parameters.
 
 =head2 text_require
 
-List of text strings that are required to use exist in the returned
+List of text strings that are required to exist in the returned
 page.
 
 See also the C<regex_require> and C<ignore_case> parameters.
@@ -1270,7 +1479,6 @@ the network.
 C<HTTP-WebTest/NN>
 
 where C<NN> is version number of HTTP-WebTest.
-
 
 
 =cut
@@ -1320,40 +1528,39 @@ To be replaced with Apache log level.
 =head1 RESTRICTIONS / BUGS
 
 This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
-etc.) but it should work on Win32 systems.
-
-Local file tests don't work on Win32 systems.
-
+etc.) but it should work on Win32 systems.  (Exception: local file tests
+don't work on Win32 systems.)
 The module's HTTP requests time out after 3 minutes (the default value
 for L<LWP::UserAgent|LWP::UserAgent>).  If the C<file_path> parameter is
 specified, Apache must be installed.
 
-=head1 SUPPORT
-
-Please email bug reports, suggestions, questions, etc. to
-C<HTTP::WebTest> maillist
-C<http-webtest-general@lists.sourceforge.net>.  You can sign up at
-http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
-
 =head1 AUTHORS
 
-Richard Anderson <richard@richard-anderson.org> have wrote
-C<HTTP::WebTest 1.xx>.
+Richard Anderson <richard@richard-anderson.org> wrote
+C<HTTP::WebTest 1.xx>, using some ideas from the CPAN Monkeywrench module.
 
-Ilya Martynov <ilya@martynov.org> made rewrite of
-C<HTTP::WebTest>.  New version of C<HTTP::WebTest> have introduced
-extended API and plugin based architecture.
+Ilya Martynov <ilya@martynov.org> implemented the plug-in concept, the
+extended API and completely rewrote C<HTTP::WebTest>.
 
-Please don't email authors directly.  Use C<HTTP::WebTest> maillists.
+Please don't email authors directly.  Use the SourceForge
+C<HTTP::WebTest> mail list (see SUPPORT, next section).
+
+=head1 SUPPORT
+
+Please email bug reports, suggestions, questions, etc. to the SourceForge
+C<HTTP::WebTest> maillist.
+You can sign up at
+http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
+The email address is C<http-webtest-general@lists.sourceforge.net>.
 
 =head1 COPYRIGHT
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

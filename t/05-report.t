@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.3 2002/04/08 06:52:00 m_ilya Exp $
+# $Id: 05-report.t,v 1.4 2002/07/31 09:07:46 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -18,7 +18,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL $TEST);
 
-BEGIN { plan tests => 12 }
+BEGIN { plan tests => 14 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -50,10 +50,10 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 {
     my $opts = { show_html => 'yes' };
 
-    check_webtest(webtest => $WEBTEST,
+    check_webtest(webtest    => $WEBTEST,
 		  server_url => $URL,
-		  opts => $opts,
-		  tests => [ $TEST ],
+		  opts       => $opts,
+		  tests      => [ $TEST ],
 		  check_file => 't/test.out/report-html');
 }
 
@@ -64,24 +64,23 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 	       'hostname does not contain two dots' :
 	       undef;
     if($skip) {
-	skip($skip, 1);
-	skip($skip, 1);
+	skip($skip, 1) for 1 .. 2;
     } else {
 	my $opts = { show_cookies => 'yes' };
 
-	check_webtest(webtest => $WEBTEST,
+	check_webtest(webtest    => $WEBTEST,
 		      server_url => $URL,
-		      opts => $opts,
+		      opts       => $opts,
 		      out_filter => $COOKIE_FILTER,
-		      tests => [ $COOKIE_TEST ],
+		      tests      => [ $COOKIE_TEST ],
 		      check_file => 't/test.out/report-cookie1');
 
 	# note that second time we should send cookie ourselves
-	check_webtest(webtest => $WEBTEST,
+	check_webtest(webtest    => $WEBTEST,
 		      server_url => $URL,
-		      opts => $opts,
+		      opts       => $opts,
 		      out_filter => $COOKIE_FILTER,
-		      tests => [ $COOKIE_TEST ],
+		      tests      => [ $COOKIE_TEST ],
 		      check_file => 't/test.out/report-cookie2');
     }
 }
@@ -98,11 +97,11 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 	my $opts = { show_html => 'yes',
 		     show_cookies => 'yes' };
 
-	check_webtest(webtest => $WEBTEST,
+	check_webtest(webtest    => $WEBTEST,
 		      server_url => $URL,
-		      opts => $opts,
+		      opts       => $opts,
 		      out_filter => $COOKIE_FILTER,
-		      tests => [ $COOKIE_TEST ],
+		      tests      => [ $COOKIE_TEST ],
 		      check_file => 't/test.out/report-html-cookie');
     }
 }
@@ -115,10 +114,10 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
     for my $terse (qw(summary failed_only)) {
 	my $opts = { terse => $terse };
 
-	check_webtest(webtest => $WEBTEST,
+	check_webtest(webtest    => $WEBTEST,
 		      server_url => $URL,
-		      opts => $opts,
-		      tests => $tests,
+		      opts       => $opts,
+		      tests      => $tests,
 		      check_file => "t/test.out/report-terse-$terse");
     }
 }
@@ -131,10 +130,10 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
     for my $default_report (qw(yes no)) {
 	my $opts = { default_report => $default_report };
 
-	check_webtest(webtest => $WEBTEST,
+	check_webtest(webtest    => $WEBTEST,
 		      server_url => $URL,
-		      opts => $opts,
-		      tests => $tests,
+		      opts       => $opts,
+		      tests      => $tests,
 		      check_file => "t/test.out/default-report-$default_report");
     }
 }
@@ -143,18 +142,18 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 # tests failing)
 {
     my $tests = [ $TEST,
-		  { url => abs_url($URL, '/non-existent') },
+		  { url       => abs_url($URL, '/non-existent') },
 		  { test_name => 'BlaBla',
-		    url => abs_url($URL, '/non-existent') },
+		    url       => abs_url($URL, '/non-existent') },
 		];
 
     my $opts = { plugins => [ '::HarnessReport' ],
 		 default_report => 'no' };
 
-    check_webtest(webtest => $WEBTEST,
+    check_webtest(webtest    => $WEBTEST,
 		  server_url => $URL,
-		  opts => $opts,
-		  tests => $tests,
+		  opts       => $opts,
+		  tests      => $tests,
 		  check_file => 't/test.out/test-harness-not-ok')
 }
 
@@ -166,10 +165,10 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
     my $opts = { plugins => [ '::HarnessReport' ],
 		 default_report => 'no' };
 
-    check_webtest(webtest => $WEBTEST,
+    check_webtest(webtest    => $WEBTEST,
 		  server_url => $URL,
-		  opts => $opts,
-		  tests => $tests,
+		  opts       => $opts,
+		  tests      => $tests,
 		  check_file => 't/test.out/test-harness-ok')
 }
 
@@ -189,12 +188,47 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 	$_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
     };
 
-    check_webtest(webtest => $WEBTEST,
+    check_webtest(webtest    => $WEBTEST,
 		  server_url => $URL,
-		  opts => $opts,
+		  opts       => $opts,
 		  out_filter => $out_filter,
-		  tests => $tests,
+		  tests      => $tests,
 		  check_file => 't/test.out/show-headers')
+}
+
+# 13-14: test show_html, show_cookie, show_headers with terse parameter
+{
+     my $skip = $HOSTNAME !~ /\..*\./ ?
+	       'skip: cannot test cookies - ' .
+	       'hostname does not contain two dots' :
+	       undef;
+    if($skip) {
+	skip($skip, 1) for 1 .. 2;
+    } else {
+	my $tests = [ $COOKIE_TEST,
+		      { url => abs_url($URL, '/non-existent') } ];
+
+	my $out_filter = sub {
+	    $_[0] =~ s/: .*?GMT/: SOMEDAY/g;
+	    $_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
+	    $_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
+	    $COOKIE_FILTER->($_[0]);
+	};
+
+	for my $terse (qw(summary failed_only)) {
+	    my $opts = { terse        => $terse,
+			 show_html    => 'yes',
+			 show_cookie  => 'yes',
+			 show_headers => 'yes' };
+
+	    check_webtest(webtest    => $WEBTEST,
+			  server_url => $URL,
+			  opts       => $opts,
+			  tests      => $tests,
+			  out_filter => $out_filter,
+			  check_file => "t/test.out/report-terse-show-$terse");
+	}
+    }
 }
 
 # try to stop server even we have been crashed

@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.2 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Cookies.pm,v 1.4 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::Cookies;
 
@@ -35,8 +35,9 @@ use HTTP::WebTest::Utils qw(make_access_method);
 
 =head2 accept_cookies($optional_accept_cookies)
 
-Enables or disables receipt of cookies if boolean parameter
-C<$optional_accept_cookies> is passed.
+Returns the current setting of accept_cookies.
+If optional boolean parameter C<$optional_accept_cookies> is passed,
+enables or disables receipt of cookies.
 
 =head3 Returns
 
@@ -48,8 +49,9 @@ True if receipt of cookies is enabled; false otherwise.
 
 =head2 send_cookies($optional_send_cookies)
 
-Enables or disables transmission of cookies if boolean parameter
-C<$optional_send_cookies> is passed.
+Returns the current setting of send_cookies.
+If optional boolean parameter C<$optional_send_cookies> is passed,
+enables or disables transmission of cookies.
 
 =head3 Returns
 
@@ -61,8 +63,8 @@ True if transmission of cookies is enabled; false otherwise.
 
 =head2 extract_cookies (...)
 
-Overloaded method.  Passes all arguments to C<SUPER::extract_cookies>
-if receipt of cookies is enabled.  Does nothing otherwise.
+Overloaded method.  If receipt of cookies is enabled, passes all arguments 
+to C<SUPER::extract_cookies>.  Otherwise, does nothing.
 
 =cut
 
@@ -73,8 +75,8 @@ sub extract_cookies {
 
 =head2 add_cookie_header (...)
 
-Overloaded method.  Passes all arguments to C<SUPER::add_cookie_header>
-if transmission of cookies is enabled.  Does nothing otherwise.
+Overloaded method.  If transmission of cookies is enabled,
+passes all arguments to C<SUPER::add_cookie_header>.  Otherwise, does nothing.
 
 =cut
 
@@ -87,10 +89,10 @@ sub add_cookie_header {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

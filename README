@@ -2,11 +2,6 @@ NAME
     HTTP::WebTest - Test remote URLs or local web files
 
 DESCRIPTION
-  Beta software warning
-    THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS PROBABLY
-    NOT AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be downloaded at
-    http://search.cpan.org/search?dist=HTTP-WebTest-1.07
-
   Introduction
     This module runs tests on remote URLs or local web files containing
     Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report. This
@@ -61,10 +56,10 @@ DESCRIPTION
               | parameters |           |  (Perl/HTML/etc.) |
               |            |           |                   |
               --------------           ---------------------
-                    |                            |
-                    |  ---------------------------
-                    |  |
-                    V  V              ------------------------
+                  |                              |
+                  |  -----------------------------
+                  |  |
+                  V  V                ------------------------
               -------------           |                      |
               |           |---------->| Temporary Apache     |
               |  WebTest  |           | directories (htdocs, |
@@ -83,33 +78,31 @@ DESCRIPTION
 
 RESTRICTIONS / BUGS
     This module have been tested only on Unix (e.g., Solaris, Linux, AIX,
-    etc.) but it should work on Win32 systems.
-
-    Local file tests don't work on Win32 systems.
-
-    The module's HTTP requests time out after 3 minutes (the default value for
-    LWP::UserAgent). If the "file_path" parameter is specified, Apache must be
-    installed.
-
-SUPPORT
-    Please email bug reports, suggestions, questions, etc. to "HTTP::WebTest"
-    maillist "http-webtest-general@lists.sourceforge.net". You can sign up at
-    http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
+    etc.) but it should work on Win32 systems. (Exception: local file tests
+    don't work on Win32 systems.) The module's HTTP requests time out after 3
+    minutes (the default value for LWP::UserAgent). If the "file_path"
+    parameter is specified, Apache must be installed.
 
 AUTHORS
-    Richard Anderson <richard@richard-anderson.org> have wrote "HTTP::WebTest
-    1.xx".
+    Richard Anderson <richard@richard-anderson.org> wrote "HTTP::WebTest
+    1.xx", using some ideas from the CPAN Monkeywrench module.
 
-    Ilya Martynov <ilya@martynov.org> made rewrite of "HTTP::WebTest". New
-    version of "HTTP::WebTest" have introduced extended API and plugin based
-    architecture.
+    Ilya Martynov <ilya@martynov.org> implemented the plug-in concept, the
+    extended API and completely rewrote "HTTP::WebTest".
 
-    Please don't email authors directly. Use "HTTP::WebTest" maillists.
+    Please don't email authors directly. Use the SourceForge "HTTP::WebTest"
+    mail list (see SUPPORT, next section).
+
+SUPPORT
+    Please email bug reports, suggestions, questions, etc. to the SourceForge
+    "HTTP::WebTest" maillist. You can sign up at
+    http://lists.sourceforge.net/lists/listinfo/http-webtest-general. The
+    email address is "http-webtest-general@lists.sourceforge.net".
 
 COPYRIGHT
     Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
 
-    Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+    Copyright (c) 2001-2002 Ilya Martynov. All rights reserved.
 
-    This module is free software. It may be used, redistributed and/or
-    modified under the terms of the Perl Artistic License.
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.

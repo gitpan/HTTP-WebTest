@@ -1,4 +1,4 @@
-# $Id: Test.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Test.pm,v 1.6 2002/07/04 22:39:56 m_ilya Exp $
 
 package HTTP::WebTest::Test;
 
@@ -30,7 +30,7 @@ HTTP::WebTest::Test - Test object class
 
 =head1 DESCRIPTION
 
-Objects of this class represent tests.  They store both test params and
+Objects of this class represent tests.  They store both test parameters and
 test results.
 
 =head1 CLASS METHODS
@@ -75,7 +75,7 @@ sub new {
 
 =head3 Returns
 
-A reference on hash with all test parameters.
+A reference to a hash with all test parameters.
 
 =cut
 
@@ -104,7 +104,7 @@ C<$optional_results> is passed.
 
 =head3 Returns
 
-A reference on array which contains
+A reference to an array that contains
 L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects.
 
 =cut
@@ -113,9 +113,9 @@ L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects.
 
 =head2 request ($optional_request)
 
-Can set L<HTTP::Request|HTTP::Request> object for this
-C<HTTP::WebTest::Test> object if parameter C<$optional_request> is
-passed.
+If parameter C<$optional_request> is passed,
+set L<HTTP::Request|HTTP::Request> object for this
+C<HTTP::WebTest::Test> object.
 
 =head3 Returns
 
@@ -127,9 +127,9 @@ A L<HTTP::Request|HTTP::Request> object.
 
 =head2 response ($optional_response)
 
-Can set L<HTTP::Response|HTTP::Response> object for this
-C<HTTP::WebTest::Test> object if parameter C<$optional_response> is
-passed.
+If parameter C<$optional_response> is passed,
+set L<HTTP::Response|HTTP::Response> object for this
+C<HTTP::WebTest::Test> object.
 
 =head3 Returns
 
@@ -141,8 +141,8 @@ A L<HTTP::Response|HTTP::Response> object.
 
 =head2 response_time ($optional_response_time)
 
-Can set response time for this C<HTTP::WebTest::Test> object if
-parameter C<$optional_response_time> is passed.
+If parameter C<$optional_response_time> is passed,
+set response time for this C<HTTP::WebTest::Test> object.
 
 =head3 Returns
 
@@ -156,8 +156,8 @@ A response time.
 
 Tries to convert test definition in some form into
 C<HTTP::WebTest::Test> object.  Currenlty supports test defintion in
-form of C<HTTP::WebTest::Test> object (it is just passed throw) or in
-form of hash reference:
+form of C<HTTP::WebTest::Test> object (it is just passed through) or in
+the form of hash reference:
 
     { test_param1 => test_value1, test_param2 => test_value2 }
 
@@ -195,10 +195,10 @@ sub reset {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

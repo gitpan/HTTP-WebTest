@@ -1,4 +1,4 @@
-# $Id: DefaultReport.pm,v 1.5 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: DefaultReport.pm,v 1.8 2002/07/31 09:07:12 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::DefaultReport;
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin is default test report plugin.  Builds simple plain text
+This plugin is the default test report plugin.  It builds a simple text
 report.
 
 =cut
@@ -30,11 +30,10 @@ use HTTP::WebTest::Utils qw(make_access_method);
 
 I<GLOBAL PARAMETER>
 
-This parameter defines if default report plugin should be used for
+This parameter controls whether the default report plugin is used for
 test report creation.  Value C<yes> means that default report plugin
-should be used, value C<no> means that it should not.  It can be
-useful if it is desired to use another non-default report for creation
-of test report.  It can be used to disable any output at all also
+will be used, value C<no> means that it will not.
+It can also be used to disable all output 
 (i.e. if this parameter has value C<no> and no other report plugins
 are loaded).
 
@@ -48,7 +47,7 @@ C<yes>
 
 =head2 test_name
 
-Name associated with this url in the test report and error messages.
+Name associated with this URL in the test report and error messages.
 
 =head2 show_headers
 
@@ -149,34 +148,39 @@ sub report_test {
                               show_cookies terse));
 
     # get test params we handle
-    my $test_name    = $self->test_param('test_name');
+    my $test_name    = $self->test_param('test_name', 'N/A');
     my $show_html    = $self->yesno_test_param('show_html');
     my $show_cookies = $self->yesno_test_param('show_cookies');
     my $show_headers = $self->yesno_test_param('show_headers');
-    my $terse        = lc $self->test_param('terse');
+    my $terse        = lc $self->test_param('terse', 'no');
 
     my $url = 'N/A';
     if($self->webtest->last_request) {
 	$url = $self->webtest->last_request->uri;
     }
 
-    return if defined $terse and $terse eq 'summary';
+    return if $terse eq 'summary';
 
+    # output buffer
     my $out = '';
 
     # test header
-    $out .= "Test Name: $test_name\n"
-	if defined $test_name;
+    $out .= "Test Name: $test_name\n";
     $out .= "URL: $url\n\n";
+
+    my $not_ok_num = 0;
 
     for my $result (@{$self->webtest->last_results}) {
 	# test results
 	my $group_comment = $$result[0];
 
 	my @results = @$result[1 .. @$result - 1];
+	my @not_ok_results = grep +(not $_->ok), @results;
+	$not_ok_num += @not_ok_results;
 
-	if(defined($terse) and $terse eq 'failed_only') {
-	    @results = grep +(not $_->ok), @results;
+	if($terse eq 'failed_only') {
+	    # skip all positive results in output
+	    @results = @not_ok_results;
 	}
 
 	next unless @results;
@@ -195,10 +199,13 @@ FORMAT
 	}
     }
 
+    # true if show_*** parameters should take effect
+    my $show_xxx = $terse eq 'failed_only' ? $not_ok_num > 0 : 1;
+
     my $response = $self->webtest->last_response;
     my $request = $self->webtest->last_request;
 
-    if($show_headers) {
+    if($show_headers and $show_xxx) {
 	# show all headers
 
 	$out .= "\n";
@@ -211,7 +218,7 @@ FORMAT
 	$out .= $response->headers_as_string . "\n";
     }
 
-    if($show_cookies) {
+    if($show_cookies and $show_xxx) {
 	# show sent and recieved cookies
 
 	my @sent = $request->header('Cookie');
@@ -236,7 +243,7 @@ FORMAT
 	}
     }
 
-    if($show_html) {
+    if($show_html and $show_xxx) {
 	# content in response
 
 	$out .= "\n";
@@ -305,7 +312,7 @@ sub sformat {
     return $^A;
 }
 
-# print line using some format specification
+# print line using format specification
 sub fprint {
     my $self = shift;
     my $format = shift;
@@ -316,10 +323,10 @@ sub fprint {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

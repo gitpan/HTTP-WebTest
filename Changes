@@ -1,12 +1,55 @@
-$Id: Changes,v 1.29 2002/06/15 20:25:10 m_ilya Exp $
-
-THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS
-PROBABLY NOT AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be
-downloaded at http://search.cpan.org/search?dist=HTTP-WebTest-1.07
+$Id: Changes,v 1.43 2002/07/31 15:37:05 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
 
-Current version
+1.99_08 Wed Jul 31 2002
+
+ENHANCEMENTS:
+
+* New plugin HTTP::WebTest::Plugin::Delay by Duncan Cameron.
+
+* License change: previously HTTP-WebTest have been licensed under
+terms of Artistic license.  Starting from this release HTTP-WebTest is
+dual licensed under terms of GPL/Artistic licenses like Perl itself.
+
+* Docs are edited for style and grammar.  Thanks to Richard Anderson.
+
+* Parser of wtscript files supports nested lists as values for list
+parameters.
+
+* 'cookies' parameter supports new named style of cookie
+specifications.  See HTTP::WebTest::Plugin::Cookies for details.
+
+* File upload tests are supported now.
+
+INCOMPATIBILITIES:
+
+* HTTP-WebTest now uses HTTP::WebTest::Request instead of
+HTTP::Request.  It is inherited from HTTP::Request and supports notion
+of query parameters.  This change simplifies writting plugins than may
+need to set or change query parameters.  However existing plugins
+which set query parameters using HTTP::Request's methods 'content' and
+'uri' are likely to be broken by this change.  If you use such plugins
+then change them to use HTTP::WebTest::Request's method 'params'.
+
+DEPRECATIONS:
+
+* Parameter 'cookie' is deprecated. Use 'cookies' intead of it.
+
+* Old style of cookie specifications with 'cookies' parameter is
+deprecated.
+
+BUG FIXES:
+
+* HTTP-WebTest's default report plugin doesn't outputs cookies,
+headers and web page itself when any of 'show_xxx' parameters are on
+but such output is prohibited by test parameter 'terse'.  Reported by
+William McKee.
+
+* Put Algorithm::Diff back into PREREQ_PM in Makefile.PL.  It fixes
+problems with automated testing of HTTP-WebTest by CPAN and CPANPLUS.
+
+1.99_07 Sun Jun 16 2002
 
 ENHANCEMENTS:
 
@@ -18,8 +61,8 @@ including optional.
 
 * $webtest->run_wtscript accepts wtscript passed as string.
 
-* Parser for wtscript files is rewritten. It doesn't use
-Parse::RecDescent anymore. New parser is faster and provides better
+* Parser for wtscript files is rewritten.  It doesn't use
+Parse::RecDescent anymore.  New parser is faster and provides better
 error diagnostics for parse errors.
 
 INCOMPATIBILITIES:

@@ -1,6 +1,6 @@
 package Bundle::HTTP::WebTest;
 
-# $Id: WebTest.pm,v 1.2 2002/06/15 21:47:56 m_ilya Exp $
+# $Id: WebTest.pm,v 1.3 2002/06/19 10:28:21 m_ilya Exp $
 
 $VERSION = '0.01';
 
@@ -45,10 +45,10 @@ L<HTTP::WebTest|HTTP::WebTest>.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

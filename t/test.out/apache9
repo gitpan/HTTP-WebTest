@@ -5,6 +5,7 @@ Failed  Succeeded  Test Name
    1          1    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/error-log-0
 
   APACHE ERROR LOG TEST
@@ -13,12 +14,14 @@ URL: http://http.web.test/error-log-0
     200 OK                                                       SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/error-log-1
 
   STATUS CODE CHECK
     200 OK                                                       SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/error-log-0
 
   APACHE ERROR LOG TEST
@@ -27,6 +30,7 @@ URL: http://http.web.test/error-log-0
     200 OK                                                       SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/error-log-3
 
   APACHE ERROR LOG TEST

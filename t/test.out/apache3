@@ -4,6 +4,7 @@ Failed  Succeeded  Test Name
    0          4    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/test1.txt
 
   APACHE ERROR LOG TEST
@@ -15,6 +16,7 @@ URL: http://http.web.test/test1.txt
     123                                                          SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/test1.txt
 
   APACHE ERROR LOG TEST
@@ -26,6 +28,7 @@ URL: http://http.web.test/test1.txt
     123                                                          SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/test1.txt
 
   APACHE ERROR LOG TEST

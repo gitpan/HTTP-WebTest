@@ -3,6 +3,7 @@ Failed  Succeeded  Test Name
    1          0    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
@@ -26,6 +27,7 @@ Client-Response-Num: 1
 
 
 
+Test Name: N/A
 URL: http://http.web.test/non-existent
 
   STATUS CODE CHECK

@@ -5,6 +5,7 @@ Failed  Succeeded  Test Name
    0          1    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/inc_counter
 
   STATUS CODE CHECK
@@ -13,6 +14,7 @@ URL: http://http.web.test/inc_counter
     Test 1                                                       SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/inc_counter
 
   STATUS CODE CHECK
@@ -21,6 +23,7 @@ URL: http://http.web.test/inc_counter
     Test 2                                                       FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/inc_counter
 
   STATUS CODE CHECK
@@ -30,6 +33,7 @@ URL: http://http.web.test/inc_counter
     Test 4                                                       FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/inc_counter
 
   STATUS CODE CHECK

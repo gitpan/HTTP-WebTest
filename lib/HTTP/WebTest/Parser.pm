@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.14 2002/06/15 23:09:22 m_ilya Exp $
+# $Id: Parser.pm,v 1.17 2002/06/22 20:08:38 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -14,7 +14,7 @@ HTTP::WebTest::Parser - Parse wtscript files.
 
 =head1 DESCRIPTION
 
-Parses wtscript and converts it in set of test objects.
+Parses a wtscript file and converts it to a set of test objects.
 
 =head1 CLASS METHODS
 
@@ -36,12 +36,12 @@ my $reWORD = qr/(?: (?: [^=)\s] | [^)\s] (?!>) )+ )/x;
 
 =head2 parse ($data)
 
-Parses wtscript passed as scalar variable C<$data>.
+Parses wtscript text data passed in a scalar variable C<$data>.
 
 =head3 Returns
 
-A list of two elements - a reference on array which contains test
-objects and a reference on hash which contains test params.
+A list of two elements - a reference to an array that contains test
+objects and a reference to a hash that contains test parameters.
 
 =cut
 
@@ -198,7 +198,7 @@ sub _parse_value {
 	    # exit loop on closing bracket
 	    last if $_[0] =~ /\G \)/gcx;
 
-	    my $value = _parse_scalar($_[0]);
+	    my $value = _parse_value($_[0]);
 
 	    die "Missing right bracket\n"
 		unless defined $value;
@@ -207,7 +207,7 @@ sub _parse_value {
 
 	    if($_[0] =~ /\G $reHS* => $reHS* /gcx) {
 		# handles second part of scalar => scalar syntax
-		my $value = _parse_scalar($_[0]);
+		my $value = _parse_value($_[0]);
 
 		die "Missing right bracket\n"
 		    unless defined $value;
@@ -276,10 +276,10 @@ sub _parse_scalar {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

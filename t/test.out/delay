@@ -1,18 +1,12 @@
 Failed  Succeeded  Test Name
-   0          2    *** no name ***
    1          0    *** no name ***
 
 
 Test Name: N/A
-URL: http://http.web.test/test-file1
-
-
-
-Test Name: N/A
-URL: http://http.web.test/non-existent
+URL: http://http.web.test/test
 
   STATUS CODE CHECK
     404 Not Found                                                FAIL
 
 
-Total web tests failed: 1  succeeded: 2
+Total web tests failed: 1  succeeded: 0

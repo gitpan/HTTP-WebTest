@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.9 2002/05/12 13:36:59 m_ilya Exp $
+# $Id: 02-generic.t,v 1.11 2002/07/24 22:17:47 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -17,7 +17,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 24 }
+BEGIN { plan tests => 29 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -214,7 +214,7 @@ my $WEBTEST = HTTP::WebTest->new;
     }
 }
 
-# 10: test cookies - cookies param
+# 10: test cookies - cookies param (deprecated syntax)
 {
     my $skip = $HOSTNAME !~ /\..*\./ ?
 	       'skip: cannot test cookies - ' .
@@ -252,7 +252,75 @@ my $WEBTEST = HTTP::WebTest->new;
     }
 }
 
-# 11: and another cookie test (tests alias parameter)
+# 11-14: test cookies - cookies param (new syntax)
+{
+    my $skip = $HOSTNAME !~ /\..*\./ ?
+	       'skip: cannot test cookies - ' .
+	       'hostname does not contain two dots' :
+	       undef;
+    if($skip) {
+	skip($skip, 1) for 1..4;
+    } else {
+	my $tests = [ { url => abs_url($URL, '/show-cookies'),
+			cookies => [ [ name   => 'N001',
+				       value  => 'V001',
+				       path   => '/',
+				       domain => $HOSTNAME ],
+				     [ name   => 'N002',
+				       value  => 'V002',
+				       path   => '/',
+				       domain => $HOSTNAME,
+				       rest   => [ Comment => 'test' ] ] ],
+			text_require => [ '<N001>=<V001>',
+					  '<N002>=<V002>' ] },
+	              { url => abs_url($URL, '/show-cookies'),
+			cookies => [ [ name   => 'N003',
+				       value  => 'V003',
+				       path   => '/',
+				       domain => 'wrong.hostname.com' ],
+		                     [ name   => 'N004',
+				       value  => 'V004',
+				       domain => $HOSTNAME,
+				       path   => '/wrong/path' ] ],
+			text_forbid => [ '<N003>=<V003>',
+					 '<N004>=<V004>' ] }
+		    ];
+
+	check_webtest(webtest => $WEBTEST,
+		      server_url => $URL,
+		      tests => $tests,
+		      check_file => 't/test.out/cookie2a');
+
+	my $cookie_jar = $WEBTEST->user_agent->cookie_jar;
+	my $n001a_ok = 0;
+	my $n001b_ok = 0;
+	my $n002_ok = 0;
+	$cookie_jar->scan(sub {
+			      my @cookie = @_;
+			      # test cookie N001 for correct path
+			      if( $cookie[1] eq 'N001') {
+				  $n001a_ok = 1
+				      if $cookie[3] eq '/';
+			      }
+			      # test cookie N001 for correct domain
+			      if( $cookie[1] eq 'N001') {
+				  $n001b_ok = 1
+				      if $cookie[4] eq $HOSTNAME;
+			      }
+			      # test cookie N002 for correct comment
+			      # field
+			      if( $cookie[1] eq 'N002') {
+				  $n002_ok = 1
+				      if $cookie[10]{Comment} eq 'test';
+			      }
+			  });
+	ok($n001a_ok);
+	ok($n001b_ok);
+	ok($n002_ok);
+    }
+}
+
+# 15: and another cookie test (tests alias parameter)
 {
     my $skip = $HOSTNAME !~ /\..*\./ ?
 	       'skip: cannot test cookies - ' .
@@ -287,7 +355,7 @@ my $WEBTEST = HTTP::WebTest->new;
     }
 }
 
-# 12: authorization tests
+# 16: authorization tests
 {
     my $tests = [ { url => abs_url($URL, '/auth-test-user-passwd') },
 		  { url => abs_url($URL, '/auth-test-user-passwd'),
@@ -304,7 +372,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/auth');
 }
 
-# 13: be more forgiving about short urls
+# 17: be more forgiving about short urls
 {
     my $url = abs_url($URL, '/test-file1');
     $url =~ s|http://||;
@@ -317,7 +385,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/short-url');
 }
 
-# 14-16: subroutines as value of test parameter
+# 18-20: subroutines as value of test parameter
 {
     my $tests = [ { url => sub { abs_url($URL, '/test-file1') } },
 		  { url => sub { abs_url($URL, '/status-forbidden') } }
@@ -351,7 +419,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/subparam2');
 }
 
-# 17: test user_agent parameter
+# 21: test user_agent parameter
 {
     my $version = HTTP::WebTest->VERSION;
 
@@ -373,7 +441,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/user_agent');
 }
 
-# 18: test handling of redirects
+# 22: test handling of redirects
 {
     my $tests = [ { url => abs_url($URL, '/redirect'),
 		    method => 'get',
@@ -389,7 +457,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/redirect');
 }
 
-# 19-21: test subroutine caching
+# 23-25: test subroutine caching
 {
     my $value = 0;
 
@@ -414,7 +482,7 @@ my $WEBTEST = HTTP::WebTest->new;
     ok($value == 3);
 }
 
-# 22: test arguments passed to subroutine test parameter
+# 26: test arguments passed to subroutine test parameter
 {
     my $webtest = undef;
 
@@ -426,7 +494,7 @@ my $WEBTEST = HTTP::WebTest->new;
     ok($webtest eq $WEBTEST);
 }
 
-# 23: test if we are setting content type header correctly for POST
+# 27: test if we are setting content type header correctly for POST
 # requests
 {
     my $tests = [ { url => abs_url($URL, '/show-headers'),
@@ -441,7 +509,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		  check_file => 't/test.out/content-type');
 }
 
-# 24: test 'http_headers' param
+# 28: test 'http_headers' param
 {
     my $tests = [ { url => abs_url($URL, '/show-headers'),
 		    http_headers => [ Accept => 'text/plain, text/html' ],
@@ -455,6 +523,39 @@ my $WEBTEST = HTTP::WebTest->new;
 		  server_url => $URL,
 		  tests => $tests,
 		  check_file => 't/test.out/http-headers');
+}
+
+# 29: test file uploading capability
+{
+    my $tests = [ { url => abs_url($URL, '/show-request'),
+		    method => 'post',
+		    params => [ file => [ 't/02-generic.t' ] ],
+		    text_require => [ 'Method: <POST>',
+				      'Query: <>' ],
+		    regex_require => [ qr|Content: <.*Content-Disposition: form-data; name="file".*; filename="t/02-generic.t">|,
+				       qr/Content: <.*29: test file uploading capability.*>/ ] },
+                  { url => abs_url($URL, '/show-request'),
+		    method => 'post',
+		    params => [ file => [ 't/02-generic.t', 'test.txt' ] ],
+		    text_require => [ 'Method: <POST>',
+				      'Query: <>' ],
+		    regex_require => [ qr|Content: <.*Content-Disposition: form-data; name="file".*; filename="test.txt">|,
+				       qr/Content: <.*29: test file uploading capability.*>/ ] },
+                  { url => abs_url($URL, '/show-request'),
+		    method => 'post',
+		    params => [ file => [ 't/02-generic.t', undef,
+					  'Content-Type' => 'foo/bar' ] ],
+		    text_require => [ 'Method: <POST>',
+				      'Query: <>' ],
+		    regex_require => [ qr|Content: <.*Content-Disposition: form-data; name="file".*; filename="test.txt">|,
+				       qr|Content: <.*Content-Type: foo/bar.*>|,
+				       qr/Content: <.*29: test file uploading capability.*>/ ] },
+		];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/file-upload');
 }
 
 # try to stop server even we have been crashed

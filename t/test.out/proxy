@@ -3,6 +3,7 @@ Failed  Succeeded  Test Name
    0          2    *** no name ***
 
 
+Test Name: N/A
 URL: http://proxy.test/show-url
 
   STATUS CODE CHECK
@@ -11,6 +12,7 @@ URL: http://proxy.test/show-url
     URL: <http://proxy.test/show-url>                            SUCCEED
 
 
+Test Name: N/A
 URL: ftp://proxy.test/show-url
 
   STATUS CODE CHECK

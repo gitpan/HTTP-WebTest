@@ -1,4 +1,4 @@
-# $Id: Plugins.pod,v 1.4 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Plugins.pod,v 1.6 2002/06/21 06:48:16 richardanderson Exp $
 
 =head1 NAME
 
@@ -10,48 +10,47 @@ Not applicable.
 
 =head1 DESCRIPTION
 
-This document is good starting point for developers who wish to extend
+This document is the starting point for developers who wish to extend
 L<HTTP::WebTest|HTTP::WebTest> functionality with external plugins.
 
 =head1 ABOUT PLUGINS
 
 Plugin can be used to add new test types and add new report
-types.  Plugin is just a Perl package which defines class with a number
+types.  A plugin is just a Perl package that defines class with a number
 of methods which if present are called by
 L<HTTP::WebTest|HTTP::WebTest> at various stages of test.
 
 Each plugin package should subclass
 L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>.  Report plugins can
 subclass L<HTTP::WebTest::ReportPlugin|HTTP::WebTest::ReportPlugin>
-which is subclass of L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>
-instead of
-it.  L<HTTP::WebTest::ReportPlugin|HTTP::WebTest::ReportPlugin> defines
-some helper methods useful in report plugin and handles some test
+which is a subclass of L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>.
+L<HTTP::WebTest::ReportPlugin|HTTP::WebTest::ReportPlugin> defines
+some helper methods useful in report plugins and handles some test
 parameters common for report plugins.
 
 =head1 REQUIRED METHODS
 
-Each plugin package should provide following method:
+Each plugin package must provide following method:
 
 =head2 param_types
 
 =head3 Returns
 
-A string which contains information about supported test parameters and
+A string that contains information about supported test parameters and
 their types.
 
 String has following format:
 
     PARAM1 TYPE1 PARAM2 TYPE2 PARAM3 TYPE3 ... PARAMN TYPEN
 
-PARAM is a name of test parameter and TYPE is it's type
-specification.  It should be separated by any whitespace character.
+PARAM is the name of a test parameter and TYPE is it's type
+specification.  They should be separated by a whitespace character.
 
-Each test parameter type is defined by method in
+Each test parameter type is defined by a method in
 L<HTTP::WebTest::Plugin|HTTP::WebTest::Plugin>.  Type C<foobar> is
 defined as method C<check_foobar> in this package.  See its
-documentation for list of all C<check_****> methods which define all
-known test types.
+documentation for list of all C<check_****> methods - these methods
+define all known test types.
 
 =head3 Example
 
@@ -65,8 +64,8 @@ known test types.
 
 This is from
 L<HTTP::WebTest::Plugin::TextMatchTest|HTTP::WebTest::Plugin::TextMatchTest>.
-It defines following test parameters: C<ignore_case>, C<text_forbid>,
-C<text_require>, C<regex_forbid>, C<regex_require>.  C<yesno> and
+It defines the test parameters C<ignore_case>, C<text_forbid>,
+C<text_require>, C<regex_forbid> and C<regex_require>.  C<yesno> and
 C<list> are test parameter types.
 
 =head1 OPTIONAL METHODS
@@ -75,35 +74,34 @@ Each plugin package may provide following methods:
 
 =head2 start_tests ()
 
-Called before runing test sequence.  You can put here some
-initalization.  Report plugins can use this hook to create header of
-report.
+Called before runing test sequence.  Initializations can be done
+in this method.  Report plugins can use this hook to create the report header.
 
 =head2 end_tests ()
 
-Called when test sequence is finished.  You can put here some
-finialization code.  Report plugins can use this hook to finish
-creation of report.
+Called when test sequence is finished.  Clean-up and finalization can be
+done in this method.  Report plugins can use this hook to finish
+the report.
 
 =head2 prepare_request ()
 
-Called before L<HTTP::WebTest|HTTP::WebTest> does HTTP
-request.  Various properties of request here can be set here.
+Called just before L<HTTP::WebTest|HTTP::WebTest> submits the HTTP
+request.  Various properties of request can be set here.
 
 =head2 check_response ()
 
-Called once L<HTTP::WebTest|HTTP::WebTest> did HTTP request and have
-got HTTP response.  Test checks should be placed here.
+Called after L<HTTP::WebTest|HTTP::WebTest> gets the
+HTTP response.  Web page tests should be placed here.
 
 =head2 report_test ()
 
-Called when L<HTTP::WebTest|HTTP::WebTest> got HTTP response after
-<check_response> hooks.  Normally used by report plugins to generate
-piece of report about test step just done.
+Called after all L<HTTP::WebTest|HTTP::WebTest> 
+<check_response> hooks are called.  Normally used by report plugins to generate
+report about test just done.
 
 =head3 Returns
 
-This methods should return result of test checks made in following
+These methods should return results of tests made in the following
 form:
 
     [ [ TEST_GROUP1_NAME, TEST_RESULT1, TEST_RESULT2, ... ],
@@ -111,42 +109,39 @@ form:
       ...
     ];
 
-C<TEST_GROUP_NAME> is a string which describes a group of test checks
-and their results.  It is used during generation of test report.
+C<TEST_GROUP_NAME> is a string that describes a group of web tests
+and their results.  It is used during the generation of the test report.
 
 C<TEST_RESULT> is an
 L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> object.
 
 =head1 EXAMPLES
 
-Well, why anybody need examples when source code of all
-L<HTTP::WebTest|HTTP::WebTest> plugins is available.
-
-Some good examples are:
+Some examples of plugins are:
 
 =over 4
 
 =item L<HTTP::WebTest::Plugin::Cookies|HTTP::WebTest::Plugin::Cookies>
 
-Plugin which uses both C<prepare_request> and C<check_response> hooks.
+Plugin that uses both C<prepare_request> and C<check_response> hooks.
 
 =item L<HTTP::WebTest::Plugin::StatusTest|HTTP::WebTest::Plugin::StatusTest>
 
-Very simple plugin which defines only C<check_response> hook.
+Simple plugin that defines only the C<check_response> hook.
 
 =item L<HTTP::WebTest::Plugin::DefaultReport|HTTP::WebTest::Plugin::DefaultReport>
 
-Example of report plugin.  Uses C<start_tests>, C<report_test> and
+Example of a report plugin.  Uses C<start_tests>, C<report_test> and
 C<end_tests> hooks.
 
 =back
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

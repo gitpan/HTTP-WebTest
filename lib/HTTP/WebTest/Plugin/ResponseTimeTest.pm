@@ -1,4 +1,4 @@
-# $Id: ResponseTimeTest.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: ResponseTimeTest.pm,v 1.5 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::Plugin::ResponseTimeTest;
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin provides support for response time tests.
+This plugin supports web server response time tests.
 
 =cut
 
@@ -97,10 +97,10 @@ sub check_response {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

@@ -3,6 +3,7 @@ Failed  Succeeded  Test Name
    2          0    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/hello
 
   STATUS CODE CHECK
@@ -11,6 +12,7 @@ URL: http://http.web.test/hello
     Hello, World!                                                SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/no-hello
 
   STATUS CODE CHECK

@@ -2,6 +2,7 @@ Failed  Succeeded  Test Name
    0          2    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/show-cookies
 
   STATUS CODE CHECK
@@ -10,6 +11,8 @@ URL: http://http.web.test/show-cookies
     <webtest>=<This is the cookie value>                         SUCCEED
 
   PAGE CONTENT:
+<N001>=<V001>
+<N002>=<V002>
 <c1>=<v1>
 <c3>=<v3>
 <c4>=<v4>

@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.15 2002/06/13 09:22:14 m_ilya Exp $
+# $Id: API.pm,v 1.20 2002/07/24 21:14:52 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API.  That's right
 package HTTP::WebTest;
@@ -19,8 +19,6 @@ HTTP::WebTest::API - API of HTTP::WebTest
     # or (to pass test parameters as method arguments)
     $webtest->run_tests($tests);
 
-See below for all API.
-
 =head1 DESCRIPTION
 
 This document describes Perl API of C<HTTP::WebTest>.
@@ -32,7 +30,6 @@ This document describes Perl API of C<HTTP::WebTest>.
 use 5.005;
 use strict;
 
-use HTTP::Request;
 use IO::File;
 use LWP::UserAgent;
 use Time::HiRes qw(time);
@@ -40,6 +37,7 @@ use Time::HiRes qw(time);
 use HTTP::WebTest::Cookies;
 use HTTP::WebTest::Utils qw(make_access_method load_package);
 use HTTP::WebTest::Plugin;
+use HTTP::WebTest::Request;
 use HTTP::WebTest::Test;
 
 # BACKWARD COMPATIBILITY BITS - exported sub is from 1.xx API
@@ -76,11 +74,11 @@ Runs a test sequence.
 
 =item * $test
 
-A reference on array which contains test objects.
+A reference to an array that contains test objects.
 
 =item * $optional_params
 
-A reference on hash which contains optional global parameters for test.
+A reference to a hash that contains optional global parameters for test.
 
 =back
 
@@ -105,7 +103,7 @@ sub run_tests {
     # start tests hook; note that plugins can load other plugins and
     # modify $self->plugins in start tests hook
     my %initialized = ();
-    while(1) {
+    {
 	my $done = 1;
 
 	my @plugins = @{$self->plugins};
@@ -115,13 +113,13 @@ sub run_tests {
 		    $plugin->start_tests;
 		}
 		$initialized{$plugin} = 1;
-		# we must on more round to check for uninitialized
+		# we must do one more round to check for uninitialized
 		# plugins
 		$done = 0;
 	    }
 	}
 
-	last if $done;
+	redo unless $done;
     }
 
     # run all tests
@@ -152,16 +150,16 @@ Reads wtscript and runs tests it defines.
 
 =item * $wtscript
 
-Either a filename of wtscript file or wtscript passed as string. Very
+Either the name of wtscript file or wtscript passed as string. Very
 simple heuristic is used distinguish first from second. If
-C<$wtscript> contains either C<\n> or C<\r> it is treated like
-wtscript string. Otherwise it is filename.
+C<$wtscript> contains either C<\n> or C<\r> it is treated as a
+wtscript string. Otherwise, it is treated as a file name.
 
 =item * $optional_params
 
 =back
 
-A reference on hash which contains optional test parameters which can
+A reference to a hash that contains optional test parameters that can
 override parameters defined in wtscript.
 
 =cut
@@ -262,15 +260,15 @@ Parses test specification in wtscript format.
 
 =item * $data
 
-Scalar which contains test specification in wtscript format.
+Scalar that contains test specification in wtscript format.
 
 =back
 
 =head3 Returns
 
-A list of two elements.  First element is a reference on array which
-contains test objects.  Second element is a reference on hash which
-contains optional global parameters for test.
+A list of two elements.  First element is a reference to an array that
+contains test objects.  Second element is a reference to a hash that
+contains optional global test parameters.
 
 It can be passed directly to C<run_tests>.
 
@@ -305,7 +303,8 @@ Write an C<HTTP::WebTest> plugin.
 =item *
 
 Get access to L<LWP::UserAgent|LWP::UserAgent>,
-L<HTTP::Request|HTTP::Request>, L<HTTP::Response|HTTP::Response> and
+L<HTTP::WebTest::Request|HTTP::WebTest::Request>,
+L<HTTP::Response|HTTP::Response> and
 other objects used by C<HTTP::WebTest> during runing test sequence.
 
 =back
@@ -314,7 +313,7 @@ other objects used by C<HTTP::WebTest> during runing test sequence.
 
 =head3 Returns
 
-A reference on array which contains test objects.
+A reference to an array that contains test objects.
 
 =cut
 
@@ -322,14 +321,14 @@ A reference on array which contains test objects.
 
 =head2 user_agent ($optional_user_agent)
 
-Can switch user agent used by C<HTTP::WebTest> object if
-C<$optional_user_agent> is a user agent object.  If
-$optional_user_agent is passed as undef, the HTTP::WebTest object is
-reset to use default user agent.
+If $optional_user_agent is a user agent object,
+it is used by the C<HTTP::WebTest> object for all requests.
+If $optional_user_agent is passed as undef, the HTTP::WebTest object is
+reset to use the default user agent.
 
 =head3 Returns
 
-An user agent object used by C<HTTP::WebTest> object.
+The user agent object used by the C<HTTP::WebTest> object.
 
 =cut
 
@@ -337,14 +336,15 @@ An user agent object used by C<HTTP::WebTest> object.
 
 =head2 plugins ($optional_plugins)
 
-Can set plugins to be used during tests if C<$optional_plugins> is a
-reference on array which contains plugin objects.  If it is passed as
-undef resets C<HTTP::WebTest> object to use default set of plugins.
+If C<$optional_plugins> is a reference to an array that contains plugin 
+objects, the C<HTTP::WebTest> object uses these plugins while running tests.
+If C<$optional_plugins> is passed as
+undef, the C<HTTP::WebTest> object is reset to use the default set of plugins.
 
 =head3 Returns
 
-A reference on array which contains plugin objects.  Note that if you
-add or remove plugin objects to this array it will change set of
+A reference to an array that contains plugin objects.  If you
+add or remove plugin objects in this array, you will change the set of
 plugins used by C<HTTP::WebTest> object during tests.
 
 =cut
@@ -355,7 +355,8 @@ plugins used by C<HTTP::WebTest> object during tests.
 
 =head3 Returns
 
-A new L<LWP::UserAgent|LWP::UserAgent> object initialized with default settings.
+A new L<LWP::UserAgent|LWP::UserAgent> object, initialized with default
+settings.
 
 =cut
 
@@ -376,7 +377,7 @@ sub create_user_agent {
 
 =head2 reset_user_agent ()
 
-Resets user agent to default.
+Resets the user agent to the default.
 
 =cut
 
@@ -388,7 +389,7 @@ sub reset_user_agent {
 
 =head2 reset_plugins ()
 
-Resets set of plugin objects to default.
+Resets the set of plugin objects to the default set.
 
 =cut
 
@@ -402,7 +403,7 @@ sub reset_plugins {
 
 =head3 Returns
 
-A reference on set of default plugin objects.
+A reference to the set of default plugin objects.
 
 =cut
 
@@ -433,7 +434,7 @@ sub default_plugins {
 
 =head3 Returns
 
-A value of global test sequence parameter C<$param>.
+The value of the global test parameter C<$param>.
 
 =cut
 
@@ -448,7 +449,7 @@ sub global_test_param {
 
 =head3 Returns
 
-A number of last test being or been run.
+The number of the current test or, if no test is running, the last test run.
 
 =cut
 
@@ -458,8 +459,8 @@ A number of last test being or been run.
 
 =head3 Returns
 
-A L<HTTP::WebTest::Test|HTTP::WebTest::Test> object which corresponds
-to last test being or been run.
+The L<HTTP::WebTest::Test|HTTP::WebTest::Test> object which corresponds
+to the current test or, if no test is running, the last test run.
 
 =cut
 
@@ -469,7 +470,7 @@ to last test being or been run.
 
 =head3 Returns
 
-A L<HTTP::Request|HTTP::Request> object used in last test.
+The L<HTTP::WebTest::Request|HTTP::WebTest::Request> object used in last test.
 
 =cut
 
@@ -479,7 +480,7 @@ sub last_request { shift->last_test->request(@_) }
 
 =head3 Returns
 
-A L<HTTP::Response|HTTP::Response> object used in last test.
+The L<HTTP::Response|HTTP::Response> object used in last test.
 
 =cut
 
@@ -489,7 +490,7 @@ sub last_response { shift->last_test->response(@_) }
 
 =head3 Returns
 
-A response time for last request.
+The response time for the last request.
 
 =cut
 
@@ -499,8 +500,8 @@ sub last_response_time { shift->last_test->response_time(@_) }
 
 =head3 Returns
 
-A reference on array which contains results of checks made by plugins
-for last test.
+A reference to an array that contains the results of checks made by plugins
+for the last test.
 
 =cut
 
@@ -508,7 +509,7 @@ sub last_results { shift->last_test->results(@_) }
 
 =head2 run_test ($test, $optional_params)
 
-Runs single test.
+Runs a single test.
 
 =head3 Parameters
 
@@ -520,7 +521,7 @@ A test object.
 
 =item * $optional_params
 
-A reference on hash which contains optional global parameters for test.
+A reference to a hash that contains optional global test parameters.
 
 =back
 
@@ -539,7 +540,8 @@ sub run_test {
 
     # create request (note that actual uri is more likely to be
     # set in plugins)
-    my $request = HTTP::Request->new('GET' => 'http://MISSING_HOSTNAME/');
+    my $request = HTTP::WebTest::Request->new('GET' =>
+					      'http://MISSING_HOSTNAME/');
     $self->last_request($request);
 
     # set request object with plugins
@@ -595,9 +597,9 @@ L<HTTP::WebTest::Test|HTTP::WebTest::Test> objects).
 
 =head3 Returns
 
-A list of L<HTTP::WebTest::Test|HTTP::WebTest::Test> objects in list
-context or first value from list of
-L<HTTP::WebTest::Test|HTTP::WebTest::Test> object in scalar context.
+A list of L<HTTP::WebTest::Test|HTTP::WebTest::Test> objects (list
+context) or the first value from a list of
+L<HTTP::WebTest::Test|HTTP::WebTest::Test> objects (scalar context).
 
 =cut
 
@@ -612,18 +614,15 @@ sub convert_tests {
 
 =head1 BACKWARD COMPATIBILITY
 
-C<HTTP::WebTest 2.xx> offers more rich API than its predecessor
-C<HTTP::WebTest 1.xx>.  However while old API is deprecated it is still
-supported.
-
-It is not recommended to use it in new applications as it may be
-removed eventually in new versions of C<HTTP::WebTest>.
+C<HTTP::WebTest 2.xx> offers a richer API than its predecessor
+C<HTTP::WebTest 1.xx>.  The old API is still supported, but may be 
+deprecated in the future and is not recommended.
 
 =cut
 
 =head2 web_test ($file, $num_fail_ref, $num_succeed_ref, $optional_options)
 
-Reads wtscript and runs tests it defines.
+Reads wtscript file and runs tests it defines.
 
 In C<HTTP::WebTest 2.xx> you should use method C<run_wtscript>.
 
@@ -633,7 +632,7 @@ In C<HTTP::WebTest 2.xx> you should use method C<run_wtscript>.
 
 =item * $file
 
-A filename of wtscript file.
+Name of a wtscript file.
 
 =item * $num_fail_ref
 
@@ -647,7 +646,7 @@ C<undef> if you don't need it.
 
 =item * $optional_params
 
-A reference on hash which contains optional test parameters which can
+A reference to a hash that contains optional test parameters which can
 override parameters defined in wtscript.
 
 =back
@@ -674,13 +673,13 @@ sub web_test {
 This is not a method.  It is subroutine which creates a
 C<HTTP::WebTest> object and runs test sequence using it.
 
-You need either import C<run_web_test> into you namespace with
+You need to either import C<run_web_test> into you namespace with
 
     use HTTP::WebTest qw(run_web_test);
 
-or use full name C<HTTP::WebTest::run_web_test>
+or use the full name C<HTTP::WebTest::run_web_test>
 
-In C<HTTP::WebTest 2.xx> you should use method C<run_tests>.
+In C<HTTP::WebTest 2.xx> you should use the method C<run_tests>.
 
 =head3 Parameters
 
@@ -688,21 +687,21 @@ In C<HTTP::WebTest 2.xx> you should use method C<run_tests>.
 
 =item * $tests
 
-A reference on array which contains a set of test objects.
+A reference to an array that contains a set of test objects.
 
 =item * $num_fail_ref
 
-A reference on scalar where a number of failed tests will be stored or
+A reference to a scalar where the number of failed tests will be stored or
 C<undef> if you don't need it.
 
 =item * $num_succed_ref
 
-A reference on scalar where a number of passed tests will be stored or
+A reference to a scalar where the number of passed tests will be stored or
 C<undef> if you don't need it.
 
 =item * $optional_params
 
-A reference on hash which contains optional test parameters.
+A reference to a hash that contains optional test parameters.
 
 =back
 
@@ -728,10 +727,10 @@ sub run_web_test {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
@@ -741,9 +740,9 @@ L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>
 
 L<HTTP::WebTest::Plugins|HTTP::WebTest::Plugins>
 
-L<LWP::UserAgent|LWP::UserAgent>
+L<HTTP::WebTest::Request|HTTP::WebTest::Request>
 
-L<HTTP::Request|HTTP::Request>
+L<LWP::UserAgent|LWP::UserAgent>
 
 L<HTTP::Response|HTTP::Response>
 

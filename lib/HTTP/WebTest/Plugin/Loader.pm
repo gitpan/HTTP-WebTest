@@ -1,4 +1,4 @@
-# $Id: Loader.pm,v 1.4 2002/05/15 19:27:53 m_ilya Exp $
+# $Id: Loader.pm,v 1.6 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::Plugin::Loader;
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin allows to load external L<HTTP::WebTest|HTTP::WebTest>
+This plugin lets you to load external L<HTTP::WebTest|HTTP::WebTest>
 plugins.
 
 =cut
@@ -32,8 +32,8 @@ use HTTP::WebTest::Utils qw(load_package);
 I<GLOBAL PARAMETER>
 
 A list of module names.  Loads these modules and registers them as
-L<HTTP::WebTest|HTTP::WebTest> plugins.  If name of plugin starts with
-C<::> prepends it with C<HTTP::WebTest::Plugin>.  So
+L<HTTP::WebTest|HTTP::WebTest> plugins.  If the name of the plugin starts with
+C<::>, it is prepended with C<HTTP::WebTest::Plugin>.  So
 
     plugins = ( ::Click )
 
@@ -69,10 +69,10 @@ sub start_tests {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

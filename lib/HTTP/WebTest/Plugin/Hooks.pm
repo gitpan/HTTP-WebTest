@@ -1,4 +1,4 @@
-# $Id: Hooks.pm,v 1.7 2002/05/17 20:48:57 m_ilya Exp $
+# $Id: Hooks.pm,v 1.9 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::Plugin::Hooks;
 
@@ -30,11 +30,11 @@ HTTP::WebTest::Plugin::Hooks - Provides callbacks called during test run
 
 =head1 DESCRIPTION
 
-This plugin module adds test parameters which values are evaluated at
-specific time of L<HTTP::WebTest|HTTP::WebTest> test run.  It can be
+This plugin module adds test parameters whose values are evaluated at
+specific times of the L<HTTP::WebTest|HTTP::WebTest> test run.  It can be
 used to do some initialization before doing test request, to do some
 finalization when test response is received or to implement user
-defined tests without need to write separate plugin module.
+defined tests without writing a new plugin module.
 
 =cut
 
@@ -49,17 +49,17 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head2 on_request
 
-Value of this test parameter is ignored.  However it is evaluted
-before test request to web page is done so it is useful to do some
+The value of this test parameter is ignored.  However, it is evaluted
+before the HTTP request is done, so it can be used to do 
 initalization before the request.
 
 =head2 on_response
 
 This is a list parameter which is treated as test result.  It is
-evaluted when response for the test request is received.
+evaluted when the HTTP response for the test request is received.
 
-It can be useful to define custom tests without writting new plugins
-and/or it can be useful to run some code when response for the test
+It can be used to define custom tests without writing new plugins.
+It can also be used to run some code when the HTTP response for the test
 request is received.
 
 =head3 Allowed values
@@ -69,9 +69,9 @@ request is received.
       ....
       YESNON, COMMENTN )
 
-Here C<YESNO>, C<COMMENT> - is a test result.  C<YESNO> - is either
+Here C<YESNO>, C<COMMENT> is a test result.  C<YESNO> is either
 C<yes> if test is successful or C<no> if it is not.  C<COMMENT> is a
-text of comment associated with this test.
+comment associated with this test.
 
 =head3 Example
 
@@ -135,10 +135,10 @@ sub check_response {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

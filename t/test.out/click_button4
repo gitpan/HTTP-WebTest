@@ -5,6 +5,7 @@ Failed  Succeeded  Test Name
    0          4    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/test4.html
 
   STATUS CODE CHECK
@@ -13,6 +14,7 @@ URL: http://http.web.test/test4.html
     <title>Test File 4</title>                                   SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/show-request?param1=value1
 
   STATUS CODE CHECK
@@ -23,6 +25,7 @@ URL: http://http.web.test/show-request?param1=value1
     Content: <>                                                  SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/test4.html
 
   STATUS CODE CHECK
@@ -31,6 +34,7 @@ URL: http://http.web.test/test4.html
     <title>Test File 4</title>                                   SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/show-request
 
   STATUS CODE CHECK

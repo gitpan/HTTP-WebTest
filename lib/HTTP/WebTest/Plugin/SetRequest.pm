@@ -1,10 +1,10 @@
-# $Id: SetRequest.pm,v 1.8 2002/05/12 13:36:34 m_ilya Exp $
+# $Id: SetRequest.pm,v 1.13 2002/07/24 22:18:36 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
 =head1 NAME
 
-HTTP::WebTest::Plugin::SetRequest - Initializes test HTTP request
+HTTP::WebTest::Plugin::SetRequest - Initializes HTTP request for web test
 
 =head1 SYNOPSIS
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin initializes test HTTP request.
+This plugin initializes the HTTP request for a web test.
 
 =cut
 
@@ -38,7 +38,7 @@ See RFC 2616 (HTTP/1.1 protocol).
 
 =head3 Allowed values
 
-C<GET>, C<PUT>
+C<GET>, C<POST>
 
 =head3 Default value
 
@@ -57,12 +57,11 @@ HTTP headers or to add additional HTTP headers.
 
 A list of name/value pairs to be passed as parameters to the URL.
 (This element is used to test pages that process input from forms.)
-Unless the method key is set to C<POST>, these pairs are URI-escaped
-and appended to the requested URL.
 
-The names and values will be URI-escaped as defined by RFC 2396.
+If the method key is set to C<GET>, these pairs are URI-escaped and
+appended to the requested URL.
 
-=head3 Example
+Example (wtscript file):
 
     url = http://www.hotmail.com/cgi-bin/hmhome
     params = ( curmbox
@@ -70,9 +69,53 @@ The names and values will be URI-escaped as defined by RFC 2396.
                from
                HotMail )
 
-generates the HTTP request:
+generates the HTTP request with URI:
 
     http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
+
+If the method key is set to C<POST>, as long as all values are scalars
+they are URI-escaped and put into content of the HTTP request.
+C<application/x-www-form-urlencoded> content type is set for such HTTP
+request.
+
+If the method key is set to C<POST>, some values may be defined as
+lists.  In this case L<HTTP::WebTest|HTTP::WebTest> uses
+C<multipart/form-data> content type used for C<Form-based File Upload>
+as specified in RFC 1867.  Each parameter with list value is treated
+as file part specification specification with the following
+interpretation:
+
+    ( FILE, FILENAME, HEADER => VALUE... )
+
+where
+
+=over 4
+
+=item * FILE
+
+The name of a file to open. This file will be read and its content
+placed in the request.
+
+=item * FILENAME
+
+The optional filename to be reported in the request.  If it is not
+specified than basename of C<FILE> is used.
+
+=item * HEADER => VALUE
+
+Additional optional headers for file part.
+
+Example (wtscript file):
+
+    url = http://www.server.com/upload.pl
+    method = post
+    params = ( submit => ok
+               file   => ( '/home/ilya/file.txt', 'myfile.txt' ) )
+
+It generates HTTP request with C</home/ilya/file.txt> file included
+and reported under name C<myfile.txt>.
+
+=back
 
 =head2 auth
 
@@ -165,19 +208,8 @@ sub prepare_request {
 
     # set request params
     if(defined $params) {
-	# We use a temporary URI object to format
-	# the application/x-www-form-urlencoded content.
-	my $url = URI->new('http:');
 	my @params = ref($params) eq 'ARRAY' ? @$params : %$params;
-	$url->query_form(@params);
-	my $query = $url->query;
-
-	if($request->method eq 'GET') {
-	    $request->uri->query($query);
-	} elsif($request->method eq 'POST') {
-	    $request->content($query);
-	    $request->header('Content-Length' => length $query);
-	}
+	$request->params(\@params);
     }
 
     # pass authorization data
@@ -212,10 +244,10 @@ sub prepare_request {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

@@ -5,6 +5,7 @@ Failed  Succeeded  Test Name
    0          3    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
@@ -14,6 +15,7 @@ URL: http://http.web.test/test-file1
     Number of returned bytes (    52 ) is < or =   100 ?         SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/test-file2
 
   STATUS CODE CHECK
@@ -23,6 +25,7 @@ URL: http://http.web.test/test-file2
     Number of returned bytes ( 14138 ) is < or =   100 ?         FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
@@ -32,6 +35,7 @@ URL: http://http.web.test/test-file1
     Number of returned bytes (    52 ) is < or = 50000 ?         SUCCEED
 
 
+Test Name: N/A
 URL: http://http.web.test/test-file2
 
   STATUS CODE CHECK

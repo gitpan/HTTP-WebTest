@@ -1,23 +1,31 @@
-$Id: TODO,v 1.13 2002/06/15 21:34:09 m_ilya Exp $
+$Id: TODO,v 1.20 2002/07/31 14:44:32 m_ilya Exp $
 
 My current TODO:
+
+* Add start/end test sequence hooks into Hook plugin
+
+* rewrite HarnessReport plugin using Test::Builder
+
+* do not fail in make test if Algorithm::Diff is missing
 
 * support hidden fields in Click plugin
 
 * polish local mode tests - they are *very* non portable now
 
-* extended syntax of wtscript files which allows nested structures
-
-* support for file upload tests
-
 * automated tests for mail sending
 
-* plugin for page validation with HTML::Validator
+* plugin for page validation with HTML::Validator (HTML::Lint ? or both ?)
 
-* Generator of both Perl and wtscript code from test objects
+* Generator of Perl and wtscript code from test objects
 
-* HTTP proxy which autogenerates skeleton of test file
+* HTTP proxy which autogenerates skeleton of test file (consider using
+HTTP::RecorderSession framework)
 
 * HTML formated reports
 
 * Report plugin which stores all responses as local files.
+
+* Support including of test scripts into other test scripts
+
+* More work on cookbook. Example with $Test::dbh should be
+clarified. Probably I need one example of very simple plugin.

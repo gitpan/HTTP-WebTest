@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.8 2002/06/15 21:43:33 m_ilya Exp $
+# $Id: Makefile.PL,v 1.9 2002/07/31 15:18:47 m_ilya Exp $
 
 use 5.005;
 
@@ -13,7 +13,8 @@ my $AUTHOR = 'Richard Anderson <richard@richard-anderson.org>, ' .
 
 WriteMakefile( NAME         => 'HTTP::WebTest',
 	       VERSION_FROM => 'lib/HTTP/WebTest.pm.in',
-	       PREREQ_PM    => { 'CGI::Cookie'       => 0,
+	       PREREQ_PM    => { 'Algorithm::Diff'   => 0,
+				 'CGI::Cookie'       => 0,
 				 'File::Temp'        => 0,
 				 'LWP'               => 5.60,
 				 'MIME::Base64'      => 0,

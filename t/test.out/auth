@@ -5,24 +5,28 @@ Failed  Succeeded  Test Name
    0          1    *** no name ***
 
 
+Test Name: N/A
 URL: http://http.web.test/auth-test-user-passwd
 
   STATUS CODE CHECK
     401 Unauthorized                                             FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/auth-test-user-passwd
 
   STATUS CODE CHECK
     401 Unauthorized                                             FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/auth-test-user-passwd
 
   STATUS CODE CHECK
     401 Unauthorized                                             FAIL
 
 
+Test Name: N/A
 URL: http://http.web.test/auth-test-user-passwd
 
   STATUS CODE CHECK

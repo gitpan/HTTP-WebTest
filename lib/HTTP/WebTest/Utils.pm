@@ -1,10 +1,10 @@
-# $Id: Utils.pm,v 1.4 2002/06/06 18:29:14 m_ilya Exp $
+# $Id: Utils.pm,v 1.7 2002/06/21 10:51:27 m_ilya Exp $
 
 package HTTP::WebTest::Utils;
 
 =head1 NAME
 
-HTTP::WebTest::Utils - Some misc staff used by various parts of HTTP::WebTest
+HTTP::WebTest::Utils - Miscellaneous subroutines used by HTTP::WebTest
 
 =head1 SYNOPSIS
 
@@ -28,8 +28,8 @@ HTTP::WebTest::Utils - Some misc staff used by various parts of HTTP::WebTest
 
 =head1 DESCRIPTION
 
-This packages contains some subroutines used by various parts of
-L<HTTP::WebTest|HTTP::WebTest> which don't fit any its classes.
+This packages contains utility subroutines used by 
+L<HTTP::WebTest|HTTP::WebTest>.
 
 =head1 SUBROUTINES
 
@@ -54,9 +54,8 @@ use vars qw(@EXPORT_OK);
 
 =head2 make_access_method($field, $optional_default_value)
 
-Creates anonymouse subroutine which can be used as accessor
-method.  Such method can be used together with objects which are based
-on blessed hashes.
+Creates anonymous subroutine which can be used as accessor
+method.  Method can be used with objects that are blessed hashes.
 
 Typical usage is
 
@@ -72,8 +71,8 @@ A hash field used for created accessor method.
 
 =item * $optional_default_value
 
-If C<$optional_default_value> is a code reference uses values returned
-by its execution as default for created accessor method.  Otherwise
+If C<$optional_default_value> is a code reference, uses values returned
+by its execution as default for created accessor method.  Otherwise,
 uses C<$optional_default_value> as name of method which returns
 default value for created accessor method.
 
@@ -226,7 +225,7 @@ CODE
 
 =head2 make_sub_in_playground ($code)
 
-Creates anonymous subroutine inside playground package.
+Create anonymous subroutine inside playground package.
 
 =head3 Returns
 
@@ -242,10 +241,10 @@ sub make_sub_in_playground {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

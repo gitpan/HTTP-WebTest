@@ -1,10 +1,10 @@
-# $Id: ReportPlugin.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: ReportPlugin.pm,v 1.5 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
 =head1 NAME
 
-HTTP::WebTest::ReportPlugin - Base class for HTTP::WebTest report plugins.
+HTTP::WebTest::ReportPlugin - Subclass for HTTP::WebTest report plugins.
 
 =head1 SYNOPSIS
 
@@ -12,10 +12,10 @@ Not applicable.
 
 =head1 DESCRIPTION
 
-This is subclass of L<HTTP::WebTest|HTTP::WebTest::Plugin>.
-L<HTTP::WebTest|HTTP::WebTest> report plugin classes can subclass this
+This is a subclass of L<HTTP::WebTest|HTTP::WebTest::Plugin>.
+L<HTTP::WebTest|HTTP::WebTest> report plugin classes can inherit from this
 class.  It handles some test parameters common to report plugins by
-providing implementation of method C<print>.  See below.
+providing implementation of the method C<print>.
 
 =cut
 
@@ -35,7 +35,7 @@ use base qw(HTTP::WebTest::Plugin);
 
 I<GLOBAL PARAMETER>
 
-A reference on scalar which accumulates text of test report.  If this
+A reference to a scalar that accumulates text of test report.  If this
 test parameter is specified then value of test parameter C<fh_out> is
 ignore.
 
@@ -128,7 +128,7 @@ sub param_types {
 
 =head3 Returns
 
-Returns a reference to buffer which stores copy of test output.
+Returns a reference to buffer that stores copy of test output.
 
 =cut
 
@@ -167,12 +167,12 @@ sub print {
 
 =head2 start_tests ()
 
-This method is called by L<HTTP::WebTest|HTTP::WebTest> at the begin
-of test run.  Its implementation in this class inits output buffer for
-test report.
+This method is called by L<HTTP::WebTest|HTTP::WebTest> at the beginning
+of the test run.  Its implementation in this class initializes the
+output buffer for the test report.
 
-If you redefine this method in subclass be sure to call
-it in new method:
+If you redefine this method in a subclass, be sure to call
+the superclass method in the new method:
 
     sub start_tests {
         my $self = shift;
@@ -195,11 +195,11 @@ sub start_tests {
 =head2 end_tests ()
 
 This method is called by L<HTTP::WebTest|HTTP::WebTest> at the end of
-test run.  Its implementation in this class can email test report
+a test run.  Its implementation in this class e-mails the test report
 according test parameters C<mail***>.
 
 If you redefine this method in subclass be sure to call
-it in new method:
+the superclass method in the new method:
 
     sub end_tests {
         my $self = shift;
@@ -255,7 +255,7 @@ sub end_tests {
     $self->_smtp_cmd($smtp, 'quit');
 }
 
-# simple helper method which automates error handling
+# simple helper method that automates error handling
 sub _smtp_cmd {
     my $self = shift;
     my $smtp = shift;
@@ -271,10 +271,10 @@ sub _smtp_cmd {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

@@ -1,10 +1,10 @@
-# $Id: StatusTest.pm,v 1.2 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: StatusTest.pm,v 1.4 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::Plugin::StatusTest;
 
 =head1 NAME
 
-HTTP::WebTest::Plugin::StatusTest - Checks HTTP response status
+HTTP::WebTest::Plugin::StatusTest - Checks the HTTP response status
 
 =head1 SYNOPSIS
 
@@ -12,7 +12,7 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-This plugin checks HTTP response status.
+This plugin checks the HTTP response status.
 
 =cut
 
@@ -44,10 +44,10 @@ sub check_response {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

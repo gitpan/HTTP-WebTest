@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.10 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Plugin.pm,v 1.12 2002/06/21 06:48:16 richardanderson Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -12,7 +12,7 @@ Not applicable.
 
 =head1 DESCRIPTION
 
-L<HTTP::WebTest|HTTP::WebTest> plugin classes can subclass this class.
+L<HTTP::WebTest|HTTP::WebTest> plugin classes can inherit from this class.
 It provides some useful helper methods.
 
 =head1 METHODS
@@ -30,7 +30,7 @@ Constructor.
 
 =head3 Returns
 
-A new plugin object which will be used by
+A new plugin object that will be used by
 L<HTTP::WebTest|HTTP::WebTest> object C<$webtest>.
 
 =cut
@@ -52,7 +52,7 @@ sub new {
 
 =head3 Returns
 
-A L<HTTP::WebTest|HTTP::WebTest> object which uses this plugin.
+An L<HTTP::WebTest|HTTP::WebTest> object that uses this plugin.
 
 =cut
 
@@ -62,10 +62,10 @@ A L<HTTP::WebTest|HTTP::WebTest> object which uses this plugin.
 
 =head3 Returns
 
-If global test parameter C<$param> is not defined returns
-C<$optional_default> or C<undef> if it is not defined also.
+If global test parameter C<$param> is not defined, returns
+C<$optional_default> or C<undef> if there is no default.
 
-If global test parameter C<$param> is defined returns it's value.
+If the global test parameter C<$param> is defined, returns it's value.
 
 =cut
 
@@ -85,8 +85,8 @@ sub global_test_param {
 
 =head3 Returns
 
-If latest test parameter C<$param> is not defined returns
-C<$optional_default> or C<undef> if it is not defined also.
+If latest test parameter C<$param> is not defined, returns
+C<$optional_default> or C<undef> if there is no default.
 
 If latest test parameter C<$param> is defined returns it's value.
 
@@ -116,11 +116,11 @@ sub test_param {
 
 =head3 Returns
 
-If global test parameter C<$param> is not defined returns
-C<$optional_default> or false if it is not defined also.
+If the global test parameter C<$param> is not defined, returns
+C<$optional_default> or false if no default exists.
 
-If global test parameter C<$param> is defined returns true if latest
-test parameter C<$param> is C<yes>.  False otherwise.
+If the global test parameter C<$param> is defined, returns true if latest
+test parameter C<$param> is C<yes>, false otherwise.
 
 =cut
 
@@ -158,7 +158,7 @@ sub yesno_test_param {
     return $value =~ /^yes$/i;
 }
 
-# reference on hash which caches return value of subroutine calls
+# reference on hash that caches return value of subroutine calls
 *_sub_cache = make_access_method('_SUB_CACHE', sub { {} });
 
 # searches passed data structure for code references and replaces them
@@ -191,7 +191,7 @@ sub _canonic_value {
 
 =head2 test_result ($ok, $comment)
 
-Factory method which creates test result object.
+Factory method that creates test result object.
 
 =head3 Returns
 
@@ -232,7 +232,7 @@ sub _validate_params {
 
 =head2 validate_params (@params)
 
-Checks test parameters listed in C<@params>.  Throws exception if any
+Checks test parameters in C<@params>.  Throws exception if any
 of them are invalid.
 
 =cut
@@ -251,7 +251,7 @@ sub validate_params {
 
 =head2 global_validate_params (@params)
 
-Checks global test parameters listed in C<@params>.  Throws exception
+Checks global test parameters in C<@params>.  Throws exception
 if any of them are invalid.
 
 =cut
@@ -301,13 +301,13 @@ sub validate_value {
 
 =head2 param_types ()
 
-Method which should be redefined in subclasses.  Returns information
-about test parameters which are supported by plugin.  Used to validate
+This method should be redefined in the subclasses.  Returns information
+about test parameters that are supported by plugin.  Used to validate
 tests.
 
 =head3 Returns
 
-A string which looks like:
+A string that looks like:
 
     'param1 type1
      param2 type2
@@ -320,7 +320,7 @@ sub param_types { '' }
 
 =head2 check_anything ($value)
 
-Method which checks test parameter if it is value is of C<anything>
+Method that checks whether test parameter value is of C<anything>
 type.
 
 This is NOOP operation.  It always succeed.
@@ -331,7 +331,7 @@ sub check_anything { 1 }
 
 =head2 check_list ($param, $value, @optional_spec)
 
-Method which checks test parameter if it is value is of C<list>
+Method that checks whether test parameter value is of C<list>
 type.  That is it is a reference on an array.
 
 Optional list C<@optional_spec> can define specification on allowed
@@ -399,8 +399,8 @@ sub check_list {
 
 =head2 check_scalar ($param, $value, $optional_regexp)
 
-Method which checks test parameter if it is value is of C<scalar>
-type.  That is it is usual Perl scalar and is not a reference.
+Method that checks whether test parameter value is of C<scalar>
+type (that is it is usual Perl scalar and is not a reference).
 
 If C<$optional_regexp> is specified also checks value of parameter
 using this regual expression.
@@ -428,8 +428,8 @@ sub check_scalar {
 
 =head2 check_stringref ($param, $value)
 
-Method which checks test parameter if it is value is of C<stringref>
-type.  That is it is a reference on scalar.
+Method that checks whether test parameter value is of C<stringref>
+type (that is it is a reference on scalar).
 
 =head3 Exceptions
 
@@ -448,8 +448,8 @@ sub check_stringref {
 
 =head2 check_uri ($param, $value)
 
-Method which checks test parameter if it is value is of C<uri>
-type.  That is it either scalar or L<URI|URI> object.
+Method that checks whether test parameter value is of C<uri>
+type (that is it either scalar or L<URI|URI> object).
 
 =head3 Exceptions
 
@@ -475,9 +475,9 @@ sub check_uri {
 
 =head2 check_hashlist ($param, $value)
 
-Method which checks test parameter if it is value is of C<hashlist>
-type.  That is it is either a hash reference or an array reference
-which points to array containing even number of elements.
+Method that checks whether test parameter value is of C<hashlist>
+type (that is it is either a hash reference or an array reference
+that points to array containing even number of elements).
 
 =head3 Exceptions
 
@@ -522,10 +522,10 @@ sub check_yesno {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 

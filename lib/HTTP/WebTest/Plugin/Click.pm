@@ -1,4 +1,4 @@
-# $Id: Click.pm,v 1.9 2002/05/15 19:27:53 m_ilya Exp $
+# $Id: Click.pm,v 1.12 2002/07/24 21:16:33 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Click;
 
@@ -20,7 +20,7 @@ HTTP::WebTest::Plugin::Click - Click buttons and links on web page
 
 =head1 DESCRIPTION
 
-This plugin allows to use names of links and button on HTML pages to
+This plugin lets you use the names of links and buttons on HTML pages to
 build test requests.
 
 =cut
@@ -38,7 +38,7 @@ use base qw(HTTP::WebTest::Plugin);
 =head2 click_button
 
 Given name of submit button (i.e. C<<input type="submit"E<gt>> tag
-inside of C<<formE<gt>> tag) on previosly requested HTML page builds
+inside of C<<formE<gt>> tag) on previosly requested HTML page, builds
 test request to the submitted page.
 
 Note that you still need to pass all form parameters yourself using
@@ -51,7 +51,7 @@ See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
 =head2 click_link
 
 Given name of link (i.e. C<<aE<gt>> tag) on previosly requested HTML
-page builds test request to the linked page.
+page, builds test request to the linked page.
 
 =head3 Example
 
@@ -94,37 +94,15 @@ sub prepare_request {
 	my $link = $self->find_link(response => $response,
 				    pattern  => $click_link);
 
-	$self->new_request_uri(request => $request, uri => $link)
+	$request->base_uri($link)
 	    if defined $link;
     } elsif(defined $click_button) {
 	# find action which corresponds to requested submit button
 	my $action = $self->find_form(response => $response,
 				      pattern  => $click_button);
 
-	$self->new_request_uri(request => $request, uri => $action)
+	$request->base_uri($action)
 	    if defined $action;
-    }
-}
-
-# sets new request URI preserving query parameters if necessary
-sub new_request_uri {
-    my $self = shift;
-    my %param = @_;
-
-    my $request = $param{request};
-    my $uri     = $param{uri};
-
-    my $old_query = undef;
-    if($request->method eq 'GET') {
-	$old_query = $request->uri->query;
-    }
-    # set request uri
-    $request->uri($uri);
-    # restore query parameters
-    if(defined $old_query) {
-	my $new_query = $request->uri->query;
-	$new_query = defined $new_query ? "$new_query&$old_query" : $old_query;
-	$request->uri->query($new_query);
     }
 }
 
@@ -229,10 +207,10 @@ sub find_form {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001,2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
-modified under the terms of the Perl Artistic License.
+This program is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
