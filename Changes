@@ -1,5 +1,15 @@
 Revision history for Perl extension HTTP::WebTest.
 
+ 1.07  Tue Nov 20 2001
+
+   * HTTP::WebTest now uses Config.pm to find correct shebang string
+     for script 'wt'. It should correctly set path to perl interpreter
+     even if perl is installed in non-standart place.
+
+   * Added test parameter mail_from which allows to set From: header
+     in report e-mails. Thanks Joe Germuska <Joe.Germuska@JGSullivan.com>
+     for patch.
+
  1.06  Sat Aug 11 2001
 
    * Some files required for local web files testing mode were missing
@@ -21,7 +31,8 @@ Revision history for Perl extension HTTP::WebTest.
      directives to disable usage of apache access and resource config
      files.
 
-   * Use File::Temp for sane creation of temporary directories.
+   * HTTP::WebTest now uses File::Temp module for secure creation of
+     temporary directories.
 
    * Removed section 'CHANGES' from HTTP::WebTest POD docs since it
      became too long. Anybody interested in changes should consult

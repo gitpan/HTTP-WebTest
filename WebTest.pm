@@ -158,7 +158,7 @@ $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(run_web_test);
-$VERSION = 1.06;
+$VERSION = 1.07;
 
 #############################
 # Constants (magic numbers) #
@@ -262,6 +262,7 @@ my %_TEST_OPTIONS_PARAMS = (
    ignore_case      => 'scalar',
    mail             => 'scalar',
    mail_addresses   => 'list',
+   mail_from        => 'scalar',
    mail_server      => 'scalar',
    max_bytes        => 'scalar',
    max_rtime        => 'scalar',
@@ -718,7 +719,8 @@ my $_mail_report = sub {
 # Description: Optionally e-mails the test report to the specified addresses.
 #
 # Synopsis:
-# $_mail_report->($report, $mail, $mail_server, $mail_addresses, $num_fail);
+# $_mail_report->($report, $mail, $mail_server, $mail_from,
+#                 $mail_addresses, $num_fail);
 #
 # Input arguments:
 # $report - Test report, results of max/min tests will be appended.
@@ -735,7 +737,8 @@ my $_mail_report = sub {
 # 1 -> O.K.
 # 0 -> Invalid input arguments, no mail sent
 #
-   my ($report, $mail, $mail_server, $mail_addresses, $num_fail) = @_;
+   my ($report, $mail, $mail_server, $mail_from,
+       $mail_addresses, $num_fail) = @_;
 
    return 1 unless (defined($mail) and ($mail eq 'all' or $mail eq 'errors'));
    return 1 if ($mail eq 'errors' and 0 == $num_fail);
@@ -747,8 +750,9 @@ my $_mail_report = sub {
       warn "Invalid value of mail_addresses ( = null )";
       return 0;
    }
+   Net::SMTP->debug($Debug);
    my $smtp = Net::SMTP->new($mail_server);
-   my $user = getlogin() || (getpwuid($<))[0] || 'nobody';
+   my $user = $mail_from || getlogin() || (getpwuid($<))[0] || 'nobody';
    $smtp->mail($user);
    $smtp->to(@{$mail_addresses});
    $smtp->data();
@@ -2991,6 +2995,7 @@ sub run_web_test {
           Otherwise   -> Do not send e-mail.
        mail_server - Fully-qualified name of of the mail server
           (e.g., mailhost.mycompany.com).
+       mail_from - Sets From: header for report e-mails
        max_bytes - Maximum number of bytes expected in returned
           pages.  If this value is exceeded, an error message is
           displayed.
@@ -3160,7 +3165,8 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       print $final_report;
    }
    $_mail_report->($final_report, $test_options->{mail},
-      $test_options->{mail_server}, $test_options->{mail_addresses},
+      $test_options->{mail_server}, $test_options->{mail_from},
+      $test_options->{mail_addresses},
       $$num_fail);
    return 0 if $$num_fail;
    return 1;
@@ -3304,6 +3310,7 @@ sub add_cookie_header {
   mail: Option to send e-mail containing results of tests.
   mail_addresses: List of e-mail addresses to send reports to.
   mail_server: Name of mail server.
+  mail_from: E-mail address for From: header of report e-mail.
   method: HTTP request method; either get or post.
   max_bytes: Maximum number of bytes expected in returned page.
   min_bytes: Minimum number of bytes expected in returned page.
@@ -3705,6 +3712,10 @@ sub add_cookie_header {
  PARAMETER: mail_server  TYPE: global parameter
  NO DEFAULT.  REQUIRED unless mail = no.
  DESCRIPTION: Name of mail server.
+
+ PARAMETER: mail_from  TYPE: global parameter
+ DEFAULT: name of user under which test script runs.
+ DESCRIPTION: E-mail address for From: header of report e-mail.
 
  PARAMETER: method  TYPE: test block parameter
  DEFAULT: get  ALLOWED VALUES: get post  OPTIONAL PARAMETER.

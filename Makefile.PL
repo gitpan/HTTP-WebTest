@@ -1,3 +1,4 @@
+use Config;
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
@@ -68,9 +69,8 @@ pure_install ::
 EOF
 #
 # Add pathname of Perl to wt file
-   if (($perl = $^X) =~ /^perl$/) { chomp($perl = `which perl`); }
    open(WT, ">wt") or die "Can't open file wt: $!";
-   print WT "#! $perl -w\n";
+   print WT "$Config{startperl} -w\n";
    open(WT_DIST, "<wt_dist") or die "Can't open file wt_dist: $!";
    open(WT, ">>wt") or die "Can't open file wt: $!";
    while (<WT_DIST>) {
