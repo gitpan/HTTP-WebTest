@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.19 2002/12/12 23:22:11 m_ilya Exp $
+# $Id: SetRequest.pm,v 1.20 2003/03/02 11:52:09 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -314,7 +314,7 @@ sub prepare_request {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

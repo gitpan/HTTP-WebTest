@@ -22,8 +22,6 @@ Server: libwww-perl-daemon/NN
 Content-Length: 52
 Content-Type: text/plain
 Last-Modified: SOMEDAY
-Client-Date: SOMEDAY
-Client-Response-Num: 1
 
 
 
@@ -43,8 +41,6 @@ Date: SOMEDAY
 Server: libwww-perl-daemon/NN
 Content-Length: 53
 Content-Type: text/html
-Client-Date: SOMEDAY
-Client-Response-Num: 1
 Title: 404 Not Found
 
 

@@ -1,4 +1,4 @@
-# $Id: ResponseTimeTest.pm,v 1.6 2002/12/12 23:22:12 m_ilya Exp $
+# $Id: ResponseTimeTest.pm,v 1.7 2003/03/02 11:52:09 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ResponseTimeTest;
 
@@ -97,7 +97,7 @@ sub check_response {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

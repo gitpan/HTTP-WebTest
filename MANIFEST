@@ -125,6 +125,7 @@ t/test.out/text_match2
 t/test.out/time
 t/test.out/timeout
 t/test.out/user_agent
+t/test.out/write_params
 t/test1.html
 t/test1.txt
 t/test2.html.in

@@ -25,7 +25,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '2.00';
+$VERSION = '2.01';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -263,10 +263,9 @@ It is also possible to specify a Perl expression in place of a scalar
 value, one of a list parameter's values or an entire list.  Curly
 brackets are used to denote Perl code inside wtscript files.
 C<HTTP::WebTest> compiles this Perl code as anonymous subroutines
-which are called when values of corresponding test
-parameters are required.  These subroutines are called in an object-oriented
-fashion, so the
-C<HTTP::WebTest> object is passed to them as the first argument.
+which are called when values of corresponding test parameters are
+required.  When these subroutines are called C<HTTP::WebTest> object
+is passed to them as the first argument.
 
 Some examples of syntax:
 
@@ -276,7 +275,7 @@ Some examples of syntax:
     # element of a list
     name = (
              'first value'
-             { "first " . "value" }
+             { "second " . "value" }
            )
 
     # entire list (must be a reference to an array)
@@ -383,11 +382,10 @@ C<tester@mycompany.com>.
 
 =head2 Core plugin modules
 
-C<HTTP::WebTest> is implemented in a modular structure that allows programmers
-to easily add modules to run additional tests or define additional simple
-tests without writing a module.
-C<HTTP::WebTest> provides a number of core plugin modules which are
-loaded by default:
+C<HTTP::WebTest> is implemented in a modular structure that allows
+programmers to easily add modules to run additional tests or define
+additional simple tests without writing a module.  C<HTTP::WebTest>
+provides a number of core plugin modules which are loaded by default:
 
 =over 4
 
@@ -472,6 +470,14 @@ from CPAN.
 =item L<HTTP::WebTest::Plugin::Apache|HTTP::WebTest::Plugin::Apache>
 
 This plugin supports testing web files using a local instance of Apache.
+
+=item L<HTTP::WebTest::Plugin::DateTest|HTTP::WebTest::Plugin::DateTest>
+
+Evaluate the "age" of embedded date strings in response body.
+
+=item L<HTTP::WebTest::Plugin::XMLReport|HTTP::WebTest::Plugin::XMLReport>
+
+Report plugin for HTTP::WebTest, generates output in XML format.
 
 =back
 
@@ -1412,7 +1418,7 @@ The email address is C<http-webtest-general@lists.sourceforge.net>.
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -1,4 +1,4 @@
-# $Id: SelfTest.pm,v 1.2 2002/12/12 21:43:12 m_ilya Exp $
+# $Id: SelfTest.pm,v 1.7 2003/03/02 11:52:10 m_ilya Exp $
 
 package HTTP::WebTest::SelfTest;
 
@@ -41,12 +41,10 @@ use vars qw(@EXPORT $HOSTNAME $PORT $URL);
 
 use Algorithm::Diff qw(diff);
 use MIME::Base64;
-use POSIX qw(SIGTERM);
 use Sys::Hostname;
-use Test;
 use URI;
 
-use HTTP::WebTest::Utils qw(find_port);
+use HTTP::WebTest::Utils qw(find_port start_webserver stop_webserver);
 
 =head2 $HOSTNAME
 
@@ -62,7 +60,7 @@ The port of the test webserver.
 
 =cut
 
-$PORT = find_port(hostname => $HOSTNAME);
+$PORT = find_port();
 die "Can't find free port" unless defined $PORT;
 
 =head2 $URL
@@ -337,12 +335,25 @@ sub compare_output {
 
     my $output1 = read_file($check_file, 1);
     _print_diff($output1, $output2);
-    ok(($output1 eq $output2) or defined $ENV{TEST_FIX});
+    _ok(($output1 eq $output2) or defined $ENV{TEST_FIX});
 
     if(defined $ENV{TEST_FIX} and $output1 ne $output2) {
 	# special mode for writting test report output files
 
 	write_file($check_file, $output2);
+    }
+}
+
+# ok compatible with Test and Test::Builder
+sub _ok {
+    # if Test is already loaded use its ok
+    if(Test->can('ok')) {
+        @_ = $_[0];
+        goto \&Test::ok;
+    } else {
+        require Test::Builder;
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        Test::Builder->new->ok(@_);
     }
 }
 
@@ -355,96 +366,9 @@ sub _print_diff {
 
     for my $hunk (@diff) {
 	for my $diff_str (@$hunk) {
-	    print "@$diff_str\n";
+	    printf "%s %03d %s\n", @$diff_str;
 	}
     }
-}
-
-=head2 start_webserver(%params)
-
-Starts separate process with a test webserver.
-
-=head3 Parameters
-
-=over 4
-
-=item port => $port
-
-A port number where the test webserver listens for incoming connections.
-
-=item server_sub => $server_sub
-
-A reference on a subroutine to handle requests. It get passed two
-named parameters: C<connect> and C<request>.
-
-=back
-
-=cut
-
-sub start_webserver {
-    my %param = @_;
-
-    # try to start server
-    my $daemon = HTTP::Daemon->new(LocalPort => $param{port}, ReuseAddr => 1)
-	or die;
-
-    # fork server to separate process
-    my $pid = fork;
-    die unless defined $pid;
-    return $pid if $pid != 0;
-
-    # when we are run under debugger do not stop and call debugger at
-    # the exit of the forked process. This helps to workaround problem
-    # when forked process tries to takeover and to screw the terminal
-    $DB::inhibit_exit = 0;
-
-    # set 'we are working' flag
-    my $done = 0;
-
-    # exit on SIGTERM
-    $SIG{TERM} = sub { $done = 1 };
-    # handle closed connection
-    $SIG{PIPE} = 'IGNORE';
-
-    # handle requests untill we are killed
-    eval {
-	until($done) {
-	    # wait one tenth of second for connection
-	    my $rbits = '';
-	    vec($rbits, $daemon->fileno, 1) = 1;
-	    my $nfound = select $rbits, '', '', 0.1;
-
-	    # if we have connection then handle it
-	    if($nfound > 0) {
-		my $connect = $daemon->accept;
-		die unless defined $connect;
-
-		while (my $request = $connect->get_request) {
-                    $param{server_sub}->(connect => $connect,
-                                         request => $request);
-		}
-		$connect->close;
-		undef $connect;
-	    }
-	}
-    };
-    # in any case try to shutdown daemon correctly
-    $daemon->close;
-    if($@) { die $@ };
-
-    exit 0;
-}
-
-=head2 stop_webserver($pid)
-
-Kills a test webserver specified by its PID.
-
-=cut
-
-sub stop_webserver {
-    my $pid = shift;
-
-    return kill SIGTERM, $pid;
 }
 
 =head2 parse_basic_credentials($credentials)
@@ -471,9 +395,27 @@ sub parse_basic_credentials {
     return ($user, $password);
 }
 
+=head1 DEPRECATED SUBROUTINES
+
+This module imports in namespace of test script following helper
+subroutines but they are deprecated and may be removed in the future
+from this module.
+
+=head2 start_webserver
+
+This subroutine was moved into
+L<HTTP::WebTest::Utils|HTTP::WebTest::Utils> but for backward
+compatibility purposes can be exported from this module.
+
+=head2 stop_webserver
+
+This subroutine was moved into
+L<HTTP::WebTest::Utils|HTTP::WebTest::Utils> but for backward
+compatibility purposes can be exported from this module.
+
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

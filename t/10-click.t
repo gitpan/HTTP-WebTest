@@ -1,17 +1,17 @@
 #!/usr/bin/perl -w
 
-# $Id: 10-click.t,v 1.10 2002/12/12 21:43:11 m_ilya Exp $
+# $Id: 10-click.t,v 1.12 2002/12/22 21:25:49 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Click plugin
 
 use strict;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 9 }
+use Test::More tests => 9;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);

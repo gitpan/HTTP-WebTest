@@ -1,13 +1,12 @@
 #!/usr/bin/perl -w
 
-# $Id: 12-request.t,v 1.3 2002/07/31 15:26:23 m_ilya Exp $
+# $Id: 12-request.t,v 1.4 2002/12/22 21:25:49 m_ilya Exp $
 
 # Unit tests for HTTP::WebTest::Request
 
 use strict;
-use Test;
 
-BEGIN { plan tests => 25 }
+use Test::More tests => 25;
 
 use HTTP::WebTest::Request;
 

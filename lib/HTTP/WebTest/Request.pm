@@ -1,4 +1,4 @@
-# $Id: Request.pm,v 1.4 2002/07/31 15:25:21 m_ilya Exp $
+# $Id: Request.pm,v 1.5 2003/03/02 11:52:10 m_ilya Exp $
 
 package HTTP::WebTest::Request;
 
@@ -166,7 +166,7 @@ An reference to an array that contains CGI request parameters.
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

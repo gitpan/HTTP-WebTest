@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.8 2002/12/13 00:53:42 m_ilya Exp $
+# $Id: 05-report.t,v 1.12 2003/01/03 22:32:32 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -8,12 +8,12 @@ use strict;
 use CGI::Cookie;
 use IO::File;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 12 }
+use Test::More tests => 12;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -53,52 +53,46 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 }
 
 # 3-4: test show_cookie parameter
-{
+SKIP: {
     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1) for 1 .. 2;
-    } else {
-	my $opts = { show_cookies => 'yes' };
+    skip $skip, 2 if $skip;
 
-	check_webtest(webtest    => $WEBTEST,
-		      server_url => $URL,
-		      opts       => $opts,
-		      out_filter => $COOKIE_FILTER,
-		      tests      => [ $COOKIE_TEST ],
-		      check_file => 't/test.out/report-cookie1');
+    my $opts = { show_cookies => 'yes' };
 
-	# note that second time we should send cookie ourselves
-	check_webtest(webtest    => $WEBTEST,
-		      server_url => $URL,
-		      opts       => $opts,
-		      out_filter => $COOKIE_FILTER,
-		      tests      => [ $COOKIE_TEST ],
-		      check_file => 't/test.out/report-cookie2');
-    }
+    check_webtest(webtest    => $WEBTEST,
+                  server_url => $URL,
+                  opts       => $opts,
+                  out_filter => $COOKIE_FILTER,
+                  tests      => [ $COOKIE_TEST ],
+                  check_file => 't/test.out/report-cookie1');
+
+    # note that second time we should send cookie ourselves
+    check_webtest(webtest    => $WEBTEST,
+                  server_url => $URL,
+                  opts       => $opts,
+                  out_filter => $COOKIE_FILTER,
+                  tests      => [ $COOKIE_TEST ],
+                  check_file => 't/test.out/report-cookie2');
 }
 
 # 5: test show_cookie and show_html parameters
-{
+SKIP: {
     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1);
-    } else {
-	my $opts = { show_html => 'yes',
-		     show_cookies => 'yes' };
+    skip $skip, 1 if $skip;
 
-	check_webtest(webtest    => $WEBTEST,
-		      server_url => $URL,
-		      opts       => $opts,
-		      out_filter => $COOKIE_FILTER,
-		      tests      => [ $COOKIE_TEST ],
-		      check_file => 't/test.out/report-html-cookie');
-    }
+    my $opts = { show_html => 'yes',
+                 show_cookies => 'yes' };
+
+    check_webtest(webtest    => $WEBTEST,
+                  server_url => $URL,
+                  opts       => $opts,
+                  out_filter => $COOKIE_FILTER,
+                  tests      => [ $COOKIE_TEST ],
+                  check_file => 't/test.out/report-html-cookie');
 }
 
 # 6-7: test terse parameter
@@ -144,9 +138,10 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
     my $opts = { show_headers => 'yes' };
 
     my $out_filter = sub {
-	$_[0] =~ s/: .*?GMT/: SOMEDAY/g;
+	$_[0] =~ s|: .*?GMT|: SOMEDAY|g;
 	$_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
 	$_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
+        $_[0] =~ s|Client-.*?: .*?\n||g;
     };
 
     check_webtest(webtest    => $WEBTEST,
@@ -158,37 +153,34 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 }
 
 # 11-12: test show_html, show_cookie, show_headers with terse parameter
-{
-     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+SKIP: {
+    my $skip = $HOSTNAME !~ /\..*\./ ?
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1) for 1 .. 2;
-    } else {
-	my $tests = [ $COOKIE_TEST,
-		      { url => abs_url($URL, '/non-existent') } ];
+    skip $skip, 2 if  $skip;
 
-	my $out_filter = sub {
-	    $_[0] =~ s/: .*?GMT/: SOMEDAY/g;
-	    $_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
-	    $_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
-	    $COOKIE_FILTER->($_[0]);
-	};
+    my $tests = [ $COOKIE_TEST,
+                  { url => abs_url($URL, '/non-existent') } ];
 
-	for my $terse (qw(summary failed_only)) {
-	    my $opts = { terse        => $terse,
-			 show_html    => 'yes',
-			 show_cookie  => 'yes',
-			 show_headers => 'yes' };
+    my $out_filter = sub {
+        $_[0] =~ s/: .*?GMT/: SOMEDAY/g;
+        $_[0] =~ s|Server: libwww-perl-daemon/[\w\.]*|Server: libwww-perl-daemon/NN|g;
+        $_[0] =~ s|User-Agent: HTTP-WebTest/[\w\.]*|User-Agent: HTTP-WebTest/NN|g;
+        $COOKIE_FILTER->($_[0]);
+    };
 
-	    check_webtest(webtest    => $WEBTEST,
-			  server_url => $URL,
-			  opts       => $opts,
-			  tests      => $tests,
-			  out_filter => $out_filter,
-			  check_file => "t/test.out/report-terse-show-$terse");
-	}
+    for my $terse (qw(summary failed_only)) {
+        my $opts = { terse        => $terse,
+                     show_html    => 'yes',
+                     show_cookie  => 'yes',
+                     show_headers => 'yes' };
+
+        check_webtest(webtest    => $WEBTEST,
+                      server_url => $URL,
+                      opts       => $opts,
+                      tests      => $tests,
+                      out_filter => $out_filter,
+                      check_file => "t/test.out/report-terse-show-$terse");
     }
 }
 

@@ -1,16 +1,15 @@
 #!/usr/bin/perl -w
 
-# $Id: 06-parser.t,v 1.17 2002/12/13 00:50:45 m_ilya Exp $
+# $Id: 06-parser.t,v 1.22 2003/03/02 11:57:03 m_ilya Exp $
 
 # This script tests wt scripts parser
 
 use strict;
-use Test;
 
 use HTTP::WebTest::Parser;
 use HTTP::WebTest::SelfTest;
 
-BEGIN { plan tests => 68 }
+use Test::More tests => 70;
 
 # 1-60: check parsed wt script (which contains all variants of
 # supported syntax)
@@ -95,7 +94,7 @@ BEGIN { plan tests => 68 }
     ok($opts->{ignore_case} eq 'no');
 }
 
-# 61-68: check error handling for borked wtscript files
+# 61-68: test error handling for borked wtscript files
 parse_error_check(wtscript   => 't/borked1.wt',
 		  check_file => 't/test.out/borked1.err');
 parse_error_check(wtscript   => 't/borked2.wt',
@@ -108,18 +107,38 @@ parse_error_check(wtscript   => 't/borked5.wt',
 		  check_file => 't/test.out/borked5.err');
 parse_error_check(wtscript   => 't/borked6.wt',
 		  check_file => 't/test.out/borked6.err');
-if($] >= 5.006) {
+SKIP: {
+    skip 'test is skipped because it triggers Perl bug', 1
+        if $] < 5.006;
+
     my $out_filter = sub {
 	$_[0] =~ s/\(eval \d+\) line \d+/(eval NN) line N/;
     };
     parse_error_check(wtscript   => 't/borked7.wt',
 		      check_file => 't/test.out/borked7.err',
 		      out_filter => $out_filter);
-} else {
-    skip('skip: test is skipped because it triggers Perl bug', 1);
 }
 parse_error_check(wtscript   => 't/borked8.wt',
 		  check_file => 't/test.out/borked8.err');
+
+# 69-70: test writing wtscript for single test
+{
+    my @params = ( xxx => 'yyy',
+                   zzz => [ 1 => 2 ],
+                   abc => [ 1 => [ 2 => 3 ] ],
+                   bad => [ qw|( ) ' \' " => { }| ]);
+    my $output = HTTP::WebTest::Parser->write_test(\@params);
+    compare_output(check_file => 't/test.out/write_params',
+                   output_ref => \$output);
+
+    # crash test - parse wtscript, generate, parse wtscript and
+    # compare results
+    my ($tests1, $opts1) = HTTP::WebTest::Parser->parse($output);
+    my $output1 = HTTP::WebTest::Parser->write_test([ %{$tests1->[0]} ]);
+    my ($tests2, $opts2) = HTTP::WebTest::Parser->parse($output1);
+    is_deeply([$tests1, $opts1],
+              [$tests2, $opts2]);
+}
 
 sub parse_error_check {
     my %param = @_;

@@ -1,4 +1,4 @@
-$Id: README,v 1.1.1.1 2002/01/24 12:26:18 m_ilya Exp $
+$Id: README,v 1.2 2002/12/14 20:07:57 m_ilya Exp $
 
 This file contains information relevant to the tests that are run
 after building the software with "make" and testing with "make test".
@@ -10,8 +10,8 @@ least two periods (dots). Otherwise these tests will be skipped.
 If test script doesn't detect your hostname correctly you can set it
 with environment variable TEST_HOSTNAME.
 
-Response time and 'apache_max_wait' tests can take long time. It is
-possible to disable them by setting environment variable TEST_FAST.
+Response time tests can take long time. It is possible to disable them
+by setting environment variable TEST_FAST.
 
 If HTTP::WebTest changes its output then it breaks test suite tests
 because they compare HTTP::WebTest output with reference files in

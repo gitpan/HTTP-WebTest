@@ -1,4 +1,4 @@
-# $Id: Utils.pm,v 1.7 2002/06/21 10:51:27 m_ilya Exp $
+# $Id: Utils.pm,v 1.9 2003/03/02 11:52:10 m_ilya Exp $
 
 package HTTP::WebTest::Utils;
 
@@ -9,15 +9,14 @@ HTTP::WebTest::Utils - Miscellaneous subroutines used by HTTP::WebTest
 =head1 SYNOPSIS
 
     use HTTP::WebTest::Utils;
-    use HTTP::WebTest::Utils qw(make_access_method find_port);
-    use HTTP::WebTest::Utils qw(copy_dir load_package);
-    use HTTP::WebTest::Utils qw(eval_in_playground);
 
     *method = make_access_method($field);
     *method = make_access_method($field, $default_value);
     *method = make_access_method($field, sub { ... });
 
     find_port(hostname => $hostname);
+    my $pid = start_webserver(port => $port, server_sub => sub { ... });
+    stop_webserver($pid);
 
     copy_dir($src_dir, $dst_dir);
 
@@ -28,8 +27,9 @@ HTTP::WebTest::Utils - Miscellaneous subroutines used by HTTP::WebTest
 
 =head1 DESCRIPTION
 
-This packages contains utility subroutines used by 
-L<HTTP::WebTest|HTTP::WebTest>.
+This packages contains utility subroutines used by
+L<HTTP::WebTest|HTTP::WebTest>.  All of them can be exported but none
+of them is exported by default.
 
 =head1 SUBROUTINES
 
@@ -50,7 +50,8 @@ use vars qw(@EXPORT_OK);
 
 @EXPORT_OK = qw(make_access_method find_port
                 copy_dir load_package
-                eval_in_playground make_sub_in_playground);
+                eval_in_playground make_sub_in_playground
+                start_webserver stop_webserver);
 
 =head2 make_access_method($field, $optional_default_value)
 
@@ -132,6 +133,97 @@ sub find_port {
     }
 
     return undef;
+}
+
+=head2 start_webserver(%params)
+
+Starts separate process with a test webserver.
+
+=head3 Parameters
+
+=over 4
+
+=item port => $port
+
+A port number where the test webserver listens for incoming connections.
+
+=item server_sub => $server_sub
+
+A reference on a subroutine to handle requests. It get passed two
+named parameters: C<connect> and C<request>.
+
+=back
+
+=cut
+
+sub start_webserver {
+    my %param = @_;
+
+    my $daemon = HTTP::Daemon->new(LocalPort => $param{port}, Reuse => 1)
+	or die;
+
+    # create daemon process
+    my $pid = fork;
+    die unless defined $pid;
+    return $pid if $pid != 0;
+
+    # when we are run under debugger do not stop and call debugger at
+    # the exit of the forked process. This helps to workaround problem
+    # when forked process tries to takeover and to screw the terminal
+    $DB::inhibit_exit = 0;
+
+    # if we are running with Test::Builder do not let it output
+    # anything for daemon process
+    if(Test::Builder->can('new')) {
+        Test::Builder->new->no_ending(1);
+    }
+
+    # set 'we are working' flag
+    my $done = 0;
+
+    # exit on SIGTERM
+    $SIG{TERM} = sub { $done = 1 };
+    # handle connections closed by client
+    $SIG{PIPE} = 'IGNORE';
+
+    # handle requests till process is killed
+    eval {
+	until($done) {
+	    # wait one tenth of second for connection
+	    my $rbits = '';
+	    vec($rbits, $daemon->fileno, 1) = 1;
+	    my $nfound = select $rbits, '', '', 0.1;
+
+	    # handle incoming connections
+	    if($nfound > 0) {
+		my $connect = $daemon->accept;
+		die unless defined $connect;
+
+		while (my $request = $connect->get_request) {
+                    $param{server_sub}->(connect => $connect,
+                                         request => $request);
+		}
+		$connect->close;
+	    }
+	}
+    };
+    # in any event try to shutdown daemon nicely
+    $daemon->close;
+    if($@) { die $@ };
+
+    exit 0;
+}
+
+=head2 stop_webserver($pid)
+
+Kills a test webserver specified by its PID.
+
+=cut
+
+sub stop_webserver {
+    my $pid = shift;
+
+    return kill 'SIGTERM', $pid;
 }
 
 =head2 copy_dir ($src_dir, $dst_dir)
@@ -241,7 +333,7 @@ sub make_sub_in_playground {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

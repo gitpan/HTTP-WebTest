@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.26 2002/12/12 23:22:16 m_ilya Exp $
+# $Id: API.pm,v 1.29 2003/03/02 11:52:10 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API.  That's right
 package HTTP::WebTest;
@@ -40,7 +40,8 @@ use HTTP::WebTest::Plugin;
 use HTTP::WebTest::Request;
 use HTTP::WebTest::Test;
 
-# BACKWARD COMPATIBILITY BITS - exported sub is from 1.xx API
+# BACKWARD COMPATIBILITY BITS - exporting this subroutine is a part of
+# HTTP-WebTest 1.xx API
 
 use base qw(Exporter);
 use vars qw(@EXPORT_OK);
@@ -249,6 +250,20 @@ sub have_succeed {
     $self->num_fail > 0 ? 0 : 1;
 }
 
+=head2 parser_package($optional_parser_package)
+
+If $optional_parser is defined sets a parser package to use when
+parsing wtscript files. Otherwise just returns current parser package.
+
+=head3 Returns
+
+The parser package.
+
+=cut
+
+*parser_package = make_access_method('PARSER_PACKAGE',
+                                     sub { 'HTTP::WebTest::Parser' });
+
 =head2 parse ($data)
 
 Parses test specification in wtscript format.
@@ -281,9 +296,10 @@ sub parse {
     my $self = shift;
     my $data = shift;
 
-    # load parsing module on demand - it is quite heavy
-    load_package('HTTP::WebTest::Parser');
-    my ($tests, $opts) = HTTP::WebTest::Parser->parse($data);
+    load_package('HTTP::WebTest::Parser')
+        unless(UNIVERSAL::can($self->parser_package, 'parse'));
+
+    my ($tests, $opts) = $self->parser_package->parse($data);
 
     return ($tests, $opts);
 }
@@ -721,7 +737,7 @@ sub run_web_test {
 
 Copyright (c) 2000-2001 Richard Anderson.  All rights reserved.
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -1,4 +1,4 @@
-# $Id: Click.pm,v 1.15 2002/12/12 23:22:14 m_ilya Exp $
+# $Id: Click.pm,v 1.17 2003/03/02 11:52:09 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Click;
 
@@ -115,8 +115,8 @@ sub prepare_request {
 	    if defined $action;
     } elsif(defined $form_name) {
 	# find action which corresponds to requested form name
-	my $action = $self->find_form(response => $response,
-				      form_name  => $form_name);
+	my $action = $self->find_form(response  => $response,
+				      form_name => $form_name);
 
 	$request->base_uri($action)
 	    if defined $action;
@@ -232,7 +232,7 @@ sub find_form {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

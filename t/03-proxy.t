@@ -1,18 +1,18 @@
 #!/usr/bin/perl -w
 
-# $Id: 03-proxy.t,v 1.4 2002/12/12 21:43:12 m_ilya Exp $
+# $Id: 03-proxy.t,v 1.6 2002/12/22 21:25:49 m_ilya Exp $
 
 # This script tests proxy support in HTTP::WebTest.
 
 use strict;
 use HTTP::Response;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 2 }
+use Test::More tests => 2;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);

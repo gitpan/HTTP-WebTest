@@ -1,17 +1,17 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.12 2002/12/12 23:22:09 m_ilya Exp $
+# $Id: 01-api.t,v 1.15 2003/01/25 17:48:05 m_ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
 use strict;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 15 }
+use Test::More tests => 19;
 
 # init test
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -26,7 +26,7 @@ my $WEBTEST = HTTP::WebTest->new;
 {
     my $user_agent = new LWP::UserAgent;
     $WEBTEST->user_agent($user_agent);
-    ok($WEBTEST->user_agent eq $user_agent);
+    is($WEBTEST->user_agent, $user_agent);
 }
 
 # 3: reset to default user agent
@@ -38,7 +38,7 @@ my $WEBTEST = HTTP::WebTest->new;
 # 4: check what returns method tests (should be reference on empty array)
 {
     my $aref = $WEBTEST->tests;
-    ok(@$aref == 0);
+    is(@$aref, 0);
 }
 
 # 5-6: run single test and check last response and last request
@@ -48,7 +48,7 @@ my $WEBTEST = HTTP::WebTest->new;
     $WEBTEST->run_test($test);
     my $request = $WEBTEST->current_request;
     my $response = $WEBTEST->current_response;
-    ok($request->uri eq $url);
+    is($request->uri->as_string, $url->as_string);
     ok($response->is_success);
 }
 
@@ -67,7 +67,7 @@ my $WEBTEST = HTTP::WebTest->new;
 # 8: check what returns method tests now
 {
     my $aref = $WEBTEST->tests;
-    ok(@$aref == 3);
+    is(@$aref, 3);
 }
 
 # 9-10: parse wt script
@@ -75,8 +75,8 @@ my $WEBTEST = HTTP::WebTest->new;
     my $data = read_file('t/simple.wt');
 
     my ($tests, $opts) = $WEBTEST->parse($data);
-    ok($tests->[0]{test_name} eq 'Some name here');
-    ok($opts->{text_require}[0] eq 'Require some');
+    is($tests->[0]{test_name}, 'Some name here');
+    is($opts->{text_require}[0], 'Require some');
 }
 
 # 11: run tests defined in wt script
@@ -123,8 +123,8 @@ WTSCRIPT
     my $output = '';
 
     $WEBTEST->run_tests($tests, { output_ref => \$output });
-    ok($WEBTEST->num_fail == 2);
-    ok($WEBTEST->num_succeed == 1);
+    is($WEBTEST->num_fail, 2);
+    is($WEBTEST->num_succeed, 1);
 }
 
 # 15: test current_test after running $WEBTEST->run_tests
@@ -135,7 +135,27 @@ WTSCRIPT
     my $output = '';
 
     $WEBTEST->run_tests($tests, { output_ref => \$output });
-    ok($WEBTEST->current_test->request->uri eq abs_url($URL, '/doesnt-exist'));
+    is($WEBTEST->current_test->request->uri->as_string,
+       abs_url($URL, '/doesnt-exist')->as_string);
+}
+
+# 16-19: test $WEBTEST->parser_package
+{
+    is($WEBTEST->parser_package, 'HTTP::WebTest::Parser');
+    {
+        package TestParser;
+
+        sub parse { [ x => 'z' ], { 1 => 2 } };
+    };
+    # set non default parser
+    $WEBTEST->parser_package('TestParser');
+    is($WEBTEST->parser_package, 'TestParser');
+    is_deeply([ [ x => 'z' ], { 1 => 2 } ],
+              [ $WEBTEST->parse('a = b') ]);
+    # reset to default
+    $WEBTEST->parser_package(undef);
+    is_deeply([ [ ], { a => 'b' } ],
+              [ $WEBTEST->parse('a = b') ]);
 }
 
 # try to stop server even we have been crashed

@@ -1,4 +1,4 @@
-# $Id: HarnessReport.pm,v 1.10 2002/12/13 01:23:11 m_ilya Exp $
+# $Id: HarnessReport.pm,v 1.12 2003/03/02 11:52:09 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::HarnessReport;
 
@@ -67,6 +67,10 @@ sub report_test {
 	$url = $self->webtest->current_request->uri;
     }
 
+    # fool Test::Builder to generate diag output on STDOUT
+    my $failure_output = $TEST->failure_output;
+    $TEST->failure_output($TEST->output);
+
     $TEST->diag('-' x 60);
     $TEST->diag("URL: $url");
     $TEST->diag("Test Name: $test_name") if defined $test_name;
@@ -90,13 +94,16 @@ sub report_test {
 	}
     }
 
+    # restore failure_output
+    $TEST->failure_output($failure_output);
+
     local $Test::Builder::Level = 3;
     $TEST->ok($all_ok);
 }
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 13-harness.t,v 1.1 2002/12/13 00:53:42 m_ilya Exp $
+# $Id: 13-harness.t,v 1.3 2003/01/18 10:14:55 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -9,6 +9,7 @@ use HTTP::Status;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -31,24 +32,27 @@ import Test::Builder::Tester tests => 2;
     my $opts = { plugins => [ '::HarnessReport' ],
 		 default_report => 'no' };
 
-    test_diag('-' x 60,
-              'URL: ' . abs_url($URL, '/test-file1'),
-              'STATUS CODE CHECK',
-              '  Expected \'200\' and got: 200 OK: SUCCEED',
-              'REQUIRED TEXT',
-              '  987654: SUCCEED');
+    test_out(map "# $_",
+             '-' x 60,
+             'URL: ' . abs_url($URL, '/test-file1'),
+             'STATUS CODE CHECK',
+             '  Expected \'200\' and got: 200 OK: SUCCEED',
+             'REQUIRED TEXT',
+             '  987654: SUCCEED');
     test_out('ok 1');
-    test_diag('-' x 60,
-              'URL: ' . abs_url($URL, '/non-existent'),
-              'STATUS CODE CHECK',
-              '  Expected \'200\' and got: 404 Not Found: FAIL');
+    test_out(map "# $_",
+             '-' x 60,
+             'URL: ' . abs_url($URL, '/non-existent'),
+             'STATUS CODE CHECK',
+             '  Expected \'200\' and got: 404 Not Found: FAIL');
     test_out('not ok 2');
-    test_fail(9);
-    test_diag('-' x 60,
-              'URL: ' . abs_url($URL, '/non-existent'),
-              'Test Name: BlaBla',
-              'STATUS CODE CHECK',
-              '  Expected \'200\' and got: 404 Not Found: FAIL');
+    test_fail(10);
+    test_out(map "# $_",
+             '-' x 60,
+             'URL: ' . abs_url($URL, '/non-existent'),
+             'Test Name: BlaBla',
+             'STATUS CODE CHECK',
+             '  Expected \'200\' and got: 404 Not Found: FAIL');
     test_out('not ok 3');
     test_fail(2);
 
@@ -64,19 +68,21 @@ import Test::Builder::Tester tests => 2;
     my $opts = { plugins => [ '::HarnessReport' ],
 		 default_report => 'no' };
 
-    test_diag('-' x 60,
-              'URL: ' . abs_url($URL, '/test-file1'),
-              'STATUS CODE CHECK',
-              '  Expected \'200\' and got: 200 OK: SUCCEED',
-              'REQUIRED TEXT',
-              '  987654: SUCCEED');
+    test_out(map "# $_",
+             '-' x 60,
+             'URL: ' . abs_url($URL, '/test-file1'),
+             'STATUS CODE CHECK',
+             '  Expected \'200\' and got: 200 OK: SUCCEED',
+             'REQUIRED TEXT',
+             '  987654: SUCCEED');
     test_out('ok 1');
-    test_diag('-' x 60,
-              'URL: ' . abs_url($URL, '/test-file1'),
-              'STATUS CODE CHECK',
-              '  Expected \'200\' and got: 200 OK: SUCCEED',
-              'REQUIRED TEXT',
-              '  987654: SUCCEED');
+    test_out(map "# $_",
+             '-' x 60,
+             'URL: ' . abs_url($URL, '/test-file1'),
+             'STATUS CODE CHECK',
+             '  Expected \'200\' and got: 200 OK: SUCCEED',
+             'REQUIRED TEXT',
+             '  987654: SUCCEED');
     test_out('ok 2');
 
     $WEBTEST->run_tests($tests, $opts);

@@ -1,18 +1,18 @@
 #!/usr/bin/perl -w
 
-# $Id: 11-delay.t,v 1.5 2002/12/12 21:43:10 m_ilya Exp $
+# $Id: 11-delay.t,v 1.8 2003/01/03 22:32:32 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Delay plugin
 
 use strict;
 use HTTP::Status;
-use Test;
 use Time::HiRes qw(gettimeofday);
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 4 }
+use Test::More tests => 4;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -35,48 +35,40 @@ END { stop_webserver($PID) if defined $PID }
 			  output_ref => \$output });
 }
 
-{
-    if(defined $ENV{TEST_FAST}) {
-	for (1..2) {
-	    skip('skip: delay tests are disabled', 1);
-	}
-    } else {
-	my $start = gettimeofday;
+SKIP: {
+    skip 'delay tests are disabled', 2 if defined $ENV{TEST_FAST};
 
-	my $tests = [ { url => abs_url($URL, '/test'),
-			delay => 2 } ];
+    my $start = gettimeofday;
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      opts => $OPTS,
-		      tests => $tests,
-		      check_file => 't/test.out/delay');
+    my $tests = [ { url => abs_url($URL, '/test'),
+                    delay => 2 } ];
 
-	my $delay = gettimeofday - $start;
-	ok(1 < $delay and $delay < 3);
-    }
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  opts => $OPTS,
+                  tests => $tests,
+                  check_file => 't/test.out/delay');
+
+    my $delay = gettimeofday - $start;
+    ok(1 < $delay and $delay < 3);
 }
 
-{
-    if(defined $ENV{TEST_FAST}) {
-	for (1..2) {
-	    skip('skip: delay tests are disabled', 1);
-	}
-    } else {
-	my $start = gettimeofday;
+SKIP: {
+    skip 'delay tests are disabled', 2 if defined $ENV{TEST_FAST};
 
-	my $tests = [ { url => abs_url($URL, '/test'),
-			delay => 4 } ];
+    my $start = gettimeofday;
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      opts => $OPTS,
-		      tests => $tests,
-		      check_file => 't/test.out/delay');
+    my $tests = [ { url => abs_url($URL, '/test'),
+                    delay => 4 } ];
 
-	my $delay = gettimeofday - $start;
-	ok(3 < $delay and $delay < 5);
-    }
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  opts => $OPTS,
+                  tests => $tests,
+                  check_file => 't/test.out/delay');
+
+    my $delay = gettimeofday - $start;
+    ok(3 < $delay and $delay < 5);
 }
 
 # here we handle connects to our mini web server

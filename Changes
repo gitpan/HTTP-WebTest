@@ -1,6 +1,40 @@
-$Id: Changes,v 1.64 2002/12/14 17:31:11 m_ilya Exp $
+$Id: Changes,v 1.72 2003/03/02 11:42:21 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
+
+2.01 Sun Mar  2 2003
+
+ENHANCEMENTS:
+
+* Port self-testing suite from Test to Test::More.
+
+* HTTP::WebTest allows to specify non-default parser for wtscript
+files.
+
+* Now HTTP::WebTest::Parser can generate wtscript files from test
+parameters.
+
+DEPRECATIONS:
+
+* Subroutines 'start_webserver' and 'stop_webserver' was moved from
+HTTP::WebTest::SelfTest to HTTP::WebTest::Utils.  They still can be
+exported from HTTP::WebTest::SelfTest but their usage from this module
+is deprecated.
+
+BUG FIXES:
+
+* New versions of LWP add Client-Peer header in all responses what
+breaks one of tests in self-testing suite. This test is fixed so it
+should pass ok with both new and old versions of LWP.  Thanks to
+Johannes la Poutre for bug report.
+
+* Test in self-testing suite for 'timeout' parameter was buggy and
+could fail on some machines.  Thanks to Johannes la Poutre for bug
+report.
+
+* HTTP::WebTest::Plugin::HarnessReport produced report output on
+STDERR what was adding noise in 'make test' output when being used in
+Test::Harness-style test suites.
 
 2.00 Sat Dec 14 2002
 
@@ -29,7 +63,7 @@ will no longer be loaded by default even if it is available.
 schema is less confusing.
 
 * HTTP::WebTest::Plugin::HarnessReport is rewritten using
-Test::Builder. As side effect now you can freely intermix
+Test::Builder. As a side effect you can now freely intermix
 HTTP::WebTest based tests with tests written using other testing
 libraries like Test::More or Test::Differences. Unfortunately this
 change breaks existing test scripts which were using
@@ -103,7 +137,7 @@ of query parameters.  This change simplifies writting plugins than may
 need to set or change query parameters.  However existing plugins
 which set query parameters using HTTP::Request's methods 'content' and
 'uri' are likely to be broken by this change.  If you use such plugins
-then change them to use HTTP::WebTest::Request's method 'params'.
+then modify them to use HTTP::WebTest::Request's method 'params'.
 
 DEPRECATIONS:
 

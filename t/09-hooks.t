@@ -1,18 +1,18 @@
 #!/usr/bin/perl -w
 
-# $Id: 09-hooks.t,v 1.7 2002/12/13 00:50:45 m_ilya Exp $
+# $Id: 09-hooks.t,v 1.9 2002/12/22 21:25:49 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Hooks plugin
 
 use strict;
 use CGI::Cookie;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 13 }
+use Test::More tests => 13;
 
 # init tests
 my $COUNTER_FILE = 't/counter';

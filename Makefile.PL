@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.14 2002/12/14 16:56:31 m_ilya Exp $
+# $Id: Makefile.PL,v 1.15 2002/12/22 21:25:50 m_ilya Exp $
 
 use 5.005;
 
@@ -22,7 +22,7 @@ WriteMakefile( NAME         => 'HTTP::WebTest',
 				 'Pod::Usage'            => 0,
 				 'Pod::Man'              => 1.14,
 				 'Time::HiRes'           => 0,
-				 'Test::Builder'         => 0,
+                                 'Test::More'            => 0,
                                  'Test::Builder::Tester' => 0,
 				 'URI'                   => 0 },
 	       EXE_FILES    => [ File::Spec->catfile(qw(bin wt)) ],

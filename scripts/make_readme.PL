@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: make_readme.PL,v 1.2 2002/12/13 01:35:27 m_ilya Exp $
+# $Id: make_readme.PL,v 1.3 2002/12/14 20:07:58 m_ilya Exp $
 
 use strict;
 
@@ -20,7 +20,7 @@ my $data = read_file($readme);
 
 # kill SYNOPSIS
 $data =~ s/\nSYNOPSIS.*?DESCRIPTION/\nDESCRIPTION/s;
-# kill all from Getting Started until RESTRICTIONS section
+# kill everything from Getting Started till RESTRICTIONS section
 $data =~ s/\n\s*Getting started.*?RESTRICTIONS/\n\nRESTRICTIONS/s;
 # kill SEE ALSO section
 $data =~ s/\nSEE ALSO.*//s;

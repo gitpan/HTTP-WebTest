@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.18 2002/08/22 07:21:50 m_ilya Exp $
+# $Id: Parser.pm,v 1.21 2003/03/02 11:52:10 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -277,9 +277,87 @@ sub _parse_scalar {
     }
 }
 
+=head2 write_test ($params_aref)
+
+Given a set of test parameters generates text representation of the
+test.
+
+=head3 Returns
+
+The test text.
+
+=cut
+
+sub write_test {
+    my $class = shift;
+    my($params_aref) = @_;
+    my %params = @$params_aref;
+
+    my $wtscript = '';
+
+    $wtscript .= _write_param_value('test_name',
+                                    $params{test_name} || 'N/A',
+                                   '');
+
+    for(my $i = 0; $i < @$params_aref/2; $i ++) {
+        my $param = $params_aref->[2 * $i];
+        my $value = $params_aref->[2 * $i + 1];
+        next if $param eq 'test_name';
+        $wtscript .= _write_param_value($params_aref->[2 * $i],
+                                        $params_aref->[2 * $i + 1],
+                                        ' ' x 4);
+    }
+
+    $wtscript .= "end_test\n";
+
+    return $wtscript;
+}
+
+sub _write_param_value {
+    my($param, $value, $indent) = @_;
+
+    my $wtscript = "$indent$param = ";
+    my $value_indent = ' ' x length($wtscript);
+    $wtscript .= _write_value($value, $value_indent) . "\n";
+
+    return $wtscript;
+}
+
+sub _write_value {
+    my($value, $indent) = @_;
+
+    my $wtscript = '';
+    if(UNIVERSAL::isa($value, 'ARRAY')) {
+        $wtscript .= "(\n";
+        for my $subvalue (@$value) {
+            my $subindent = "$indent  ";
+            $wtscript .= $subindent;
+            $wtscript .= _write_value($subvalue, $subindent);
+            $wtscript .= "\n";
+        }
+        $wtscript .= "$indent)";
+    } else {
+        $wtscript .= _write_scalar($value);
+    }
+
+    return $wtscript;
+}
+
+sub _write_scalar {
+    my($scalar) = @_;
+
+    if($scalar =~ /[()'"{}]/ or $scalar =~ /=>/) {
+        my $q_scalar = $scalar;
+        $q_scalar =~ s/(['\\])/\\$1/g;
+        return "'" . $q_scalar . "'";
+    } else {
+        return $scalar;
+    }
+}
+
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

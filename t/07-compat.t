@@ -1,17 +1,17 @@
 #!/usr/bin/perl -w
 
-# $Id: 07-compat.t,v 1.6 2002/12/13 00:50:45 m_ilya Exp $
+# $Id: 07-compat.t,v 1.8 2002/12/22 21:25:49 m_ilya Exp $
 
 # This script tests backward compatiblity with HTTP::WebTest 1.xx
 
 use strict;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest qw(run_web_test);
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 10 }
+use Test::More tests => 10;
 
 # init test
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);

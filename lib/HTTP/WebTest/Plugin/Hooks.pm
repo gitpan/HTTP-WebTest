@@ -1,4 +1,4 @@
-# $Id: Hooks.pm,v 1.10 2002/08/22 08:37:41 m_ilya Exp $
+# $Id: Hooks.pm,v 1.11 2003/03/02 11:52:09 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Hooks;
 
@@ -177,7 +177,7 @@ sub check_response {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

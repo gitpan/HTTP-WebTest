@@ -1,19 +1,19 @@
 #!/usr/bin/perl -w
 
-# $Id: 08-plugins.t,v 1.5 2002/12/12 21:43:11 m_ilya Exp $
+# $Id: 08-plugins.t,v 1.7 2002/12/22 21:25:49 m_ilya Exp $
 
 # This script tests external plugin support in HTTP::WebTest.
 
 use strict;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
 use lib 't';
 
-BEGIN { plan tests => 4 }
+use Test::More tests => 4;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);

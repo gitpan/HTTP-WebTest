@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.22 2002/12/12 23:22:08 m_ilya Exp $
+# $Id: 02-generic.t,v 1.26 2003/01/03 22:32:32 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -8,12 +8,12 @@ use strict;
 use CGI::Cookie;
 use HTTP::Response;
 use HTTP::Status;
-use Test;
 
 use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
+use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-BEGIN { plan tests => 35 }
+use Test::More tests => 35;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -126,37 +126,36 @@ my $WEBTEST = HTTP::WebTest->new;
 }
 
 # 7: run response time tests
-{
-    if(defined $ENV{TEST_FAST}) {
-	skip('skip: long response time tests are disabled', 1);
-    } else {
-	my $tests = [ { url => abs_url($URL, '/sleep-2'),
-			min_rtime => 1,
-			max_rtime => 3 },
-		      { url => abs_url($URL, '/sleep-4'),
-			min_rtime => 1,
-			max_rtime => 3 },
-		      { url => abs_url($URL, '/sleep-2'),
-			min_rtime => 3,
-			max_rtime => 6 },
-		      { url => abs_url($URL, '/sleep-4'),
-			min_rtime => 3,
-			max_rtime => 6 }
-		    ];
+SKIP: {
+    skip 'long response time tests are disabled', 1
+        if defined $ENV{TEST_FAST};
 
-	my $out_filter = sub {
-	    $_[0] =~ s|( Response \s+ time \s+ \( \s+ )
-                       ( \d+ \. ) ( \d+ )
-                       ( \s+ \) )
-                      |"$1$2" . ('0' x length($3)) . "$4"|xge;
-	};
+    my $tests = [ { url => abs_url($URL, '/sleep-2'),
+                    min_rtime => 1,
+                    max_rtime => 3 },
+                  { url => abs_url($URL, '/sleep-4'),
+                    min_rtime => 1,
+                    max_rtime => 3 },
+                  { url => abs_url($URL, '/sleep-2'),
+                    min_rtime => 3,
+                    max_rtime => 6 },
+                  { url => abs_url($URL, '/sleep-4'),
+                    min_rtime => 3,
+                    max_rtime => 6 }
+                ];
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      tests => $tests,
-		      check_file => 't/test.out/time',
-		      out_filter => $out_filter);
-    }
+    my $out_filter = sub {
+        $_[0] =~ s|( Response \s+ time \s+ \( \s+ )
+                   ( \d+ \. ) ( \d+ )
+                   ( \s+ \) )
+                   |"$1$2" . ('0' x length($3)) . "$4"|xge;
+    };
+
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/time',
+                  out_filter => $out_filter);
 }
 
 # 8: test 'test_name' param
@@ -174,181 +173,169 @@ my $WEBTEST = HTTP::WebTest->new;
 }
 
 # 9: test cookies - accept-cookies, send-cookies params
-{
+SKIP: {
     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1);
-    } else {
-	my $tests = [ { url => abs_url($URL, '/set-cookie-c1-v1') },
-		      { url => abs_url($URL, '/show-cookies'),
-			text_require => [ '<c1>=<v1>' ] },
-		      { url => abs_url($URL, '/set-cookie-c2-v2'),
-			accept_cookies => 'no' },
-		      { url => abs_url($URL, '/show-cookies'),
-			text_forbid => [ '<c2>=<v2>' ] },
-		      { url => abs_url($URL, '/set-cookie-c3-v3'),
-			accept_cookies => 'yes' },
-		      { url => abs_url($URL, '/show-cookies'),
-			text_require => [ '<c3>=<v3>' ] },
-		      { url => abs_url($URL, '/show-cookies'),
-			send_cookies => 'no',
-			text_forbid => [ '<c1>=<v1>',
-					 '<c3>=<v3>'] },
-		      { url => abs_url($URL, '/show-cookies'),
-			send_cookies => 'yes',
-			text_require => [ '<c1>=<v1>',
-					  '<c3>=<v3>'] },
-		    ];
+    skip $skip, 1 if $skip;
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      tests => $tests,
-		      check_file => 't/test.out/cookie1');
-    }
+    my $tests = [ { url => abs_url($URL, '/set-cookie-c1-v1') },
+                  { url => abs_url($URL, '/show-cookies'),
+                    text_require => [ '<c1>=<v1>' ] },
+                  { url => abs_url($URL, '/set-cookie-c2-v2'),
+                    accept_cookies => 'no' },
+                  { url => abs_url($URL, '/show-cookies'),
+                    text_forbid => [ '<c2>=<v2>' ] },
+                  { url => abs_url($URL, '/set-cookie-c3-v3'),
+                    accept_cookies => 'yes' },
+                  { url => abs_url($URL, '/show-cookies'),
+                    text_require => [ '<c3>=<v3>' ] },
+                  { url => abs_url($URL, '/show-cookies'),
+                    send_cookies => 'no',
+                    text_forbid => [ '<c1>=<v1>',
+                                     '<c3>=<v3>'] },
+                  { url => abs_url($URL, '/show-cookies'),
+                    send_cookies => 'yes',
+                    text_require => [ '<c1>=<v1>',
+                                      '<c3>=<v3>'] },
+                ];
+
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/cookie1');
 }
 
 # 10: test cookies - cookies param (deprecated syntax)
-{
+SKIP: {
     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1);
-    } else {
-	my $tests = [ { url => abs_url($URL, '/show-cookies'),
-			cookies => [ [ 0, 'c4', 'v4', '/', $HOSTNAME ],
-				     [ 0, 'c5', 'v5', '/', $HOSTNAME,
-				       '', '', '', '', '' ],
-				     [ 0, 'c6', 'v6', '/', $HOSTNAME,
-				       undef, undef, undef, undef, undef ],
-				     [ 0, 'c7', 'v7', '/', $HOSTNAME,
-				       '', '', '', '', '',
-				       'attr1', 'avalue1' ] ],
-			text_require => [ '<c4>=<v4>',
-					  '<c5>=<v5>',
-					  '<c6>=<v6>',
-					  '<c7>=<v7>' ] },
-	              { url => abs_url($URL, '/show-cookies'),
-			cookies => [ [ 0, 'c8', 'v8',
-				       '/wrong-path', $HOSTNAME ],
-				     [ 0, 'c9', 'v9', '/',
-				       'wrong.hostname.com' ] ],
-			text_forbid => [ '<c8>=<v8>',
-					 '<c9>=<v9>' ] }
-		    ];
+    skip $skip, 1 if $skip;
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      tests => $tests,
-		      check_file => 't/test.out/cookie2');
-    }
+    my $tests = [ { url => abs_url($URL, '/show-cookies'),
+                    cookies => [ [ 0, 'c4', 'v4', '/', $HOSTNAME ],
+                                 [ 0, 'c5', 'v5', '/', $HOSTNAME,
+                                   '', '', '', '', '' ],
+                                 [ 0, 'c6', 'v6', '/', $HOSTNAME,
+                                   undef, undef, undef, undef, undef ],
+                                 [ 0, 'c7', 'v7', '/', $HOSTNAME,
+                                   '', '', '', '', '',
+                                   'attr1', 'avalue1' ] ],
+                    text_require => [ '<c4>=<v4>',
+                                      '<c5>=<v5>',
+                                      '<c6>=<v6>',
+                                      '<c7>=<v7>' ] },
+                  { url => abs_url($URL, '/show-cookies'),
+                    cookies => [ [ 0, 'c8', 'v8',
+                                   '/wrong-path', $HOSTNAME ],
+                                 [ 0, 'c9', 'v9', '/',
+                                   'wrong.hostname.com' ] ],
+                    text_forbid => [ '<c8>=<v8>',
+                                     '<c9>=<v9>' ] }
+                ];
+
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/cookie2');
 }
 
 # 11-14: test cookies - cookies param (new syntax)
-{
+SKIP: {
     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1) for 1..4;
-    } else {
-	my $tests = [ { url => abs_url($URL, '/show-cookies'),
-			cookies => [ [ name   => 'N001',
-				       value  => 'V001',
-				       path   => '/',
-				       domain => $HOSTNAME ],
-				     [ name   => 'N002',
-				       value  => 'V002',
-				       path   => '/',
-				       domain => $HOSTNAME,
-				       rest   => [ Comment => 'test' ] ] ],
-			text_require => [ '<N001>=<V001>',
-					  '<N002>=<V002>' ] },
-	              { url => abs_url($URL, '/show-cookies'),
-			cookies => [ [ name   => 'N003',
-				       value  => 'V003',
-				       path   => '/',
-				       domain => 'wrong.hostname.com' ],
-		                     [ name   => 'N004',
-				       value  => 'V004',
-				       domain => $HOSTNAME,
-				       path   => '/wrong/path' ] ],
-			text_forbid => [ '<N003>=<V003>',
-					 '<N004>=<V004>' ] }
-		    ];
+    skip $skip, 4 if $skip;
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      tests => $tests,
-		      check_file => 't/test.out/cookie2a');
+    my $tests = [ { url => abs_url($URL, '/show-cookies'),
+                    cookies => [ [ name   => 'N001',
+                                   value  => 'V001',
+                                   path   => '/',
+                                   domain => $HOSTNAME ],
+                                 [ name   => 'N002',
+                                   value  => 'V002',
+                                   path   => '/',
+                                   domain => $HOSTNAME,
+                                   rest   => [ Comment => 'test' ] ] ],
+                    text_require => [ '<N001>=<V001>',
+                                      '<N002>=<V002>' ] },
+                  { url => abs_url($URL, '/show-cookies'),
+                    cookies => [ [ name   => 'N003',
+                                   value  => 'V003',
+                                   path   => '/',
+                                   domain => 'wrong.hostname.com' ],
+                                 [ name   => 'N004',
+                                   value  => 'V004',
+                                   domain => $HOSTNAME,
+                                   path   => '/wrong/path' ] ],
+                    text_forbid => [ '<N003>=<V003>',
+                                     '<N004>=<V004>' ] }
+                ];
 
-	my $cookie_jar = $WEBTEST->user_agent->cookie_jar;
-	my $n001a_ok = 0;
-	my $n001b_ok = 0;
-	my $n002_ok = 0;
-	$cookie_jar->scan(sub {
-			      my @cookie = @_;
-			      # test cookie N001 for correct path
-			      if( $cookie[1] eq 'N001') {
-				  $n001a_ok = 1
-				      if $cookie[3] eq '/';
-			      }
-			      # test cookie N001 for correct domain
-			      if( $cookie[1] eq 'N001') {
-				  $n001b_ok = 1
-				      if $cookie[4] eq $HOSTNAME;
-			      }
-			      # test cookie N002 for correct comment
-			      # field
-			      if( $cookie[1] eq 'N002') {
-				  $n002_ok = 1
-				      if $cookie[10]{Comment} eq 'test';
-			      }
-			  });
-	ok($n001a_ok);
-	ok($n001b_ok);
-	ok($n002_ok);
-    }
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/cookie2a');
+
+    my $cookie_jar = $WEBTEST->user_agent->cookie_jar;
+    my $n001a_ok = 0;
+    my $n001b_ok = 0;
+    my $n002_ok = 0;
+    $cookie_jar->scan(sub {
+                          my @cookie = @_;
+                          # test cookie N001 for correct path
+                          if( $cookie[1] eq 'N001') {
+                              $n001a_ok = 1
+                                  if $cookie[3] eq '/';
+                          }
+                          # test cookie N001 for correct domain
+                          if( $cookie[1] eq 'N001') {
+                              $n001b_ok = 1
+                                  if $cookie[4] eq $HOSTNAME;
+                          }
+                          # test cookie N002 for correct comment
+                          # field
+                          if( $cookie[1] eq 'N002') {
+                              $n002_ok = 1
+                                  if $cookie[10]{Comment} eq 'test';
+                          }
+                      });
+    ok($n001a_ok);
+    ok($n001b_ok);
+    ok($n002_ok);
 }
 
 # 15: and another cookie test (tests alias parameter)
-{
+SKIP: {
     my $skip = $HOSTNAME !~ /\..*\./ ?
-	       'skip: cannot test cookies - ' .
-	       'hostname does not contain two dots' :
+	       'cannot test cookies - hostname does not contain two dots' :
 	       undef;
-    if($skip) {
-	skip($skip, 1);
-    } else {
-	my $domain = $HOSTNAME;
-	$domain =~ s/^.*\././;
-	my $tests = [ { url => abs_url($URL, '/show-cookies'),
-			cookie => [ 0,
-				    'webtest',
-				    'This is the cookie value',
-				    '/',
-				    $domain,
-				    '',
-				    0,
-				    '',
-				    2592000,
-				    '',
-				    'Comment',
-				    'What a tasty cookie!' ],
-			text_require => [ '<webtest>=<This is the cookie value>' ] }
-		    ];
+    skip $skip, 1 if $skip;
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      tests => $tests,
-		      check_file => 't/test.out/cookie3',
-		      opts => { show_html => 'yes' });
-    }
+    my $domain = $HOSTNAME;
+    $domain =~ s/^.*\././;
+    my $tests = [ { url => abs_url($URL, '/show-cookies'),
+                    cookie => [ 0,
+                                'webtest',
+                                'This is the cookie value',
+                                '/',
+                                $domain,
+                                '',
+                                0,
+                                '',
+                                2592000,
+                                '',
+                                'Comment',
+                                'What a tasty cookie!' ],
+                    text_require => [ '<webtest>=<This is the cookie value>' ] }
+                ];
+
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/cookie3',
+                  opts => { show_html => 'yes' });
 }
 
 # 16: authorization tests
@@ -643,34 +630,33 @@ my $WEBTEST = HTTP::WebTest->new;
 }
 
 # 35: run timeout tests
-{
-    if(defined $ENV{TEST_FAST}) {
-	skip('skip: long response time tests are disabled', 1);
-    } else {
-	my $tests = [ { url => abs_url($URL, '/sleep-2'),
-			max_rtime => 10,
-			timeout => 4 },
-		      { url => abs_url($URL, '/sleep-3'),
-			max_rtime => 10,
-			timeout => 2 },
-		      { url => abs_url($URL, '/sleep-4'),
-			max_rtime => 10,
-			timeout => 1 },
-		    ];
+SKIP: {
+    skip 'long response time tests are disabled', 1
+        if defined $ENV{TEST_FAST};
 
-	my $out_filter = sub {
-	    $_[0] =~ s|( Response \s+ time \s+ \( \s+ )
-                       ( \d+ \. ) ( \d+ )
-                       ( \s+ \) )
-                      |"$1$2" . ('0' x length($3)) . "$4"|xge;
-	};
+    my $tests = [ { url => abs_url($URL, '/sleep-2'),
+                    max_rtime => 10,
+                    timeout => 4 },
+                  { url => abs_url($URL, '/sleep-3'),
+                    max_rtime => 10,
+                    timeout => 2 },
+                  { url => abs_url($URL, '/sleep-4'),
+                    max_rtime => 10,
+                    timeout => 1 },
+                ];
 
-	check_webtest(webtest => $WEBTEST,
-		      server_url => $URL,
-		      tests => $tests,
-		      check_file => 't/test.out/timeout',
-		      out_filter => $out_filter);
-    }
+    my $out_filter = sub {
+        $_[0] =~ s|( Response \s+ time \s+ \( \s+ )
+                   ( \d+ \. \d+ )
+                   ( \s+ \) )
+                   |"$1" . sprintf('%.2f', int $2 + 0.25) . "$3"|xge;
+    };
+
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/timeout',
+                  out_filter => $out_filter);
 }
 
 # try to stop server even we have been crashed

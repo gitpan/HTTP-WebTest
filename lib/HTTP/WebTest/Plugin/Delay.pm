@@ -1,4 +1,4 @@
-# $Id: Delay.pm,v 1.3 2002/06/21 10:52:43 m_ilya Exp $
+# $Id: Delay.pm,v 1.4 2003/03/02 11:52:09 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Delay;
 
@@ -55,7 +55,7 @@ sub prepare_request {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2002 Duncan Cameron.  All rights reserved.
+Copyright (c) 2002-2003 Duncan Cameron.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.

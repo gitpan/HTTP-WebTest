@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.5 2002/06/21 06:48:16 richardanderson Exp $
+# $Id: ReportPlugin.pm,v 1.6 2003/03/02 11:52:10 m_ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -271,7 +271,7 @@ sub _smtp_cmd {
 
 =head1 COPYRIGHT
 
-Copyright (c) 2001-2002 Ilya Martynov.  All rights reserved.
+Copyright (c) 2001-2003 Ilya Martynov.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
