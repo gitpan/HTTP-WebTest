@@ -52,10 +52,7 @@ HTTP::WebTest - Test remote URLs or local web files
 =head1 DESCRIPTION
 
 This module runs tests on remote URLs or local web files containing
-Perl/HTML/JavaScript/etc. and generates a detailed test report.  
-This module is designed to test the source code, not the webserver or
-Internet connectivity.  (There are a variety of better solutions for 
-testing server reponse times or Internet connectivity.)  
+Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.  
 
 The test specifications can be read from a parameter file or 
 input as method arguments.  If you are testing a local file, Apache 
@@ -67,11 +64,12 @@ stops the local instance of Apache and deletes the temporary directory.
 
 Each test consists of literal strings or regular expressions that are
 either required to exist or forbidden to exist in the fetched page.
-You can also specify tests for the minimum and maximum number of
-bytes in the returned page.  If you are testing a local file, the
-module checks the error log in the temporary directory before and
-after the file is fetched from Apache.  If messages are written to
-the error log during the fetch, the module flags this as an error
+You can also specify tests for the minimum and maximum number of bytes
+in the returned page.  You can also specify tests for the minimum and
+maximum web server response time.  If you are testing a local file,
+the module checks the error log in the temporary directory before
+and after the file is fetched from Apache.  If messages are written
+to the error log during the fetch, the module flags this as an error
 and writes the messages to the output test report.
 
 The wt script is provided for running HTTP::WebTest from the command
@@ -144,6 +142,7 @@ use Net::Domain qw(hostfqdn);
 use Net::SMTP;
 use Sys::Hostname qw(hostname);
 use Term::ReadKey qw(ReadMode ReadLine);
+use Time::HiRes qw/ gettimeofday /;
 use URI::URL;
  
 ###########################
@@ -153,7 +152,7 @@ use URI::URL;
 use vars qw($AUTHOR $Debug $VERSION);
 $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
-$VERSION = 0.31;
+$VERSION = 1.00;
  
 #############################
 # Constants (magic numbers) #
@@ -245,7 +244,7 @@ my %_TERSE = (
    no           => 'arbitrary_value', 
 );
 #
-# Allowed types for test_options input parameters/arguments
+# Allowed types for test_options input parameters/arguments (global params)
 my %_TEST_OPTIONS_PARAMS = (
    accept_cookies   => 'scalar',
    auth             => 'list',   # Two-element list
@@ -255,6 +254,11 @@ my %_TEST_OPTIONS_PARAMS = (
    mail             => 'scalar', 
    mail_addresses   => 'list',
    mail_server      => 'scalar', 
+   max_bytes        => 'scalar',
+   max_rtime        => 'scalar',
+   min_bytes        => 'scalar',
+   min_rtime        => 'scalar',
+   pauth            => 'list',   # Two-element list
    proxies          => 'list',   # With an even number of elements
    regex_forbid     => 'list',
    regex_require    => 'list',
@@ -282,9 +286,12 @@ my %_WEB_TEST_PARAMS = (
    ignore_error_log => 'scalar', 
    ignore_case      => 'scalar', 
    max_bytes        => 'scalar',
+   max_rtime        => 'scalar',
    method           => 'scalar',
    min_bytes        => 'scalar',
+   min_rtime        => 'scalar',
    params           => 'list',   # With an even number of elements
+   pauth            => 'list',   # Two-element list
    regex_forbid     => 'list',   
    regex_require    => 'list',   
    send_cookies     => 'scalar',
@@ -454,6 +461,11 @@ my $_check_nbytes = sub {
 #
    my ($nbytes, $max_bytes, $min_bytes, $terse, $report, $num_fail,
        $num_succeed) = @_;
+   my ($report_text, $result);
+   format WRITE_NBYTES =
+              @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<
+              $report_text,                                             $result
+.
    if ($nbytes < 0) {
       warn "Invalid value of nbytes ( = $nbytes )";
       return 0;
@@ -462,46 +474,169 @@ my $_check_nbytes = sub {
 #
 # Check whether number of bytes is greater than allowed maximum
       if ($nbytes > $max_bytes) {
-         $$report .= "              Number of returned bytes (";
-         $$report .= sprintf "%6d", $nbytes;
-         $$report .= " ) is < or =";
-         $$report .= sprintf "%6d", $max_bytes;
-         $$report .= " ?      FAIL\n";
+         $report_text = "Number of returned bytes (";
+         $report_text .= sprintf "%6d", $nbytes;
+         $report_text .= " ) is < or =";
+         $report_text .= sprintf "%6d", $max_bytes;
+         $report_text .= " ?";
+         $result = 'FAIL';
          ++$$num_fail;
       } else {
          unless (defined($terse) and $terse eq 'failed_only') {
-            $$report .= "              Number of returned bytes (";
-            $$report .= sprintf "%6d", $nbytes;
-            $$report .= " ) is < or =";
-            $$report .= sprintf "%6d", $max_bytes;
-            $$report .= " ?      SUCCEED\n";
+            $report_text = "Number of returned bytes (";
+            $report_text .= sprintf "%6d", $nbytes;
+            $report_text .= " ) is < or =";
+            $report_text .= sprintf "%6d", $max_bytes;
+            $report_text .= " ?";
          }
+         $result = 'SUCCEED';
          ++$$num_succeed;
+      }
+      {
+         pipe READ_NBYTES, WRITE_NBYTES;
+         write WRITE_NBYTES;
+         close WRITE_NBYTES;
+         local $/ = undef;
+         $$report .= <READ_NBYTES>;
+         close READ_NBYTES;
       }
    }
    if ($min_bytes) {
 #
 # Check whether number of bytes is less than allowed minimum
       if ($nbytes < $min_bytes) {
-         $$report .= "              Number of returned bytes (";
-         $$report .= sprintf "%6d", $nbytes;
-         $$report .= " ) is > or =";
-         $$report .= sprintf "%6d", $min_bytes;
-         $$report .= " ?      FAIL\n";
+         $report_text = "Number of returned bytes (";
+         $report_text .= sprintf "%6d", $nbytes;
+         $report_text .= " ) is > or =";
+         $report_text .= sprintf "%6d", $min_bytes;
+         $report_text .= " ?";
+         $result = 'FAIL';
          ++$$num_fail;
       } else {
          unless (defined($terse) and $terse eq 'failed_only') {
-            $$report .= "              Number of returned bytes (";
-            $$report .= sprintf "%6d", $nbytes;
-            $$report .= " ) is > or =";
-            $$report .= sprintf "%6d", $min_bytes;
-            $$report .= " ?      SUCCEED\n";
+            $report_text = "Number of returned bytes (";
+            $report_text .= sprintf "%6d", $nbytes;
+            $report_text .= " ) is > or =";
+            $report_text .= sprintf "%6d", $min_bytes;
+            $report_text .= " ?";
          }
+         $result = 'SUCCEED';
          ++$$num_succeed;
+      }
+      {
+         pipe READ_NBYTES, WRITE_NBYTES;
+         write WRITE_NBYTES;
+         close WRITE_NBYTES;
+         local $/ = undef;
+         $$report .= <READ_NBYTES>;
+         close READ_NBYTES;
       }
    }
    return 1;
 };
+
+my $_check_response_time = sub {
+#
+# Description: 
+# Compares the response time to the specified maximum and minimum numbers,
+# appends a line to the report stating the results, and increments the
+# failure and success counts. 
+#
+# Synopsis: $_check_response_time->($rtime, $max_rtime, $min_rtime, $terse,
+#                                   \$report, \$num_fail, \$num_succeed);
+#
+# Input arguments:
+# $rtime - response time for the returned page, in seconds
+# $max_rtime - Maximum response time allowed
+# $min_rtime - Minimum response time allowed 
+# $terse - Option to show only failed tests on the report
+#          = 'failed_only' -> Show only tests that failed.
+#          Otherwise, show all tests. 
+#
+# Input/output arguments:
+# \$report - Test report, results of max/min tests will be appended.
+# \$num_fail - Running sum of test failures.
+# \$num_succeed - Running sum of test successes.
+#
+# Return values:
+# 1 -> Error analysis complete
+# 0 -> Invalid input arguments
+#
+   my ($rtime, $max_rtime, $min_rtime, $terse, $report, $num_fail,
+       $num_succeed) = @_;
+   my ($report_text, $result);
+   format WRITE_RTIME =
+              @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< @<<<<<<<
+              $report_text,                                             $result
+.
+   if ($rtime < 0) {
+      warn "Invalid value of rtime ( = $rtime )";
+      return 0;
+   }
+   if ($max_rtime) {
+#
+# Check whether response time is greater than allowed maximum
+      if ($rtime > $max_rtime) {
+         $report_text = "Response time ( ";
+         $report_text .= sprintf "%3.3f", $rtime;
+         $report_text .= " ) is < or = ";
+         $report_text .= sprintf "%3.3f", $max_rtime;
+         $report_text .= " ?";
+         $result = 'FAIL';
+         ++$$num_fail;
+      } else {
+         unless (defined($terse) and $terse eq 'failed_only') {
+            $report_text = "Response time ( ";
+            $report_text .= sprintf "%3.3f", $rtime;
+            $report_text .= " ) is < or = ";
+            $report_text .= sprintf "%3.3f", $max_rtime;
+            $report_text .= " ?";
+         }
+         $result = 'SUCCEED';
+         ++$$num_succeed;
+      }
+      {
+         pipe READ_RTIME, WRITE_RTIME;
+         write WRITE_RTIME;
+         close WRITE_RTIME;
+         local $/ = undef;
+         $$report .= <READ_RTIME>;
+         close READ_RTIME;
+      }
+   }
+   if ($min_rtime) {
+#
+# Check whether response time is less than allowed minimum
+      if ($rtime < $min_rtime) {
+         $report_text = "Response time ( ";
+         $report_text .= sprintf "%3.3f", $rtime;
+         $report_text .= " ) is > or = ";
+         $report_text .= sprintf "%3.3f", $min_rtime;
+         $report_text .= " ?";
+         $result = 'FAIL';
+         ++$$num_fail;
+      } else {
+         unless (defined($terse) and $terse eq 'failed_only') {
+            $report_text = "Response time ( ";
+            $report_text .= sprintf "%3.3f", $rtime;
+            $report_text .= " ) is > or = ";
+            $report_text .= sprintf "%3.3f", $min_rtime;
+            $report_text .= " ?";
+         }
+         $result = 'SUCCEED';
+         ++$$num_succeed;
+      }
+      {
+         pipe READ_RTIME, WRITE_RTIME;
+         write WRITE_RTIME;
+         close WRITE_RTIME;
+         local $/ = undef;
+         $$report .= <READ_RTIME>;
+         close READ_RTIME;
+      }
+   }
+   return 1;
+}; # end _check_response_time
 
 sub get_response {
 #
@@ -549,6 +684,10 @@ sub get_response {
    if (ref($test->{auth}) eq 'ARRAY') {
       $request->authorization_basic($test->{auth}->[0], $test->{auth}->[1]);
    }
+   if (ref($test->{pauth}) eq 'ARRAY') {
+      $request->proxy_authorization_basic($test->{pauth}->[0],
+         $test->{pauth}->[1]);
+   }   
    unless (defined($test->{send_cookies}) and $test->{send_cookies} eq 'no') {
       $cookie_jar->add_cookie_header($request);
    }
@@ -1446,11 +1585,11 @@ my $_prompt_for_auth = sub {
 #
 # Description:
 # If necessary, prompts user for password or userid/password to be used for
-# web page access authorization.  The user can edit the input while typing
-# the userid.  The password is not echoed back to the terminal.
+# authorization.  The user can edit the input while typing the userid.  The
+# password is not echoed back to the terminal.
 #
-# Synopsis: $_prompt_for_auth->(\@auth, $test_name)
-#           $_prompt_for_auth->(\@auth)
+# Synopsis: $_prompt_for_auth->(\@auth, $mode, $test_name)
+#           $_prompt_for_auth->(\@auth, $mode)
 #
 # Input/output argument:
 # \@auth - Arrayref containing auth parameter, either
@@ -1462,20 +1601,23 @@ my $_prompt_for_auth = sub {
 #    On output, $auth contains the userid and password.
 #
 # Input arguments:
+# $mode - Flag indicating if this is user or proxy authorization
+#               = 'auth'  -> user authorization
+#               = 'pauth' -> proxy authorization     
 # $test_name - (Optional) Name of test associated with this auth parameter.
 #
 # Return values:
 # 1 -> No error
 # 0 -> Error, invalid input, coding error or invalid response from user
 #
-   my ($auth, $test_name) = @_;
+   my ($auth, $mode, $test_name) = @_;
    return 1 unless defined($auth);
    if (@{$auth} < 1 or @{$auth} > 2) {
-      warn "ERROR: parameter auth must have either one or two elements\n";
+      warn "ERROR: parameter $mode must have either one or two elements\n";
       return 0;
    }
    if (length($auth->[0]) < 1) {
-      warn "ERROR: first element of parameter auth cannot be null\n";
+      warn "ERROR: first element of parameter $mode cannot be null\n";
       return 0;
    }
    return 1 unless ( @{$auth} < 2
@@ -1490,7 +1632,7 @@ my $_prompt_for_auth = sub {
 #
 # Verify standard input and output are attached to a terminal
    unless (-t STDIN and -t STDOUT) {
-      warn "ERROR: can't use prompt option for the auth parameter if program\n",
+      warn "ERROR: can't use prompt option for $mode parameter if program\n",
            "       is not interactive or terminal output/input is redirected\n";
       return 0;
    }
@@ -1516,7 +1658,11 @@ my $_prompt_for_auth = sub {
                "$test_name\n";
             undef $test_name;
          }
-         print STDOUT "Enter a userid to be used for web page access: ";
+         if ($mode eq 'auth') {
+            print STDOUT "Enter a userid for web page access: ";
+         } else {
+            print STDOUT "Enter a userid for proxy authorization: ";
+         }
          $auth->[0] = <STDIN>;
          chomp($auth->[0]);
       }
@@ -1532,7 +1678,11 @@ my $_prompt_for_auth = sub {
                "$test_name\n";
             undef $test_name;
          }
-         print STDOUT "Enter a password to be used for web page access: ";
+         if ($mode eq 'auth') {
+            print STDOUT "Enter a password for web page access: ";
+         } else {
+            print STDOUT "Enter a password for proxy authorization: ";
+         }
          $auth->[1] = ReadLine(0);
          chomp($auth->[1]);
          print STDOUT "\n";
@@ -1974,6 +2124,18 @@ my $_validate_web_tests = sub {
             $found_error = 'yes';
          }
       }
+      if (defined($web_test->{pauth})) {
+         if (@{$web_test->{pauth}} > 2 or @{$web_test->{pauth}} < 1) {
+            warn "Found error in test named: $test_name\n",
+               "ERROR: parameter pauth must have either one or two elements\n";
+            $found_error = 'yes';
+         }
+         if (length($web_test->{pauth}->[0]) < 1) {
+            warn "Found error in test named: $test_name\n",
+               "ERROR: first element of parameter pauth cannot be null\n";
+            $found_error = 'yes';
+         }
+      }  
       foreach my $cookie (@{$web_test->{cookies}}) {   
          if (scalar(@{$cookie}) % 2 != 0) {
             warn "Found error in test named: $test_name\n",
@@ -2081,6 +2243,22 @@ my $_validate_web_tests = sub {
             $found_error = 'yes';
          }
       } 
+      if (defined($web_test->{max_rtime})) {
+         if ($web_test->{max_rtime} <= 0) {
+            warn "Found error in test named: $test_name\n",
+               "ERROR: max_rtime ( = $web_test->{max_rtime} ) must ",
+               "be > 0\n";
+            $found_error = 'yes';
+         }
+         if (defined($web_test->{min_rtime})
+             and $web_test->{max_rtime} < $web_test->{min_rtime} ) 
+         {
+            warn "Found error in test named: $test_name\n",
+               "ERROR: max_rtime ( = $web_test->{max_rtime} ) must ",
+               "NOT be < min_rtime ( = $web_test->{min_rtime} )\n";
+            $found_error = 'yes';
+         }
+      } 
       if (defined($web_test->{method})) {
          if (uc($web_test->{method}) !~ /^GET$|^POST$/) {
             warn "Found error in test named: $test_name\n",
@@ -2148,6 +2326,16 @@ my $_validate_test_options = sub {
          $found_error = 'yes';
       }
    }
+   if (defined($test_options->{pauth})) {
+      if (@{$test_options->{pauth}} > 2 or @{$test_options->{pauth}} < 1) {
+         warn "ERROR: pauth must have either one or two elements\n";
+         $found_error = 'yes';
+      }
+      if (length($test_options->{pauth}->[0]) < 1) {
+         warn "ERROR: first element of pauth cannot be null\n";
+         $found_error = 'yes';
+      }
+   }
    if (defined($test_options->{error_log})) {
       unless (-r $test_options->{error_log}) {
          warn "ERROR: cannot access error log file ",
@@ -2187,6 +2375,20 @@ my $_validate_test_options = sub {
       {
          warn "ERROR: max_bytes ( = $test_options->{max_bytes} ) must ",
             "NOT be < min_bytes ( = $test_options->{min_bytes} )\n";
+         $found_error = 'yes';
+      }
+   } 
+   if (defined($test_options->{max_rtime})) {
+      if ($test_options->{max_rtime} < 0) {
+         warn "ERROR: max_rtime ( = $test_options->{max_rtime} ) must ",
+            "be > 0\n";
+         $found_error = 'yes';
+      }
+      if (defined($test_options->{min_rtime})
+          and $test_options->{max_rtime} < $test_options->{min_rtime} ) 
+      {
+         warn "ERROR: max_rtime ( = $test_options->{max_rtime} ) must ",
+            "NOT be < min_rtime ( = $test_options->{min_rtime} )\n";
          $found_error = 'yes';
       }
    } 
@@ -2287,11 +2489,15 @@ my $_init_web_test = sub {
    print $_fh_out "Parameters in file $self->{param_file} validated ",
       "successfully\n" if $Debug;
 #
-# If necessary, prompt user for userid/password for auth parameter(s) 
-   $_prompt_for_auth->($self->{test_options}->{auth}) 
+# If necessary, prompt user for userid/password for auth and pauth parameter(s) 
+   $_prompt_for_auth->($self->{test_options}->{auth}, 'auth') 
+      or return 0; 
+   $_prompt_for_auth->($self->{test_options}->{pauth}, 'pauth') 
       or return 0; 
    foreach (@{$self->{web_tests}}) {
-      $_prompt_for_auth->($_->{auth}, $_->{test_name})
+      $_prompt_for_auth->($_->{auth}, $_->{test_name}, 'auth')
+         or return 0; 
+      $_prompt_for_auth->($_->{pauth}, $_->{test_name}, 'pauth')
          or return 0; 
    }
 #
@@ -2731,6 +2937,10 @@ sub run_web_test {
           $test_options key FOR THIS URL ONLY.
        min_bytes - Overrides the value of the corresponding 
           $test_options key FOR THIS URL ONLY.
+       max_rtime - Overrides the value of the corresponding 
+          $test_options key FOR THIS URL ONLY.
+       min_rtime - Overrides the value of the corresponding 
+          $test_options key FOR THIS URL ONLY.
        method - The type of the HTTP request, either 'get' or 'post'.
           If undefined or key does not exist, 'get' is used.
        num_fail (Output) - The number of tests that failed.  If the 
@@ -2746,6 +2956,8 @@ sub run_web_test {
           the method key is set to post, these pairs are URI-escaped
           and appended to the requested URL.  (See 
           http://www.ietf.org/rfc/rfc2396.txt for URI escapes.)
+       pauth - Overrides the value of the corresponding test_options
+          key FOR THIS URL ONLY.    
        proxies - A hashref or arrayref containing service name 
           / proxy URL pairs that specify proxy servers to use for
           requests.  For example:
@@ -2808,6 +3020,12 @@ sub run_web_test {
        min_bytes - Minimum number of bytes expected in returned
           pages.  If the number of returned bytes is less than this
           value, an error message is displayed.
+       max_rtime - Maximum web server response time (seconds) expected.
+          If this value is exceeded, an error message is displayed.
+       min_rtime - Minimum web server response time (seconds) expected.
+          If this value is exceeded, an error message is displayed.
+       pauth - Arrayref containing a userid and password to be used
+          for proxy access authorization.  
 
        (The regex_forbid and regex_require parameters contain
        one or more Perl regular expressions.  These are compared
@@ -2851,8 +3069,8 @@ sub run_web_test {
 
    my ($web_tests, $num_fail, $num_succeed, $test_options, $already_validated)
       = @_;
-   my ($cookies, $nlines_before, $nbytes, $web_page, $test, $final_report,
-       $fetch_ok);
+   my ($cookies, $nlines_before, $nbytes, $rtime, $web_page, $test, 
+       $final_report, $fetch_ok);
    $$num_fail = $$num_succeed = 0;
    my $report = '';
    my $summary = "Failed  Succeeded  Test Name\n";
@@ -2902,16 +3120,23 @@ $test->{num_fail}, $test->{num_succeed}, $test->{test_name}
       if (defined($test->{error_log})) {
          $_count_error_log->($test->{error_log}, \$nlines_before);
       }
+      $rtime = gettimeofday;
       $fetch_ok = $_fetch_url->($test, $user_agent,
          $test_options->{show_cookies}, $test->{send_cookies}, 
          $cookie_jar, \$report, \$web_page, \$nbytes);
+      $rtime = gettimeofday - $rtime;
 #
 # If the number of error log messages increased, report an error
       if (defined($test->{error_log})) {
          $_count_error_log->($test->{error_log}, \$nlines_before, 
-            $test_options->{terse}, \$report, \$test->{num_fail},
+            $test_options->{terse}, \$report, \$test->{num_fail}, 
             \$test->{num_succeed});
       }
+#
+# If the response time returned violates bounds, report an error
+      $_check_response_time->($rtime, $test->{max_rtime},
+         $test->{min_rtime}, $test_options->{terse}, \$report, 
+         \$test->{num_fail}, \$test->{num_succeed});
       if ($fetch_ok) {
 #
 # If the number of bytes returned violates bounds, report an error
@@ -3019,11 +3244,13 @@ sub DESTROY {
  files, and (2) if the file_path parameter is specified, a directory
  tree that contains the subdirectories and files described in the
  APACHE DIRECTORY AND FILES section below.
+
+ The run_web_test method does not require a parameter file.
  
 
  PARAMETER FILE
  
- The input parameters are specified in a text file. You must pass
+ If the input parameters are specified in a text file, you must pass
  the name of the file as an argument to the web_test() method.
  If you are running dozens of tests, you may want to divide them
  into several parameter files.  This will organize the tests
@@ -3047,15 +3274,16 @@ sub DESTROY {
  specified outside of a test block.  Global parameters apply to
  every test block in the parameter file.
 
- You can specify certain parameters as BOTH GLOBAL PARAMETERS AND
- TEST BLOCK PARAMETERS.  These include the parameters accept_cookies,
- auth, ignore_case, ignore_error_log, regex_forbid, regex_require,
- send_cookies, text_forbid and text_require.  If you specify one of
- these within a test block, that value is used instead of the value
- of the corresponding global parameter for that test block only.
- If you specify some, but not all, of these parameters in a test
- block, the global parameter values are used for the unspecified
- test block parameters.
+ You can specify certain parameters as BOTH GLOBAL PARAMETERS AND TEST
+ BLOCK PARAMETERS.  These include the parameters accept_cookies, auth,
+ ignore_case, ignore_error_log, max_bytes, min_bytes, max_rtime,
+ min_rtime, pauth, regex_forbid, regex_require, send_cookies,
+ text_forbid and text_require.  If you specify one of these within
+ a test block, that value is used instead of the value of the
+ corresponding global parameter for that test block only.  If you
+ specify some, but not all, of these parameters in a test block,
+ the global parameter values are used for the unspecified test block
+ parameters.
 
  Parameters - Short descriptions
  ===============================
@@ -3086,6 +3314,10 @@ sub DESTROY {
   method: HTTP request method; either get or post.
   max_bytes: Maximum number of bytes expected in returned page.
   min_bytes: Minimum number of bytes expected in returned page.
+  max_rtime: Maximum web server response time (seconds) expected.
+  min_rtime: Minimum web server response time (seconds) expected.
+  pauth: Two-element list containing userid and password to be passed
+     to web server for proxy authorization.  
   params: List of parameter name/value pairs to be passed to server.
   proxies: List of service name / proxy URL pairs to use for requests.
   regex_forbid: List of strings/regexs that must NOT occur in page.
@@ -3195,7 +3427,9 @@ sub DESTROY {
     url = www.yahoo.com
     text_require = ( <a href=r/qt>Quotations</a>...<br> )
     min_bytes = 13000
-    max_bytes = 19000
+    max_bytes = 99000
+    min_rtime = 0.010
+    max_rtime = 30.0
  end_test
 
  The parameters below specify a test of a local file containing Perl
@@ -3482,19 +3716,32 @@ sub DESTROY {
  DESCRIPTION: HTTP method for the request(s).  See RFC 2616 
  (HTTP/1.1 protocol).
 
- PARAMETER: max_bytes  TYPE: test block parameter
+ PARAMETER: max_bytes  TYPE: global and/or test block parameter
  NO DEFAULT   ALLOWED VALUES: Any integer greater that zero and
  greater than min_bytes (if min_bytes is specified).  OPTIONAL
  PARAMETER.
  DESCRIPTION: Maximum number of bytes expected in returned page.  
  If this value is exceeded, an error message is displayed.
 
- PARAMETER: min_bytes  TYPE: test block parameter
+ PARAMETER: min_bytes  TYPE: global and/or test block parameter
  NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if 
  max_bytes is specified).  OPTIONAL PARAMETER.
  DESCRIPTION: Minimum number of bytes expected in returned page.  
  If the number of returned bytes is less than this value, an error 
  message is displayed.
+
+ PARAMETER: max_rtime  TYPE: global and/or test block parameter
+ NO DEFAULT   ALLOWED VALUES: Any number greater that zero and
+ greater than min_rtime (if min_rtime is specified).  OPTIONAL
+ PARAMETER.
+ DESCRIPTION: Maximum web server response time expected.  If this 
+ value is exceeded, an error message is displayed.
+
+ PARAMETER: min_rtime  TYPE: global and/or test block parameter
+ NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if 
+ max_rtime is specified).  OPTIONAL PARAMETER.
+ DESCRIPTION: Minimum web server response time expected.  If this 
+ value is exceeded, an error message is displayed.
 
  PARAMETER: params  TYPE: test block parameter
  NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
@@ -3513,6 +3760,20 @@ sub DESTROY {
  http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
  The names and values will be URI-escaped as defined by RFC 2396.
  (See http://www.ietf.org/rfc/rfc2396.txt.) 
+
+ PARAMETER: pauth  TYPE: global and/or test block parameter
+ No default.  ALLOWED VALUES: A one or two element list.  OPTIONAL
+ PARAMETER.
+ DESCRIPTION: Userid and password, in that order, to be passed to
+ the proxy if needed for authorization.  If you specify only one
+ element, it is used as the userid and the program will prompt you
+ interactively for the password.  If you specify values of 'prompt'
+ and 'userid_password' in that order, the program will prompt you for
+ both the userid and password.  If you specify values of 'prompt'
+ and 'password' in that order, the program will prompt you for
+ the password and use the userid of the user running the program.
+ (This last option is probably not what you want, unless your Unix
+ userid and web page userid are the same.)
 
  PARAMETER: proxies  TYPE: global parameter
  NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
@@ -3705,6 +3966,7 @@ sub DESTROY {
  Net::SMTP
  Sys::Hostname
  Term::ReadKey
+ Time::HiRes 
  URI::URL 
 
 =head1 RESTRICTIONS / BUGS
@@ -3718,7 +3980,7 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 0.31, release date 04 June 2001
+This document describes version 1.00, release date 06 June 2001
 
 =head1 TODO
 
@@ -3732,9 +3994,9 @@ http://world.std.com/~swmcd/steven/perl/pm/lc/linkcheck.html).
 
 =head1 COPYRIGHT
 
-Copyright (c) 2000 Richard Anderson. All rights reserved. This module is
-free software.  It may be used, redistributed and/or modified under the 
-terms of the Perl Artistic License. 
+Copyright (c) 2000-2001 Richard Anderson. All rights reserved. This 
+module is free software.  It may be used, redistributed and/or modified 
+under the terms of the Perl Artistic License. 
 
 =head1 SEE ALSO
 

@@ -24,5 +24,8 @@ test_name = Yahoo home page
       News
       Sports
                   )
-   min_bytes = 13500
+   min_bytes = 13000
+   max_bytes = 200000
+   min_rtime = 0.01
+   max_rtime = 30.0
 end_test

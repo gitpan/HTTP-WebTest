@@ -23,6 +23,22 @@ Revision history for Perl extension HTTP::WebTest.
 
     * Improved clarity of documentation and program output.
 
-0.31  
+0.31
 
     * Corrected minor documentation error.
+
+1.00
+
+    * Added max_rtime and min_rtime parameters to test web server response
+      time.  The perl module Time::HiRes is now a prerequisite to install
+      HTTP::WebTest.  This code was a collaborative effort by the author
+      and Michael Blakeley.
+
+    * Added pauth parameter for proxy authorization.  This code was a 
+      collaborative effort by the author and Darren Fulton.
+
+    * Changed max_bytes and min_bytes paramters from test block parameters
+      to global and/or test block parameters.
+
+    * Made format of output report more robust for max_bytes and min_bytes
+      parameters.

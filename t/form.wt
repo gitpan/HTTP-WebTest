@@ -16,7 +16,7 @@ show_cookies = yes
 # Test block parameters
 #######################
 
-test_name = 'Portable Unix Toolkit download survey form' 
+test_name = 'Typhoon download survey form' 
    url = http://www.unixscripts.com/cgi-bin/webtest_form.cgi
    method = get
    params = ( 

@@ -63,27 +63,25 @@ SYNOPSIS
 
 DESCRIPTION
     This module runs tests on remote URLs or local web files containing
-    Perl/HTML/JavaScript/etc. and generates a detailed test report. This
-    module is designed to test the source code, not the webserver or
-    Internet connectivity. (There are a variety of better solutions for
-    testing server reponse times or Internet connectivity.)
+    Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report.
 
     The test specifications can be read from a parameter file or input as
     method arguments. If you are testing a local file, Apache is started on
     a private/dynamic port with a configuration file in a temporary
     directory. The module displays the test results on the terminal by
     default or directs them to a file. The module optionally e-mails the
-    test results. When the calling program exits, the module stops the
-    local instance of Apache and deletes the temporary directory.
+    test results. When the calling program exits, the module stops the local
+    instance of Apache and deletes the temporary directory.
 
     Each test consists of literal strings or regular expressions that are
     either required to exist or forbidden to exist in the fetched page. You
     can also specify tests for the minimum and maximum number of bytes in
-    the returned page. If you are testing a local file, the module checks
-    the error log in the temporary directory before and after the file is
-    fetched from Apache. If messages are written to the error log during
-    the fetch, the module flags this as an error and writes the messages to
-    the output test report.
+    the returned page. You can also specify tests for the minimum and
+    maximum web server response time. If you are testing a local file, the
+    module checks the error log in the temporary directory before and after
+    the file is fetched from Apache. If messages are written to the error
+    log during the fetch, the module flags this as an error and writes the
+    messages to the output test report.
 
     The wt script is provided for running HTTP::WebTest from the command
     line.
@@ -257,6 +255,10 @@ METHODS
               $test_options key FOR THIS URL ONLY.
            min_bytes - Overrides the value of the corresponding 
               $test_options key FOR THIS URL ONLY.
+           max_rtime - Overrides the value of the corresponding 
+              $test_options key FOR THIS URL ONLY.
+           min_rtime - Overrides the value of the corresponding 
+              $test_options key FOR THIS URL ONLY.
            method - The type of the HTTP request, either 'get' or 'post'.
               If undefined or key does not exist, 'get' is used.
            num_fail (Output) - The number of tests that failed.  If the 
@@ -272,6 +274,8 @@ METHODS
               the method key is set to post, these pairs are URI-escaped
               and appended to the requested URL.  (See 
               http://www.ietf.org/rfc/rfc2396.txt for URI escapes.)
+           pauth - Overrides the value of the corresponding test_options
+              key FOR THIS URL ONLY.    
            proxies - A hashref or arrayref containing service name 
               / proxy URL pairs that specify proxy servers to use for
               requests.  For example:
@@ -334,6 +338,12 @@ METHODS
            min_bytes - Minimum number of bytes expected in returned
               pages.  If the number of returned bytes is less than this
               value, an error message is displayed.
+           max_rtime - Maximum web server response time (seconds) expected.
+              If this value is exceeded, an error message is displayed.
+           min_rtime - Minimum web server response time (seconds) expected.
+              If this value is exceeded, an error message is displayed.
+           pauth - Arrayref containing a userid and password to be used
+              for proxy access authorization.  
 
            (The regex_forbid and regex_require parameters contain
            one or more Perl regular expressions.  These are compared
@@ -387,9 +397,11 @@ FILES
      tree that contains the subdirectories and files described in the
      APACHE DIRECTORY AND FILES section below.
 
+     The run_web_test method does not require a parameter file.
+
      PARAMETER FILE
      
-     The input parameters are specified in a text file. You must pass
+     If the input parameters are specified in a text file, you must pass
      the name of the file as an argument to the web_test() method.
      If you are running dozens of tests, you may want to divide them
      into several parameter files.  This will organize the tests
@@ -413,15 +425,16 @@ FILES
      specified outside of a test block.  Global parameters apply to
      every test block in the parameter file.
 
-     You can specify certain parameters as BOTH GLOBAL PARAMETERS AND
-     TEST BLOCK PARAMETERS.  These include the parameters accept_cookies,
-     auth, ignore_case, ignore_error_log, regex_forbid, regex_require,
-     send_cookies, text_forbid and text_require.  If you specify one of
-     these within a test block, that value is used instead of the value
-     of the corresponding global parameter for that test block only.
-     If you specify some, but not all, of these parameters in a test
-     block, the global parameter values are used for the unspecified
-     test block parameters.
+     You can specify certain parameters as BOTH GLOBAL PARAMETERS AND TEST
+     BLOCK PARAMETERS.  These include the parameters accept_cookies, auth,
+     ignore_case, ignore_error_log, max_bytes, min_bytes, max_rtime,
+     min_rtime, pauth, regex_forbid, regex_require, send_cookies,
+     text_forbid and text_require.  If you specify one of these within
+     a test block, that value is used instead of the value of the
+     corresponding global parameter for that test block only.  If you
+     specify some, but not all, of these parameters in a test block,
+     the global parameter values are used for the unspecified test block
+     parameters.
 
      Parameters - Short descriptions
      ===============================
@@ -452,6 +465,10 @@ FILES
       method: HTTP request method; either get or post.
       max_bytes: Maximum number of bytes expected in returned page.
       min_bytes: Minimum number of bytes expected in returned page.
+      max_rtime: Maximum web server response time (seconds) expected.
+      min_rtime: Minimum web server response time (seconds) expected.
+      pauth: Two-element list containing userid and password to be passed
+         to web server for proxy authorization.  
       params: List of parameter name/value pairs to be passed to server.
       proxies: List of service name / proxy URL pairs to use for requests.
       regex_forbid: List of strings/regexs that must NOT occur in page.
@@ -561,7 +578,9 @@ FILES
         url = www.yahoo.com
         text_require = ( <a href=r/qt>Quotations</a>...<br> )
         min_bytes = 13000
-        max_bytes = 19000
+        max_bytes = 99000
+        min_rtime = 0.010
+        max_rtime = 30.0
      end_test
 
      The parameters below specify a test of a local file containing Perl
@@ -848,19 +867,32 @@ FILES
      DESCRIPTION: HTTP method for the request(s).  See RFC 2616 
      (HTTP/1.1 protocol).
 
-     PARAMETER: max_bytes  TYPE: test block parameter
+     PARAMETER: max_bytes  TYPE: global and/or test block parameter
      NO DEFAULT   ALLOWED VALUES: Any integer greater that zero and
      greater than min_bytes (if min_bytes is specified).  OPTIONAL
      PARAMETER.
      DESCRIPTION: Maximum number of bytes expected in returned page.  
      If this value is exceeded, an error message is displayed.
 
-     PARAMETER: min_bytes  TYPE: test block parameter
+     PARAMETER: min_bytes  TYPE: global and/or test block parameter
      NO DEFAULT   ALLOWED VALUES: Any integer less than max_bytes (if 
      max_bytes is specified).  OPTIONAL PARAMETER.
      DESCRIPTION: Minimum number of bytes expected in returned page.  
      If the number of returned bytes is less than this value, an error 
      message is displayed.
+
+     PARAMETER: max_rtime  TYPE: global and/or test block parameter
+     NO DEFAULT   ALLOWED VALUES: Any number greater that zero and
+     greater than min_rtime (if min_rtime is specified).  OPTIONAL
+     PARAMETER.
+     DESCRIPTION: Maximum web server response time expected.  If this 
+     value is exceeded, an error message is displayed.
+
+     PARAMETER: min_rtime  TYPE: global and/or test block parameter
+     NO DEFAULT   ALLOWED VALUES: Any number less than max_rtime (if 
+     max_rtime is specified).  OPTIONAL PARAMETER.
+     DESCRIPTION: Minimum web server response time expected.  If this 
+     value is exceeded, an error message is displayed.
 
      PARAMETER: params  TYPE: test block parameter
      NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
@@ -879,6 +911,20 @@ FILES
      http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
      The names and values will be URI-escaped as defined by RFC 2396.
      (See http://www.ietf.org/rfc/rfc2396.txt.) 
+
+     PARAMETER: pauth  TYPE: global and/or test block parameter
+     No default.  ALLOWED VALUES: A one or two element list.  OPTIONAL
+     PARAMETER.
+     DESCRIPTION: Userid and password, in that order, to be passed to
+     the proxy if needed for authorization.  If you specify only one
+     element, it is used as the userid and the program will prompt you
+     interactively for the password.  If you specify values of 'prompt'
+     and 'userid_password' in that order, the program will prompt you for
+     both the userid and password.  If you specify values of 'prompt'
+     and 'password' in that order, the program will prompt you for
+     the password and use the userid of the user running the program.
+     (This last option is probably not what you want, unless your Unix
+     userid and web page userid are the same.)
 
      PARAMETER: proxies  TYPE: global parameter
      NO DEFAULT.  ALLOWED VALUES: A list with an even number of 
@@ -1069,18 +1115,19 @@ PREREQUISITES
      Net::SMTP
      Sys::Hostname
      Term::ReadKey
+     Time::HiRes 
      URI::URL 
 
 RESTRICTIONS / BUGS
     This module only works on Unix (e.g., Solaris, Linux, AIX, etc.). The
     module's HTTP requests time out after 3 minutes (the default value for
-    LWP::UserAgent). If the file_path parameter is specified, Apache must
-    be installed. If the file_path parameter is specified, the directory
-    /tmp cannot be NFS-mounted, since Apache's lockfile and the SSL mutex
-    file must be stored on a local disk.
+    LWP::UserAgent). If the file_path parameter is specified, Apache must be
+    installed. If the file_path parameter is specified, the directory /tmp
+    cannot be NFS-mounted, since Apache's lockfile and the SSL mutex file
+    must be stored on a local disk.
 
 VERSION
-    This document describes version 0.31, release date 04 June 2001
+    This document describes version 1.00, release date 06 June 2001
 
 TODO
     Add option to validate HTML syntax using HTML::Validator. Add option to
@@ -1091,9 +1138,9 @@ AUTHOR
      Richard Anderson <Richard.Anderson@unixscripts.com>
 
 COPYRIGHT
-    Copyright (c) 2000 Richard Anderson. All rights reserved. This module
-    is free software. It may be used, redistributed and/or modified under
-    the terms of the Perl Artistic License.
+    Copyright (c) 2000-2001 Richard Anderson. All rights reserved. This
+    module is free software. It may be used, redistributed and/or modified
+    under the terms of the Perl Artistic License.
 
 SEE ALSO
     wt(1), perl(1), perlre(1), perldoc Apache::ASP.
