@@ -15,6 +15,52 @@
  one of the tests is for a local file), runs the tests and shuts 
  down the local instance of Apache.
 
+ Data flow for HTTP::WebTest using a remote URL:
+
+          --------------              -------------
+          |            |              |           |
+          | Input      |------------->|  WebTest  |
+          | parameters |              |           |
+          |            |              -------------
+          --------------                  |   ^
+                                          |   |
+                                          V   |
+          -------------               ------------
+          |           |    request    |          |
+          | Remote    |<--------------|   HTTP   |
+          | webserver |-------------->|   user   |
+          |           |    response   |   agent  |
+          -------------               |          |
+                                      ------------
+                                      
+ Data flow diagram for HTTP::WebTest using a local web file:
+
+          --------------           ---------------------
+          |            |           |                   |
+          | Input      |           |  Web page code    |
+          | parameters |           |  (Perl/HTML/etc.) |
+          |            |           |                   |
+          --------------           ---------------------
+                |                            |
+                |  ---------------------------
+                |  |
+                V  V              ------------------------
+          -------------           |                      |
+          |           |---------->| Temporary Apache     |
+          |  WebTest  |           | directories (htdocs, |
+          |           |<----------| conf, logs)          |
+          -------------           |                      |
+              |  ^                ------------------------
+              |  |                        |    ^
+              V  |                        V    |
+          ------------             ----------------------
+          |          |   request   |                    |
+          |   HTTP   |------------>| Temporary local    |
+          |   user   |             | instance of Apache |
+          |   agent  |<------------|                    |
+          |          |   response  ----------------------
+          ------------
+
 =head1 OPTIONS, OPERANDS
 
  -v - Print version number of HTTP:WebTest module and exit.
@@ -119,7 +165,7 @@
   send_cookies: Option to send cookies to the web server.
   show_cookies: Option to list cookies sent or received.
   show_html: Option to display the HTML source with the output.
- *test_name: Name of test.
+ *test_name: Test name, usually just the URL.  Truncated at 56 chars.
   text_forbid: List of strings that must NOT occur in page.
   text_require: List of strings that MUST occur in page.
  +url: URL to test.
@@ -197,7 +243,8 @@
  both the "RayCosoft home page" and the "Yahoo home page" tests.  
  Hence, if either returned page contains one of the case-
  insensitive strings in text_forbid, the test fails.  If any test 
- fails, an e-mail will be sent to tester@unixscripts.com.
+ fails or the fetch of the URL fails,, an e-mail will be sent to 
+ tester@unixscripts.com.
 
  apache_exec = /usr/sbin/apache 
  ignore_case = yes
@@ -323,10 +370,11 @@
  the value in the test block applies only to that test block.
 
  PARAMETER: cookie  TYPE: test block parameter  
- NO DEFAULT.  ALLOWED VALUES: A list with an even number of elements
- and at least 10 elements.  The cookie parameter is ignored if the
- send_cookies parameter is set to no.  OPTIONAL PARAMETER.  Multiple
- cookie parameters may be specified.
+ NO DEFAULT.  ALLOWED VALUES: A list with at least 5 elements.  If
+ there are more than 10 elements, there must be an even number of 
+ elements.  The cookie parameter is ignored if the send_cookies 
+ parameter is set to no.  OPTIONAL PARAMETER.  Multiple cookie 
+ parameters may be specified.
  DESCRIPTION: List that specifies a cookie to send to the web server.
  See RFC 2965 for details (ftp.isi.edu/in-notes/rfc2965.txt).
  You may specify multiple cookies within each test block by
@@ -659,7 +707,8 @@
 
  PARAMETER: test_name  TYPE: test block parameter  
  NO DEFAULT.  Parameter is REQUIRED.
- DESCRIPTION: Name of this test.  This MUST be the first parameter
+ DESCRIPTION: Name of this test, usually just the URL.  Only the
+ first 56 characters are used.  This MUST be the first parameter
  in the block for each test.  You may specify multiple test blocks
  within a parameter file.  There MUST be one end_test directive
  for each test_name parameter.
@@ -764,8 +813,8 @@
 
 =head1 RESTRICTIONS / BUGS
 
-This program only works on Unix (e.g., Solaris, Linux, AIX, etc.).
-The program's HTTP requests time out after 3 minutes (the default
+This module only works on Unix (e.g., Solaris, Linux, AIX, etc.).
+The module's HTTP requests time out after 3 minutes (the default
 value for LWP::UserAgent).  If the file_path parameter is specified,
 Apache must be installed.  If the file_path parameter is specified,
 the directory /tmp cannot be NFS-mounted, since Apache's lockfile
@@ -773,7 +822,7 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 1.01, release date 14 June 2001
+This document describes version 1.02, release date 14 June 2001
 
 =head1 CHANGES
 

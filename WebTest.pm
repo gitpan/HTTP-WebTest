@@ -59,23 +59,27 @@ input as method arguments.  If you are testing a local file, Apache
 is started on a private/dynamic port with a configuration file in a 
 temporary directory.  The module displays the test results on the 
 terminal by default or directs them to a file.  The module optionally
-e-mails the test results.  When the calling program exits, the module
-stops the local instance of Apache and deletes the temporary directory.
+e-mails the test results.  
 
-Each test consists of literal strings or regular expressions that are
-either required to exist or forbidden to exist in the fetched page.
-You can also specify tests for the minimum and maximum number of bytes
-in the returned page.  You can also specify tests for the minimum and
-maximum web server response time.  If you are testing a local file,
-the module checks the error log in the temporary directory before
-and after the file is fetched from Apache.  If messages are written
-to the error log during the fetch, the module flags this as an error
-and writes the messages to the output test report.
+Each URL/web file is tested by fetching it from the web server using
+a local instance of an HTTP user agent.  The basic test is simply
+whether or not the fetch was successful.  You may also test using
+literal strings or regular expressions that are either required to
+exist or forbidden to exist in the fetched page.  You may also
+specify tests for the minimum and maximum number of bytes in the
+returned page.  You may also specify tests for the minimum and
+maximum web server response time.  
+
+If you are testing a local file, the module checks the error log in
+the temporary directory before and after the file is fetched from
+Apache.  If messages are written to the error log during the fetch,
+the module flags this as an error and writes the messages to the
+output test report.
 
 The wt script is provided for running HTTP::WebTest from the command
 line.
 
-Data flow for WebTest using a remote URL:
+Data flow for HTTP::WebTest using a remote URL:
 
           --------------              -------------
           |            |              |           |
@@ -93,12 +97,12 @@ Data flow for WebTest using a remote URL:
           -------------               |          |
                                       ------------
                                       
-Data flow diagram for WebTest using a local web file:
+Data flow diagram for HTTP::WebTest using a local web file:
 
           --------------           ---------------------
           |            |           |                   |
           | Input      |           |  Web page code    |
-          | parameters |           |  (HTML/perl/etc.) |
+          | parameters |           |  (Perl/HTML/etc.) |
           |            |           |                   |
           --------------           ---------------------
                 |                            |
@@ -120,7 +124,6 @@ Data flow diagram for WebTest using a local web file:
           |   agent  |<------------|                    |
           |          |   response  ----------------------
           ------------
-                                      
 
 =head1 METHODS
 
@@ -154,7 +157,7 @@ $AUTHOR = 'Richard Anderson <Richard.Anderson@unixscripts.com>';
 $Debug = 0;
 @ISA = qw(Exporter);  
 @EXPORT_OK = qw(run_web_test);
-$VERSION = 1.01;
+$VERSION = 1.02;
  
 #############################
 # Constants (magic numbers) #
@@ -211,8 +214,8 @@ my %_BOOLEAN = (
 #
 # Mapping of values for debug parameter
 my %_DEBUG = ( 
-   no => 0, 
-   yes => 1, 
+   no       => 0, 
+   yes      => 1, 
    preserve => 2, 
 );
 #
@@ -706,11 +709,6 @@ sub get_response {
    $$rtime = gettimeofday;
    $response = $user_agent->request($request);
    $$rtime = gettimeofday - $$rtime;
-   unless (defined($test->{accept_cookies}) 
-           and $test->{accept_cookies} eq 'no') 
-   {
-      $cookie_jar->extract_cookies($response);
-   }
    return $response;
 }
  
@@ -1209,6 +1207,7 @@ my $_fetch_url = sub {
          $$report .= "Page Content:\n";
          $$report .= $$web_page;
       }
+      ++$test->{num_succeed};
    }
 #
 # Optionally display sent and returned cookies in the report
@@ -3358,7 +3357,7 @@ sub add_cookie_header {
   send_cookies: Option to send cookies to the web server.
   show_cookies: Option to list cookies sent or received.
   show_html: Option to display the HTML source with the output.
- *test_name: Name of test.
+ *test_name: Test name, usually just the URL.  Truncated at 56 chars.
   text_forbid: List of strings that must NOT occur in page.
   text_require: List of strings that MUST occur in page.
  +url: URL to test.
@@ -3436,7 +3435,8 @@ sub add_cookie_header {
  both the "RayCosoft home page" and the "Yahoo home page" tests.  
  Hence, if either returned page contains one of the case-
  insensitive strings in text_forbid, the test fails.  If any test 
- fails, an e-mail will be sent to tester@unixscripts.com.
+ fails or the fetch of the URL fails,, an e-mail will be sent to 
+ tester@unixscripts.com.
 
  apache_exec = /usr/sbin/apache 
  ignore_case = yes
@@ -3899,7 +3899,8 @@ sub add_cookie_header {
 
  PARAMETER: test_name  TYPE: test block parameter  
  NO DEFAULT.  Parameter is REQUIRED.
- DESCRIPTION: Name of this test.  This MUST be the first parameter
+ DESCRIPTION: Name of this test, usually just the URL.  Only the
+ first 56 characters are used.  This MUST be the first parameter
  in the block for each test.  You may specify multiple test blocks
  within a parameter file.  There MUST be one end_test directive
  for each test_name parameter.
@@ -4013,45 +4014,51 @@ and the SSL mutex file must be stored on a local disk.
 
 =head1 VERSION
 
-This document describes version 1.01, release date 14 June 2001
+This document describes version 1.02, release date 14 June 2001
 
 =head1 CHANGES
 
- 0.01  Sat Dec  9 10:14:53 2000
-	- original version; created by h2xs 1.19
+ 1.02  Tue Jun 26 2001
 
- 0.20  Mon Feb 26 2001
+   * OWNERSHIP OF HTTP:WebTest HAS BEEN TRANSFERRED FROM Richard
+     Anderson <Richard.Anderson@raycosoft.com> TO Ilya Martynov
+     <ilya@martynov.org>.  PLEASE DIRECT ALL QUESTIONS AND COMMENTS 
+     TO Ilya Martynov.  So long, and thanks for all the fish.
 
-   * Fixed bug that caused module to abort when a HTTP-Redirect 
-     (302) is sent back with a relative URL.
+   * Change succeed/fail count so that a successful fetch of a 
+     page counts as a successful test.  (An unsuccessful fetch
+     still counts as a failed test.)
 
-   * Set Content-type to 'application/x-www-form-urlencoded' 
-     for POST.
+   * Removed extraneous call to extract_cookies from get_response.
 
-   * Modified Makefile.PL to get path of perl using the which 
-     command and create the wt script with this path in the 
-     she-bang line (#!).
+ 1.01  Wed Jun 14 2001
 
-   * Modified "make test" tests to write output to files in the 
-     t subdirectory.
+   * Modified cookies parameter to allow less than 10 elements.  
+     (Thanks to Thomas Ayles <tayles@arsdigita.com> for suggesting
+     this.)
 
- 0.30  Mon Mar 05 2001
+   * Fixed bug that caused get_response() to fail to capture all 
+     cookies returned by the webserver during redirects.  Added
+     subclass HTTP::WebTest::Cookies (a modified HTTP::Cookies
+     class).  (Thanks to Ilya Martynov <ilya@martynov.org> for
+     this fix.)
 
-   * Fixed ./t/*.t files so that "make test" runs correctly on 
-     Solaris.  (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; 
-     export WEBTEST_LIB.)
+   * Modified web server response time measurement to be more 
+     accurate.
 
-   * Improved clarity of documentation and program output.
+   * Exported run_web_test method so it can be called directly.
 
  1.00  Wed Jun 06 2001
 
    * Added max_rtime and min_rtime parameters to test web server 
      response time.  The perl module Time::HiRes is now a
      prerequisite to install HTTP::WebTest.  (This code was
-     a collaborative effort by the author and Michael Blakeley.)
+     a collaborative effort by the author and Michael Blakeley 
+     <mike@blakeley.com>.)
 
    * Added pauth parameter for proxy authorization.  (This code 
-     was a collaborative effort by the author and Darren Fulton.)
+     was a collaborative effort by the author and Darren Fulton 
+     <Darren.Fulton@team.telstra.com>.)
 
    * Changed max_bytes and min_bytes paramters from test block 
      parameters to global and/or test block parameters.
@@ -4059,26 +4066,44 @@ This document describes version 1.01, release date 14 June 2001
    * Made format of output report more robust for max_bytes and 
      min_bytes parameters.
 
- 1.01  Wed Jun 14 2001
+ 0.30  Mon Mar 05 2001
 
-   * Modified cookies parameter to allow less than 10 elements.  
-     (Thanks to Thomas Ayles for suggesting this.)
+   * Fixed ./t/*.t files so that "make test" runs correctly on 
+     Solaris.  (Replaced export WEBTEST_LIB= with WEBTEST_LIB= ; 
+     export WEBTEST_LIB.)  (Thanks to M. Simon Cavalletto 
+     <simonm@evolution.com> for reporting this bug.)
 
-   * Fixed bug that caused get_response() to fail to capture all 
-     cookies returned by the webserver during redirects.  Added
-     subclass HTTP::WebTest::Cookies (a modified HTTP::Cookies
-     class).  (Thanks to Ilya Martynov for this fix.)
+   * Improved clarity of documentation and program output.
 
-   * Modified web server response time measurement to be more 
-     accurate.
+ 0.20  Mon Feb 26 2001
 
-   * Exported run_web_test method so it can be called directly.
+   * Fixed bug that caused module to abort when a HTTP-Redirect 
+     (302) is sent back with a relative URL.  Thanks to Andre 
+     Machowiak <ama@ision.net> for this fix.
+
+   * Set Content-type to 'application/x-www-form-urlencoded' 
+     for POST.  Thanks to Andre Machowiak <ama@ision.net> for
+     this fix.
+
+   * Modified Makefile.PL to get path of perl using the which 
+     command and create the wt script with this path in the 
+     she-bang line (#!).  (Thanks to Britton <fsblk@aurora.uaf.edu>
+     for reporting this bug.)
+
+   * Modified "make test" tests to write output to files in the 
+     t subdirectory.
+
+ 0.01  Sat Dec  9 10:14:53 2000
+	- original version; created by h2xs 1.19
+        First release to CPAN by Richard Anderson 
+        <Richard.Anderson@raycosoft.com>.
 
 =head1 TODO
 
-Add option to validate HTML syntax using HTML::Validator.  Add option
-to check links (see
-http://world.std.com/~swmcd/steven/perl/pm/lc/linkcheck.html).
+Add option to validate HTML syntax using HTML::Validator.  
+Add option to check links using HTML::LinkExtor.   
+Add single-URL timeout block parameter to pass to LWP::UserAgent.
+Move test_regexes into a plugin.
 
 =head1 AUTHOR
 
