@@ -1,4 +1,4 @@
-# these bits are from libwww
+# these bits are stolen from libwww
 use Config;
 use File::Basename qw(basename dirname);
 chdir(dirname($0));
@@ -16,7 +16,7 @@ $Config{'startperl'} -w
 !GROK!THIS!
 
 print OUT <<'!NO!SUBS!';
-# $Id: wt.PL,v 1.1.2.10 2002/01/12 00:16:51 ilya Exp $
+# $Id: wt.PL,v 1.2 2002/01/28 10:43:45 m_ilya Exp $
 
 =head1 NAME
 
@@ -60,6 +60,10 @@ L<HTTP::WebTest|HTTP::WebTest> on remote URLs or local web files
 containing Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
 report.
 
+This program expects given input file(s) to be in format of wtscript
+file. If no files are given then it expects test specification to be
+passed via standard input.
+
 See docs mentioned in section L<SEE ALSO|SEE ALSO> for full
 documentation.
 
@@ -91,9 +95,7 @@ modified under the terms of the Perl Artistic License.
 
 L<HTTP::WebTest|HTTP::WebTest>
 
-L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
-
-L<HTTP::WebTest::Reference|HTTP::WebTest::Cookbook>
+L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>
 
 =cut
 
@@ -124,7 +126,7 @@ TEXT
     exit 0;
 }
 
-pod2usage(1) if @ARGV < 1;
+@ARGV = '-' if @ARGV < 1;
 
 my $webtest = HTTP::WebTest->new();
 my($return, $exit_status, $total_failed, $total_succeeded) = (0) x 4;

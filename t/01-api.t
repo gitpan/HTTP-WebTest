@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.1.2.18 2002/01/13 03:07:49 ilya Exp $
+# $Id: 01-api.t,v 1.4 2002/01/28 09:49:56 m_ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
@@ -15,7 +15,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 15 }
+BEGIN { plan tests => 16 }
 
 # init test
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -74,7 +74,7 @@ my $WEBTEST = HTTP::WebTest->new;
     ok(@$aref == 3);
 }
 
-# 9: test validate_test
+# 9: test validate_params
 {
     my $tests = [ { url => [] },
 		  { url => 'http://test.org',
@@ -93,7 +93,7 @@ my $WEBTEST = HTTP::WebTest->new;
 
     my $res = '';
     for my $test (@$tests) {
-	my %checks = $WEBTEST->validate_test($test);
+	my %checks = $WEBTEST->validate_params($test);
 
 	# order of keys in hashes is different in various versions of
 	# Perl so we sort hash values by key to make sure that this
@@ -112,26 +112,45 @@ my $WEBTEST = HTTP::WebTest->new;
 		   check_file => 't/test.out/check-params');
 }
 
-# 10: check how webtest handlers broken tests
+# 10-11: check how webtest handles broken tests
 {
     my $tests = [ { url => [] } ];
 
+    # no bad global params
     check_webtest(webtest => $WEBTEST,
 		  server_url => $URL,
 		  tests => $tests,
 		  check_file => 't/test.out/broken-test');
+
+    # some bad global params
+    eval {
+	my $opts = { plugins => '',
+		     mail_addresses => '',
+		     mail => {},
+		     mail_server => {},
+		     mail_from => [] };
+	$WEBTEST->run_tests($tests, $opts);
+    };
+    if($@) {
+	my $res = $@;
+	$res =~ s/(at )\S+( line )\d+(\.)$/$1SomeFile$2SomeLine$3/;
+	compare_output(output_ref => \$res,
+		       check_file => 't/test.out/check-global-params');
+    } else {
+	ok(0);
+    }
 }
 
-# 11-12: parse wt script
+# 12-13: parse wt script
 {
     my $data = read_file('t/simple.wt');
 
     my ($tests, $opts) = $WEBTEST->parse($data);
-    ok($tests->[0]{name} eq 'Some name here');
+    ok($tests->[0]{test_name} eq 'Some name here');
     ok($opts->{text_require}[0] eq 'Require some');
 }
 
-# 13: run tests defined in wt script
+# 14: run tests defined in wt script
 {
     generate_wscript(file => 't/real.wt', server_url => $URL);
 
@@ -144,7 +163,7 @@ my $WEBTEST = HTTP::WebTest->new;
 		   check_file => 't/test.out/run-wtscript');
 }
 
-# 14-15: test num_fail and num_succeed
+# 15-16: test num_fail and num_succeed
 {
     my $tests = [ { url => abs_url($URL, '/test-file1') },
 		  { url => abs_url($URL, '/status-forbidden') },

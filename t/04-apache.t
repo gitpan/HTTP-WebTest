@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 04-apache.t,v 1.1.2.26 2002/01/07 02:02:45 ilya Exp $
+# $Id: 04-apache.t,v 1.1.1.1 2002/01/24 12:26:10 m_ilya Exp $
 
 # This script tests local web files test mode
 

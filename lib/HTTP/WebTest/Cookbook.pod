@@ -8,7 +8,94 @@ Not Applicable
 
 =head1 DESCRIPTION
 
-TODO
+This document contains some examples of L<HTTP::WebTest|HTTP::WebTest>
+usage.
+
+All examples are either runnable programs (see
+L<HTTP::WebTest::API|HTTP::WebTest::API>) or runnable wtscript files
+(see L<perldoc wt|wt>).
+
+=head1 BASICS
+
+=head2 Check Statis Website
+
+This wtscript tests couple of static pages on my website:
+
+    test_name = First page
+        url = http://martynov.org/
+        text_require = ( Ilya Martynov's Web Site )
+    end_test
+
+    test_name = Mail-CheckUser page
+        url = http://martynov.org/checkuser
+        text_require = ( Mail-CheckUser
+                         Download )
+        regex_require = ( Mail-CheckUser-[\d\.]+\.tar\.gz )
+    end_test
+
+Same test in form of Perl script:
+
+    use HTTP::WebTest;
+
+    my $webtest = new HTTP::WebTest;
+
+    $webtest->run_tests(
+        [ {
+            test_name     => 'First page',
+            url           => 'http://martynov.org/',
+            text_require  => [ "Ilya Martynov's Web Site" ]
+          },
+          {
+            test_name     => 'Mail-CheckUser page',
+            url           => 'http://martynov.org/checkuser',
+            text_require  => [ 'Mail-CheckUser',
+                               'Download' ],
+            regex_require =>
+                             [ 'Mail-CheckUser-[\d\.]+\.tar\.gz' ]
+          }
+        ]);
+
+=head2 Check Login Form
+
+This wtscripts tests login form on http://fsck.com/rt2/:
+
+    test_name = Login page
+        url = http://fsck.com/rt2/
+        text_require = ( Login
+                         Username:
+                         Password:)
+    end_test
+
+    test_name = Submit wrong username & password
+        url = http://fsck.com/rt2/
+        params = ( user => unknownUser
+                   pass => somePassword )
+        text_require = ( Error
+                         Your username or password is incorrect )
+    end_test
+
+    test_name = Submit correct username & password
+        url = http://fsck.com/rt2/
+        params = ( user => guest
+                   pass => guest )
+        regex_require = ( Signed in as.*?guest.*?\. )
+    end_test
+
+=head1 ADVANCED
+
+=head2 Test::Harness compatible output
+
+This Perl script reads test specification from file C<test.wt> and
+generates L<Test::Harness|Test::Harness> compatible output:
+
+    use HTTP::WebTest;
+
+    my $webtest = new HTTP::WebTest;
+    $webtest->run_wtscript('test.wt',
+                           {
+                             default_report => 'no',
+                             plugins        => [ '::HarnessReport' ]
+                           });
 
 =head1 COPYRIGHT
 

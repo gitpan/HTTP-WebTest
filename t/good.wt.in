@@ -1,4 +1,4 @@
-# $Id: good.wt.in,v 1.1.2.1 2001/11/20 00:04:08 ilya Exp $
+# $Id: good.wt.in,v 1.1.1.1 2002/01/24 12:26:11 m_ilya Exp $
 
 test_name = Some name here
     url = <<SERVER_URL>>test-file1

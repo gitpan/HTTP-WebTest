@@ -1,4 +1,4 @@
-# $Id: TestResult.pm,v 1.1.2.9 2002/01/15 17:16:08 ilya Exp $
+# $Id: TestResult.pm,v 1.1.1.1 2002/01/24 12:26:24 m_ilya Exp $
 
 package HTTP::WebTest::TestResult;
 
@@ -43,7 +43,7 @@ use HTTP::WebTest::Utils qw(make_access_method);
 
 use overload bool => \&_bool;
 
-=head2 new
+=head2 new ()
 
 Constructor
 

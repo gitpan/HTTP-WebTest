@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.1.2.17 2002/01/15 17:16:08 ilya Exp $
+# $Id: Cookies.pm,v 1.1.1.1 2002/01/24 12:26:29 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Cookies;
 
@@ -25,9 +25,18 @@ use HTTP::Status;
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
 =head2 accept_cookies
 
 Option to accept cookies from the web server.
+
+These cookies exist only while the program is executing and do not
+affect subsequent runs. These cookies do not affect your browser or
+any software other than the test program. These cookies are only
+accessible to other tests executed during test sequence execution.
+
+See also the <send_cookies> parameter.
 
 =head3 Allowed values
 
@@ -42,6 +51,13 @@ C<yes>
 Option to send cookies to web server. This applies to cookies received
 from the web server or cookies specified using the C<cookies> test
 parameter.
+
+This does NOT give the web server(s) access to cookies created with a
+browser or any user agent software other than this program. The
+cookies created while this program is running are only accessible to
+other tests in the same test sequence.
+
+See also the <accept_cookies> parameter.
 
 =head3 Allowed values
 
@@ -175,6 +191,20 @@ parameters are words such as Comment or CommentURL and the value
 parameters are strings that may contain embedded blanks.
 
 =back
+
+An example cookie would look like:
+
+    ( 0
+      WebTest cookie #1
+      expires&2592000&type&consumer
+      /
+      .unixscripts.com
+      ''
+      0
+      0
+      200
+      1
+    )
 
 See RFC 2965 for details (ftp://ftp.isi.edu/in-notes/rfc2965.txt).
 

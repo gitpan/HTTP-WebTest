@@ -1,4 +1,4 @@
-# $Id: Plugin.pm,v 1.1.2.32 2002/01/15 17:16:08 ilya Exp $
+# $Id: Plugin.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
 
 package HTTP::WebTest::Plugin;
 
@@ -48,7 +48,7 @@ sub new {
     return $self;
 };
 
-=head2 webtest
+=head2 webtest ()
 
 =head3 Returns
 
@@ -58,12 +58,34 @@ A L<HTTP::WebTest|HTTP::WebTest> object which uses this plugin.
 
 *webtest = make_access_method('WEBTEST');
 
-=head2 test_param ($param, $default)
+=head2 global_test_param ($param, $optional_default)
+
+=head3 Returns
+
+If global test parameter C<$param> is not defined returns
+C<$optional_default> or C<undef> if it is not defined also.
+
+If global test parameter C<$param> is defined returns it's value.
+
+=cut
+
+sub global_test_param {
+    my $self = shift;
+    my $param = shift;
+    my $default = shift;
+
+    my $value = $self->webtest->global_test_param($param);
+
+    return $default unless defined $value;
+    return $value;
+}
+
+=head2 test_param ($param, $optional_default)
 
 =head3 Returns
 
 If latest test parameter C<$param> is not defined returns
-C<$optional_default> or false if it is not defined.
+C<$optional_default> or C<undef> if it is not defined also.
 
 If latest test parameter C<$param> is defined returns it's value.
 
@@ -88,12 +110,35 @@ sub test_param {
     return $value;
 }
 
+=head2 global_yesno_test_param ($param, $optional_default)
+
+=head3 Returns
+
+If global test parameter C<$param> is not defined returns
+C<$optional_default> or false if it is not defined also.
+
+If global test parameter C<$param> is defined returns true if latest
+test parameter C<$param> is C<yes>. False otherwise.
+
+=cut
+
+sub global_yesno_test_param {
+    my $self = shift;
+    my $param = shift;
+    my $default = shift || 0;
+
+    my $value = $self->global_test_param($param);
+
+    return $default unless defined $value;
+    return $value =~ /^yes$/i;
+}
+
 =head2 yesno_test_param ($param, $optional_default)
 
 =head3 Returns
 
 If latest test parameter C<$param> is not defined returns
-C<$optional_default> or false if it is not defined.
+C<$optional_default> or false if it is not defined also.
 
 If latest test parameter C<$param> is defined returns true if latest
 test parameter C<$param> is C<yes>. False otherwise.
@@ -151,26 +196,27 @@ sub test_result {
     return $result;
 }
 
-=head2 validate_test ($test)
+=head2 validate_params ($params)
 
 Checks test parameters.
 
 =head3 Returns
 
-An array of L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects.
+A hash. The keys are the test parameters and the values are
+L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult> objects.
 
 =cut
 
-sub validate_test {
+sub validate_params {
     my $self = shift;
-    my $test = shift;
+    my $params = shift;
 
     my %param_types = %{$self->param_types};
 
     my %checks = ();
     while(my($param, $type) = each %param_types) {
 	my $method = 'check_' . $type;
-	my $value = $test->param($param);
+	my $value = $params->{$param};
 	next unless defined $value;
 	my $ok = $self->$method($value);
 	my $message = "Parameter $param should be of $type type.";
@@ -180,7 +226,7 @@ sub validate_test {
     return %checks;
 }
 
-=head2 param_types
+=head2 param_types ()
 
 Method which should be redefined in subclasses. Returns information
 about test parameters which are supported by plugin. Used to validate

@@ -1,4 +1,4 @@
-# $Id: Loader.pm,v 1.1.2.5 2002/01/15 17:16:08 ilya Exp $
+# $Id: Loader.pm,v 1.1.1.1 2002/01/24 12:26:32 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Loader;
 
@@ -25,7 +25,11 @@ use HTTP::WebTest::Utils qw(load_package);
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
 =head2 plugins
+
+I<GLOBAL PARAMETER>
 
 A list of module names. Loads these modules and registers them as
 L<HTTP::WebTest|HTTP::WebTest> plugins. If name of plugin starts with
@@ -46,7 +50,7 @@ sub param_types {
 sub start_tests {
     my $self = shift;
 
-    my $plugins = $self->test_param('plugins');
+    my $plugins = $self->global_test_param('plugins');
 
     for my $plugin (@$plugins) {
 	my $name = $plugin;

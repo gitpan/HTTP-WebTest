@@ -1,4 +1,4 @@
-# $Id: DefaultReport.pm,v 1.1.2.34 2002/01/15 17:16:08 ilya Exp $
+# $Id: DefaultReport.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::DefaultReport;
 
@@ -24,6 +24,28 @@ use HTTP::WebTest::Utils qw(make_access_method);
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
+=head2 default_report
+
+I<GLOBAL PARAMETER>
+
+This parameter defines if default report plugin should be used for
+test report creation. Value C<yes> means that default report plugin
+should be used, value C<no> means that it should not. It can be useful
+if it is desired to use another non-default report for creation of
+test report. It can be used to disable any output at all also (i.e. if
+this parameter has value C<no> and no other report plugins are
+loaded).
+
+=head3 Allowed values
+
+C<yes>, C<no>
+
+=head3 Default value
+
+C<yes>
+
 =head2 test_name
 
 Name associated with this url in the test report and error messages.
@@ -40,7 +62,7 @@ C<yes>, C<no>
 
 C<no>
 
-=head2 show_cookie
+=head2 show_cookies
 
 Option to display any cookies sent or received.
 
@@ -80,21 +102,22 @@ C<no>
 
 sub param_types {
     return { %{ shift->SUPER::param_types },
-	     qw(test_name   string
-                show_html   yesno
-                show_cookie yesno
-                terse       string) };
+	     qw(default_report yesno
+                test_name      string
+                show_html      yesno
+                show_cookies   yesno
+                terse          string) };
 }
 
-sub validate_test {
+sub validate_params {
     my $self = shift;
-    my $test = shift;
+    my $params = shift;
 
-    my %checks = $self->SUPER::validate_test($test);
+    my %checks = $self->SUPER::validate_params($params);
 
     if(exists $checks{terse}) {
 	$checks{terse} &&=
-	    $self->test_result($test->param('terse') =~ /^(?:no|summary|failed_only)$/i ? 1 : 0,
+	    $self->test_result($params->{terse} =~ /^(?:no|summary|failed_only)$/i ? 1 : 0,
 			       'Parameter terse can be either no, summary or failed_only.');
     }
 
@@ -107,6 +130,8 @@ sub validate_test {
 sub start_tests {
     my $self = shift;
 
+    return unless $self->global_yesno_test_param('default_report', 1);
+
     $self->SUPER::start_tests;
 
     # reset temporary output storage
@@ -116,11 +141,13 @@ sub start_tests {
 sub report_test {
     my $self = shift;
 
+    return unless $self->global_yesno_test_param('default_report', 1);
+
     # get test params we handle
-    my $test_name = $self->test_param('test_name');
-    my $show_html = $self->yesno_test_param('show_html');
-    my $show_cookie = $self->yesno_test_param('show_cookie');
-    my $terse = lc $self->test_param('terse');
+    my $test_name    = $self->test_param('test_name');
+    my $show_html    = $self->yesno_test_param('show_html');
+    my $show_cookies = $self->yesno_test_param('show_cookies');
+    my $terse        = lc $self->test_param('terse');
 
     my $url = 'N/A';
     if($self->webtest->last_request) {
@@ -132,7 +159,7 @@ sub report_test {
     my $out = '';
 
     # test header
-    $out .= "Test Name: $test_name \n"
+    $out .= "Test Name: $test_name\n"
 	if defined $test_name;
     $out .= "URL: $url\n\n";
 
@@ -154,7 +181,7 @@ FORMAT
 
 	for my $subresult (@$result[1 .. @$result - 1]) {
 	    my $comment = $subresult->comment;
-	    my $ok = $subresult ? 'SUCCEED' : 'FAIL';
+	    my $ok      = $subresult->ok ? 'SUCCEED' : 'FAIL';
 
 	    $out .= $self->sformat(<<FORMAT, $comment, $ok);
     @<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<  @<<<<<<<
@@ -165,7 +192,7 @@ FORMAT
     my $response = $self->webtest->last_response;
     my $request = $self->webtest->last_request;
 
-    if($show_cookie) {
+    if($show_cookies) {
 	# sent and recieved cookies
 
 	my @sent = $request->header('Cookie');
@@ -206,6 +233,8 @@ FORMAT
 
 sub end_tests {
     my $self = shift;
+
+    return unless $self->global_yesno_test_param('default_report', 1);
 
     $self->print("Failed  Succeeded  Test Name\n");
 

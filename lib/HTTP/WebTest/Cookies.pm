@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.1.2.5 2002/01/15 17:16:08 ilya Exp $
+# $Id: Cookies.pm,v 1.1.1.1 2002/01/24 12:26:24 m_ilya Exp $
 
 package HTTP::WebTest::Cookies;
 

@@ -1,4 +1,4 @@
-# $Id: Makefile.PL,v 1.1.1.1.2.38 2002/01/18 00:43:33 ilya Exp $
+# $Id: Makefile.PL,v 1.1.1.1 2002/01/24 12:26:02 m_ilya Exp $
 
 use 5.005;
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 06-parser.t,v 1.1.2.6 2002/01/08 03:30:57 ilya Exp $
+# $Id: 06-parser.t,v 1.2 2002/01/28 09:49:55 m_ilya Exp $
 
 # This script tests wt scripts parser
 
@@ -22,7 +22,7 @@ BEGIN { plan tests => 27 }
     my ($tests, $opts) = HTTP::WebTest::Parser->parse($data);
 
     # check $tests
-    ok($tests->[0]{name} eq 'Some name here');
+    ok($tests->[0]{test_name} eq 'Some name here');
     ok($tests->[0]{auth}[0] eq 'name');
     ok($tests->[0]{auth}[1] eq 'value');
     ok($tests->[0]{regex_require}[0] eq 'Quoted text " test');
@@ -34,7 +34,7 @@ BEGIN { plan tests => 27 }
     ok($tests->[0]{regex_forbid}[3] eq 'tests and fun');
     ok($tests->[0]{regex_forbid}[4] eq 'abcdef 1234');
     ok($tests->[0]{regex_forbid}[5] eq ' a b c d \' e f ');
-    ok($tests->[1]{name} eq 'Another name');
+    ok($tests->[1]{test_name} eq 'Another name');
     ok($tests->[1]{url} eq 'www.tiv.net');
     ok($tests->[1]{cookie}[0][0] eq '0');
     ok($tests->[1]{cookie}[0][1] eq 'webtest');

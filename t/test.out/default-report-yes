@@ -1,0 +1,20 @@
+Failed  Succeeded  Test Name
+   0          2    *** no name ***
+   1          0    *** no name ***
+
+
+URL: http://http.web.test/test-file1
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    987654                                                       SUCCEED
+
+
+URL: http://http.web.test/non-existent
+
+  STATUS CODE CHECK
+    404 Not Found                                                FAIL
+
+
+Total web tests failed: 1  succeeded: 2

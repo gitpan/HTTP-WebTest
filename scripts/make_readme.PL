@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: make_readme.PL,v 1.1.2.1 2002/01/15 17:51:49 ilya Exp $
+# $Id: make_readme.PL,v 1.1.1.1 2002/01/24 12:26:33 m_ilya Exp $
 
 use strict;
 

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: config.pl,v 1.1.2.7 2001/08/11 23:00:36 ilya Exp $
+# $Id: config.pl,v 1.1.1.1 2002/01/24 12:26:18 m_ilya Exp $
 
 # Here we set some global vars for test scripts
 

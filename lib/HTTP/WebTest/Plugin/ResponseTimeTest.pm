@@ -1,4 +1,4 @@
-# $Id: ResponseTimeTest.pm,v 1.1.2.10 2002/01/15 17:16:08 ilya Exp $
+# $Id: ResponseTimeTest.pm,v 1.1.1.1 2002/01/24 12:26:30 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ResponseTimeTest;
 
@@ -21,6 +21,8 @@ use strict;
 use base qw(HTTP::WebTest::Plugin);
 
 =head1 TEST PARAMETERS
+
+=for pod_merge copy params
 
 =head2 min_rtime
 

@@ -1,4 +1,4 @@
-# $Id: HelloWorld.pm,v 1.1.2.1 2002/01/07 01:40:39 ilya Exp $
+# $Id: HelloWorld.pm,v 1.1.1.1 2002/01/24 12:26:18 m_ilya Exp $
 
 package HelloWorld;
 

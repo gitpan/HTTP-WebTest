@@ -1,4 +1,4 @@
-# $Id: ContentSizeTest.pm,v 1.1.2.12 2002/01/15 17:16:08 ilya Exp $
+# $Id: ContentSizeTest.pm,v 1.1.1.1 2002/01/24 12:26:32 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::ContentSizeTest;
 
@@ -22,11 +22,13 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
 =head2 min_bytes
 
 Minimum number of bytes expected in returned page.
 
-=head3 Allowed Values
+=head3 Allowed values
 
 Any integer less than C<max_bytes> (if C<max_bytes> is specified).
 
@@ -34,7 +36,7 @@ Any integer less than C<max_bytes> (if C<max_bytes> is specified).
 
 Maximum number of bytes expected in returned page.
 
-=head3 Allowed Values
+=head3 Allowed values
 
 Any integer greater that zero and greater than C<min_bytes> (if
 C<min_bytes> is specified).

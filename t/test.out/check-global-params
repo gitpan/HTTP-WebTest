@@ -1,0 +1,6 @@
+HTTP::WebTest:
+Parameter mail should be of string type.
+Parameter mail_addresses should be of list type.
+Parameter mail_from should be of string type.
+Parameter mail_server should be of string type.
+Parameter plugins should be of list type. at SomeFile line SomeLine.

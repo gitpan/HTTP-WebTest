@@ -1,4 +1,4 @@
-# $Id: Plugins.pod,v 1.1.2.6 2002/01/15 17:16:08 ilya Exp $
+# $Id: Plugins.pod,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
 
 =head1 NAME
 
@@ -48,7 +48,7 @@ known test types.
 
 This method is used to validate values of test parameters. If
 additional checks are required they can be defined in method
-C<validate_test>. See below.
+C<validate_params>. See below.
 
 =head3 Example
 
@@ -70,12 +70,22 @@ C<list> are test parameter types.
 
 Each plugin package can provide following methods:
 
-=head2 validate_test ($test)
+=head2 validate_params ($params)
 
 This method can be defined in plugin packages to add additional checks
-for test defined by C<$test> which are not covered by test parameter
-types specification set by C<param_types>. If you define this method
-it be sure to call C<$self->SUPER::validate_test($test)>.
+for test parameters which are not covered by test parameter types
+specification defined by C<param_types>. If you define this method in
+plugin package be sure to call C<$self->SUPER::validate_params($test)>.
+
+=head3 Parameters
+
+=over 4
+
+=item * $params
+
+A reference on hash which contains test parameters.
+
+=back
 
 =head3 Returns
 
@@ -86,17 +96,17 @@ values.
 =head3 Example
 
 This example adds check for test parameter C<my_test_param>. It must
-be equal to 'BlaBla' if this test parameter is defined.
+be equal to 'BlaBla' if this test parameter is specified.
 
-    sub validate_test {
+    sub validate_params {
         my $self = shift;
-        my $test = shift;
+        my $params = shift;
 
         # run default checks
-        my %checks = $self->SUPER::validate_test($test);
+        my %checks = $self->SUPER::validate_params($params);
 
         if($checks{my_test_param}) {
-            my $ok = $test->param('my_test_param') eq 'BlaBla';
+            my $ok = $params->{my_test_param} eq 'BlaBla';
             $checks{my_test_param} =
                 $self->test_result($ok, 'Parameter my_test_param is not ' .
                                         'equal to BlaBla');
@@ -105,29 +115,29 @@ be equal to 'BlaBla' if this test parameter is defined.
 	return %checks;
     }
 
-=head2 start_tests
+=head2 start_tests ()
 
 Called before runing test sequence. You can put here some
 initalization. Report plugins can use this hook to create header of
 report.
 
-=head2 end_tests
+=head2 end_tests ()
 
 Called when test sequence is finished. You can put here some
 finialization code. Report plugins can use this hook to finish
 creation of report.
 
-=head2 prepare_request
+=head2 prepare_request ()
 
 Called before L<HTTP::WebTest|HTTP::WebTest> does HTTP
 request. Various properties of request here can be set here.
 
-=head2 check_response
+=head2 check_response ()
 
 Called once L<HTTP::WebTest|HTTP::WebTest> did HTTP request and have
 got HTTP response. Test checks should be placed here.
 
-=head2 report_test
+=head2 report_test ()
 
 Called when L<HTTP::WebTest|HTTP::WebTest> got HTTP response after
 <check_response> hooks. Normally used by report plugins to generate

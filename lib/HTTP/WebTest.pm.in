@@ -1,10 +1,10 @@
 # This is a -*-perl-*- source file
 
-# $Id: WebTest.pm.in,v 1.1.2.3 2002/01/18 00:39:04 ilya Exp $
+# $Id: WebTest.pm.in,v 1.2 2002/01/24 14:52:40 m_ilya Exp $
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_02';
+$VERSION = '1.99_03';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -15,34 +15,53 @@ HTTP::WebTest - Test remote URLs or local web files
 
 =head1 SYNOPSIS
 
-All HTTP::WebTest API cannot be summarized here. Only basic usage.
-
     use HTTP::WebTest;
 
     my $webtest = new HTTP::WebTest;
 
+    # run test from file
     $webtest->run_wtscript('script.wt');
+
+    # or (to pass test parameters as method arguments)
     $webtest->run_tests($tests);
 
-See below for all API.
-
 =head1 DESCRIPTION
+
+=head2 Beta software warning
+
+THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS PROBABLY NOT
+AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be downloaded at
+http://search.cpan.org/search?dist=HTTP-WebTest-1.07
 
 =head2 Introduction
 
 This module runs tests on remote URLs or local web files containing
 Perl/JSP/HTML/JavaScript/etc. and generates a detailed test
-report. This module has plugin based architecture. Plugins can define
-test types and provide various report capabilities. This module comes
-with a set of default plugins but can be easily extended with third
-party plugins.
+report. This module can be used "as-is" or its functionality can be
+extended using plugins. Plugins can define test types and provide
+additional report capabilities. This module comes with a set of
+default plugins but can be easily extended with third party plugins.
 
-The test specifications can be read from a parameter file (wtscript)
-or input as method arguments. If you are testing a local file, Apache
-is started on a private/dynamic port with a configuration file in a
-temporary directory. The module can display the test results via
-report plugin(s). Default report plugin can output them on the
-terminal, directs them to a file or scalar variable and/or email them.
+The L<wt|wt> script is provided for running C<HTTP::WebTest> from the
+command line.
+
+The test specifications can be read from a parameter file in wtscript
+format or input as method arguments. If you are testing a local file,
+Apache is started on a private/dynamic port with a configuration file
+in a temporary directory.
+
+The test results can be displayed on the terminal, directed to a file,
+stored in a scalar variable. The test results can also be emailed.
+The report can be modified and extended using report plugins.
+
+Each URL/web file is tested by fetching it from the web server using a
+local instance of an HTTP user agent. The basic test is simply whether
+or not the fetch was successful. You may also test using literal
+strings or regular expressions that are either required to exist or
+forbidden to exist in the fetched page. You may also specify tests for
+the minimum and maximum number of bytes in the returned page. You may
+also specify tests for the minimum and maximum web server response
+time.
 
 Data flow for C<HTTP::WebTest> using a remote URL:
 
@@ -92,13 +111,19 @@ Data flow diagram for C<HTTP::WebTest> using a local web file:
 
 =head2 Getting Started
 
-This document is good starting point. It describes:
+This module has complex functionality, but using it to run simple
+tests is simple. Create a file of test parameters in the
+L<wtscript format|Running HTTP::WebTest using a parameter file> and use the
+L<wt|wt> program to process the file using the command C<wt
+filename>. The only required parameters are C<test_name> and C<url>.
+
+This document describes:
 
 =over 4
 
 =item *
 
-How tests can be specificated. See section L<TEST SPECIFICATION|TEST
+How tests can be specified. See section L<TEST SPECIFICATION|TEST
 SPECIFICATION>.
 
 =item *
@@ -107,6 +132,8 @@ All test parameters supported by core C<HTTP::WebTest>
 plugins. See section L<TEST PARAMETERS|TEST PARAMETERS>.
 
 =back
+
+See L<"perldoc wt"|wt> for documentation on the wt program.
 
 Other useful documentation is:
 
@@ -120,7 +147,7 @@ of wtscript files and examples of C<HTTP::WebTest> API usage.
 =item *
 
 L<perldoc HTTP::WebTest::API|HTTP::WebTest::API> - full documentaion
-on HTTP::WebTest::API.
+on API of C<HTTP::WebTest>.
 
 =item *
 
@@ -131,13 +158,16 @@ developers of C<HTTP::WebTest> plugins.
 
 =head1 TEST SPECIFICATION
 
-The test specifications can be read from a parameter file (wtscript)
-or input in form of array of hashes.
+The test specifications can be read from a parameter file (in the
+wtscript format described below) or passed as method arguments as an
+array of hashes.
 
-=head2 Wtscript
+=head2 Running HTTP::WebTest using a parameter file
 
 C<HTTP::WebTest> can read test specification from file
-in format called as C<wtscript>. Tests defined by wtscript file can be
+in format called as C<wtscript>.
+
+Tests defined by wtscript file can be
 run either using Perl API of C<HTTP::WebTest>
 
     use HTTP::WebTest;
@@ -146,6 +176,12 @@ run either using Perl API of C<HTTP::WebTest>
     $webtest->run_wtscript('script.wt');
 
 or by using program L<wt|wt> supplied with this module.
+
+If you are running dozens of tests, you may want to divide them into
+several parameter files. This will organize the tests and reduce the
+size of the output and e-mail messages. However, cookies passed to or
+received from the web server(s) are not shared between tests in
+different parameter files.
 
 =head3 File format
 
@@ -175,8 +211,9 @@ with the following exceptions:
 
 =item *
 
-Test block parameters MUST occur between a test_name parameter
-and an end_test directive.
+Test block parameters MUST occur between a test_name parameter and an
+end_test directive. (Test block parameters affect only an individual
+test.)
 
 =item *
 
@@ -317,15 +354,15 @@ copied using the C<include_file_path> parameter.
                        )
     end_test
 
-=head2 Array of Hashes
+=head2 Calling HTTP::WebTest from a Perl program
 
-If you are using Perl API of C<HTTP::WebTest> then test sequence can
-be defined in form of array of hashes.
+If you are using Perl API of C<HTTP::WebTest> then the test parameters
+can be defined in form of array of hashes.
 
-Each hash in array defines tests for one URL. Keys in hashes are test
-parameter names and values in hashes are values of test
-parameters. Also there can be defined global test parameters in form
-of hash for each test sequence.
+Each hash in array defines tests for one URL or local web file. Keys
+in hashes are test parameter names and values in hashes are values of
+test parameters. Additionally, optional global test parameters can be
+passed in a hash passed as the second argument.
 
 Tests can be run as
 
@@ -359,20 +396,49 @@ C<tester@unixscripts.com>.
                    max_bytes    => 99000,
                  }
                 ];
-    my $options = { mail_server    => 'mailhost.unixscripts.com',
-                    mail_addresses => [ 'tester@unixscripts.com' ],
-                    mail           => 'all',
-                    ignore_case    => 'yes',
-                  };
 
-    $webtest->run_tests($tests, $options);
+    my $params = { mail_server    => 'mailhost.unixscripts.com',
+                   mail_addresses => [ 'tester@unixscripts.com' ],
+                   mail           => 'all',
+                   ignore_case    => 'yes',
+                 };
+
+    $webtest->run_tests($tests, $params);
 
 =head1 TEST PARAMETERS
 
-=for pod_merge TEST PARAMETERS
+Most parameters can be used both as global and as test block
+parameters. If you specify such parameter as global its value applies
+to all test blocks. Value of parameter specified as global can be
+overriden individually in each test block by specifying this parameter
+with different values in test blocks.
 
-Content of this section should be autogenerated from POD docs in plugin
-modules.
+Parameters marked as I<GLOBAL PARAMETER> can be used only as global
+and it cannot be overriden in test blocks.
+
+=for pod_merge replace params
+
+Content of this section should be autogenerated from POD documentation
+in plugin modules. Everything from this point till next =cut will be
+replaced with autogenerated documentation.
+
+=for pod_merge copy params
+
+=head2 end_test
+
+It is not really test parameter but a part of
+L<wtscript format|Running HTTP::WebTest using a parameter file>.
+It marks end of test block.
+
+=cut
+
+=for pod_merge replace apache
+
+Content of this section should be autogenerated from POD documentation
+in Apache plugin module. Everything from this point till next =cut
+will be replaced with autogenerated documentation.
+
+=cut
 
 =head1 RESTRICTIONS / BUGS
 
@@ -382,17 +448,26 @@ etc.) but it should work on Win32 systems.
 Local file tests don't work on Win32 systems.
 
 The module's HTTP requests time out after 3 minutes (the default value
-for L<LWP::UserAgent|LWP::UserAgent>). If the file_path parameter is
+for L<LWP::UserAgent|LWP::UserAgent>). If the C<file_path> parameter is
 specified, Apache must be installed.
 
-=head1 AUTHOR
+=head1 SUPPORT
+
+Please email bug reports, suggestions, questions, etc. to
+C<HTTP::WebTest> maillist
+C<http-webtest-general@lists.sourceforge.net>. You can sign up at
+http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
+
+=head1 AUTHORS
 
 Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
 C<HTTP::WebTest 1.xx>.
 
-Ilya Martynov <ilya@martynov.org> made rewrite of C<HTTP::WebTest>. He
-is maintaining C<HTTP::WebTest> now. Please email him bug reports,
-suggestions, questions, etc.
+Ilya Martynov <ilya@martynov.org> made rewrite of
+C<HTTP::WebTest>. New version of C<HTTP::WebTest> have introduced
+extended API and plugin based architecture.
+
+Please don't email authors directly. Use C<HTTP::WebTest> maillists.
 
 =head1 COPYRIGHT
 
@@ -400,7 +475,7 @@ Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
 
 Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
 
-This module is free software.  It may be used, redistributed and/or
+This module is free software. It may be used, redistributed and/or
 modified under the terms of the Perl Artistic License.
 
 =head1 SEE ALSO

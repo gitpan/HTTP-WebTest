@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 05-report.t,v 1.1.2.5 2001/08/22 12:02:16 ilya Exp $
+# $Id: 05-report.t,v 1.1.1.1 2002/01/24 12:26:11 m_ilya Exp $
 
 # This script tests core plugins of HTTP::WebTest.
 
@@ -18,7 +18,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL $TEST);
 
-BEGIN { plan tests => 7 }
+BEGIN { plan tests => 10 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -67,7 +67,7 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 	skip($skip, 1);
 	skip($skip, 1);
     } else {
-	my $opts = { show_cookie => 'yes' };
+	my $opts = { show_cookies => 'yes' };
 
 	check_webtest(webtest => $WEBTEST,
 		      server_url => $URL,
@@ -96,7 +96,7 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 	skip($skip, 1);
     } else {
 	my $opts = { show_html => 'yes',
-		     show_cookie => 'yes' };
+		     show_cookies => 'yes' };
 
 	check_webtest(webtest => $WEBTEST,
 		      server_url => $URL,
@@ -121,6 +121,40 @@ my $COOKIE_FILTER = sub { $_[0] =~ s/expires=.*?GMT/expires=SOMEDAY/;};
 		      tests => $tests,
 		      check_file => "t/test.out/report-terse-$terse");
     }
+}
+
+# 8-9: test default_report parameter
+{
+    my $tests = [ $TEST,
+		  { url => abs_url($URL, '/non-existent') } ];
+
+    for my $default_report (qw(yes no)) {
+	my $opts = { default_report => $default_report };
+
+	check_webtest(webtest => $WEBTEST,
+		      server_url => $URL,
+		      opts => $opts,
+		      tests => $tests,
+		      check_file => "t/test.out/default-report-$default_report");
+    }
+}
+
+# 10: test HTTP::WebTest::Plugin::HarnessReport plugin
+{
+    my $tests = [ $TEST,
+		  { url => abs_url($URL, '/non-existent') },
+		  { test_name => 'BlaBla',
+		    url => abs_url($URL, '/non-existent') },
+		];
+
+    my $opts = { plugins => [ '::HarnessReport' ],
+		 default_report => 'no' };
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  opts => $opts,
+		  tests => $tests,
+		  check_file => 't/test.out/test-harness')
 }
 
 # try to stop server even we have been crashed

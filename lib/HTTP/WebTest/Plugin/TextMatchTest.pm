@@ -1,4 +1,4 @@
-# $Id: TextMatchTest.pm,v 1.1.2.12 2002/01/15 17:16:08 ilya Exp $
+# $Id: TextMatchTest.pm,v 1.1.1.1 2002/01/24 12:26:33 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::TextMatchTest;
 
@@ -23,6 +23,8 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
 =head2 ignore_case
 
 Option to do case-insensitive string matching for C<text_forbid>,
@@ -41,20 +43,34 @@ C<no>
 List of text strings that are forbidden to use exist in the returned
 page.
 
+See also the C<regex_forbid> and C<ignore_case> parameters.
+
 =head2 text_require
 
 List of text strings that are required to use exist in the returned
 page.
 
+See also the C<regex_require> and C<ignore_case> parameters.
+
 =head2 regex_forbid
 
-List of regular expressions that are URI forbidden to exist in the
+List of regular expressions that are forbidden to exist in the
 returned page.
+
+For more information, see L<perldoc perlre|perlre> or see Programming
+Perl, 3rd edition, Chapter 5.
+
+See also the C<text_forbid> and C<ignore_case> parameters.
 
 =head2 regex_require
 
-List of regular expressions that are URI required to exist in the
+List of regular expressions that are required to exist in the
 returned page.
+
+For more information, see L<perldoc perlre|perlre> or see Programming Perl,
+3rd edition, Chapter 5.
+
+See also the C<text_require> and C<ignore_case> parameters.
 
 =cut
 

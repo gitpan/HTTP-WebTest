@@ -1,4 +1,4 @@
-# $Id: Test.pm,v 1.1.2.11 2002/01/15 17:16:08 ilya Exp $
+# $Id: Test.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
 
 package HTTP::WebTest::Test;
 
@@ -14,6 +14,7 @@ HTTP::WebTest::Test - Test object class
     my $test = HTTP::WebTest::Test->convert($raw_test);
 
     my $value = $test->param($param);
+    my $value = $test->params->{$param};
 
     my $results = $test->results;
     my $result = $test->result->[0];
@@ -65,13 +66,20 @@ sub new {
     my %params = @_;
 
     my $self = bless {}, $class;
-    $self->_params({ %params });
+    $self->params({ %params });
 
     return $self;
 }
 
-# accessor method for test params data
-*_params = make_access_method('PARAMS', sub { {} });
+=head2 params
+
+=head3 Returns
+
+A reference on hash with all test parameters.
+
+=cut
+
+*params = make_access_method('PARAMS', sub { {} });
 
 =head2 param ($param)
 
@@ -85,7 +93,7 @@ sub param {
     my $self = shift;
     my $param = shift;
 
-    return $self->_params->{$param};
+    return $self->params->{$param};
 }
 
 =head2 results ($optional_results)
@@ -170,7 +178,7 @@ sub convert {
     return $conv_test;
 }
 
-=head2 reset
+=head2 reset ()
 
 Resets test object
 

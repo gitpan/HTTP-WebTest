@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: utils.pl,v 1.1.2.15 2001/11/24 15:38:49 ilya Exp $
+# $Id: utils.pl,v 1.1.1.1 2002/01/24 12:26:11 m_ilya Exp $
 
 # some subs common for all tests are defined here
 

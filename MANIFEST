@@ -1,4 +1,5 @@
 Changes
+INSTALL
 MANIFEST
 Makefile.PL
 README
@@ -18,6 +19,7 @@ lib/HTTP/WebTest/Plugin/Apache.pm
 lib/HTTP/WebTest/Plugin/ContentSizeTest.pm
 lib/HTTP/WebTest/Plugin/Cookies.pm
 lib/HTTP/WebTest/Plugin/DefaultReport.pm
+lib/HTTP/WebTest/Plugin/HarnessReport.pm
 lib/HTTP/WebTest/Plugin/Loader.pm
 lib/HTTP/WebTest/Plugin/ResponseTimeTest.pm
 lib/HTTP/WebTest/Plugin/SetRequest.pm
@@ -63,10 +65,12 @@ t/test.out/borked1.err
 t/test.out/borked2.err
 t/test.out/borked3.err
 t/test.out/broken-test
+t/test.out/check-global-params
 t/test.out/check-params
 t/test.out/cookie1
 t/test.out/cookie2
 t/test.out/cookie3
+t/test.out/default-report-yes
 t/test.out/pauth
 t/test.out/plugin-counter
 t/test.out/plugin-hello
@@ -85,6 +89,7 @@ t/test.out/run-wtscript
 t/test.out/short-url
 t/test.out/size
 t/test.out/status
+t/test.out/test-harness
 t/test.out/test_name
 t/test.out/text_match1
 t/test.out/text_match2

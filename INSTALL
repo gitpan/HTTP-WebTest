@@ -1,0 +1,30 @@
+$Id: INSTALL,v 1.1.1.1 2002/01/24 12:26:04 m_ilya Exp $
+
+PREREQUISITES
+
+* Perl 5.005 or later
+* Algorithm::Diff
+* File::Temp (is included in Perl 5.6.1 and later)
+* libwww
+* libnet
+* Parse::RecDescent
+* Pod::Usage (is included in Perl 5.6.1 and later)
+* Pod::Man 1.14 (is included in Perl 5.6.1 and later)
+* Time::HiRes
+
+INSTALLATION
+
+Installing HTTP-WebTest:
+
+    perl Makefile.PL
+    (answer the questions you're asked)
+    make
+    make test
+    make install       
+
+On Win32 systems you should use 'nmake' instead of make'. 'nmake.exe'
+is Windows version of Unix 'make' utility which can be downloaded from
+ftp.microsoft.com for free.
+
+For more information see README and POD documentation in
+HTTP::WebTest.

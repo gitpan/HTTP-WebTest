@@ -1,4 +1,4 @@
-$Id: README,v 1.1.2.2 2002/01/15 18:13:28 ilya Exp $
+$Id: README,v 1.1.1.1 2002/01/24 12:26:38 m_ilya Exp $
 
 This directory contains module maintenance scripts. Normally you
 should not use (or need) them unless you are module maintainer.

@@ -1,8 +1,9 @@
 Failed  Succeeded  Test Name
-   1          2    *** no name ***
-   1          1    *** no name ***
+   1          2    Some name here
+   1          1    Another name
 
 
+Test Name: Some name here
 URL: http://http.web.test/test-file1
 
   STATUS CODE CHECK
@@ -13,6 +14,7 @@ URL: http://http.web.test/test-file1
     TEST TEST                                                    SUCCEED
 
 
+Test Name: Another name
 URL: http://http.web.test/no-such-file
 
   STATUS CODE CHECK

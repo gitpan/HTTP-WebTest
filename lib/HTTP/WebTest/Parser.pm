@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.1.2.11 2002/01/15 17:16:08 ilya Exp $
+# $Id: Parser.pm,v 1.2 2002/01/28 09:49:56 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -52,7 +52,7 @@ my $parser = new Parse::RecDescent (q{
     comment: /#.*/ { [ 'comment', $item[1] ] }
 
     test: starttest testchunk(s) endtest
-        { [ 'test', [ [ 'param', 'name', $item[1] ], @{$item[2]} ] ] }
+        { [ 'test', [ [ 'param', 'test_name', $item[1] ], @{$item[2]} ] ] }
 
     testchunk: comment
              | param

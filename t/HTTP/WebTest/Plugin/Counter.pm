@@ -1,4 +1,4 @@
-# $Id: Counter.pm,v 1.1.2.1 2002/01/07 01:52:33 ilya Exp $
+# $Id: Counter.pm,v 1.1.1.1 2002/01/24 12:26:20 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Counter;
 

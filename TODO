@@ -1,14 +1,18 @@
-$Id: TODO,v 1.1.2.75 2002/01/17 21:33:21 ilya Exp $
+$Id: TODO,v 1.2 2002/01/28 07:11:05 m_ilya Exp $
 
 My current TODO:
 
 * write cookbook
 
-* separate global and normal test parameters in a reference
+* resurrect all parameter checks from old HTTP::WebTest
 
 * generate index of test parameters in a reference
 
 * reread all docs to check if it makes any sense
+
+* add pointers on ::HarnessReport in HTTP::WebTest docs
+
+* embeded Perl in wtscripts
 
 * polish local mode tests - they are *very* non portable now
 
@@ -16,20 +20,19 @@ My current TODO:
 
 * save_output option for backward compatibility API
 
+* extended syntax of wtscript files which allows nested structures
+
+* support for file upload tests
+
 * automated tests for mail sending
 
 * plugin for page validation with HTML::Validator
 
-* report plugin with output compatible with Test::Harness (using
-  Test::Builder ?)
-
-* embeded Perl in wtscripts
-
 * simple navigation using link names and button names (with HTML::Form)
 
-* HTTP proxy which autogenerates skeleton of test file
+* Generator of both Perl and wtscript code from test objects
 
-* support for file upload tests
+* HTTP proxy which autogenerates skeleton of test file
 
 * HTML formated reports
 

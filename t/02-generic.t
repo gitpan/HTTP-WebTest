@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.1.2.5 2002/01/13 03:14:16 ilya Exp $
+# $Id: 02-generic.t,v 1.1.1.1 2002/01/24 12:26:13 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 

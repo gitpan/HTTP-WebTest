@@ -1,4 +1,4 @@
-# $Id: SetRequest.pm,v 1.1.2.22 2002/01/15 17:16:08 ilya Exp $
+# $Id: SetRequest.pm,v 1.2 2002/01/28 06:32:02 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::SetRequest;
 
@@ -23,13 +23,18 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
 =head2 url
 
-URL to test. If schema is omitted then HTTP is implied.
+URL to test. If schema part of URL is omitted (i.e. URL doesn't start
+with C<http://>, C<ftp://>, etc) then C<http://> is implied.
 
 =head2 method
 
 HTTP request method.
+
+See RFC 2616 (HTTP/1.1 protocol).
 
 =head3 Allowed values
 
@@ -46,10 +51,24 @@ URL. (This element is used to test pages that process input from
 forms.) Unless the method key is set to C<POST>, these pairs are
 URI-escaped and appended to the requested URL.
 
+For example,
+
+    url = http://www.hotmail.com/cgi-bin/hmhome
+    params = ( curmbox
+               F001 A005
+               from
+               HotMail )
+
+generates the HTTP request:
+
+    http://www.hotmail.com/cgi-bin/hmhome?curmbox=F001%20A005&from=HotMail
+
+The names and values will be URI-escaped as defined by RFC 2396.
+
 =head2 auth
 
-A list of userid/password pairs to be used for web page access
-authorization.
+A list which contains two elements: userid/password pair to be used
+for web page access authorization.
 
 =head2 proxies
 
@@ -63,8 +82,8 @@ For example (C<wtscript> usage):
 
 =head2 pauth
 
-A list of userid/password pairs to be used for proxy server access
-authorization.
+A list which contains two elements: userid/password pair to be used
+for proxy server access authorization.
 
 =cut
 
@@ -77,25 +96,25 @@ sub param_types {
 	        pauth   list) };
 }
 
-sub validate_test {
+sub validate_params {
     my $self = shift;
-    my $test = shift;
+    my $params = shift;
 
-    my %checks = $self->SUPER::validate_test($test);
+    my %checks = $self->SUPER::validate_params($params);
 
     if(exists $checks{method}) {
 	$checks{method} &&=
-	    $self->test_result($test->param('method') =~ /^(?:GET|POST)$/i ? 1 : 0,
+	    $self->test_result($params->{method} =~ /^(?:GET|POST)$/i ? 1 : 0,
 			       'Request method should be either GET or POST.');
     }
     if(exists $checks{auth}) {
 	$checks{auth} &&=
-	    $self->test_result(@{$test->param('auth')} == 2,
+	    $self->test_result(@{$params->{auth}} == 2,
 			       'Parameter auth should have two elements.');
     }
     if(exists $checks{pauth}) {
  	$checks{pauth} &&=
- 	    $self->test_result(@{$test->param('pauth')} == 2,
+ 	    $self->test_result(@{$params->{pauth}} == 2,
  			       'Parameter auth should have two elements.');
     }
 

@@ -1,4 +1,4 @@
-# $Id: StatusTest.pm,v 1.1.2.7 2002/01/15 17:16:08 ilya Exp $
+# $Id: StatusTest.pm,v 1.1.1.1 2002/01/24 12:26:29 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::StatusTest;
 
@@ -21,6 +21,12 @@ use strict;
 use base qw(HTTP::WebTest::Plugin);
 
 use HTTP::Status;
+
+=head1 TEST PARAMETERS
+
+None.
+
+=cut
 
 sub check_response {
     my $self = shift;

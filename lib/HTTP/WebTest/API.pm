@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.1.2.2 2002/01/15 19:02:16 ilya Exp $
+# $Id: API.pm,v 1.3 2002/01/28 07:11:05 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API. That's right
 package HTTP::WebTest;
@@ -9,13 +9,14 @@ HTTP::WebTest::API - API of HTTP::WebTest
 
 =head1 SYNOPSIS
 
-All HTTP::WebTest API cannot be summarized here.
-
     use HTTP::WebTest;
 
     my $webtest = new HTTP::WebTest;
 
+    # run test from file
     $webtest->run_wtscript('script.wt');
+
+    # or (to pass test parameters as method arguments)
     $webtest->run_tests($tests);
 
 See below for all API.
@@ -47,7 +48,7 @@ use base qw(Exporter);
 use vars qw(@EXPORT_OK);
 @EXPORT_OK = qw(run_web_test);
 
-=head2 new
+=head2 new ()
 
 Constructor.
 
@@ -100,6 +101,19 @@ sub run_tests {
 
     $self->tests([ @tests ]);
     $self->_global_test_params($params);
+
+    # validate global test parameters
+    my %checks = $self->validate_params($params);
+    # be sure that checks are sorted by param name
+    my @broken = grep { not $_->ok } map $checks{$_}, sort keys %checks;
+
+    # is is hard to report errors nicely (i.e. via report plugins)
+    # here because plugins are not initialized yet. Just die right now
+    # if there are any bad global test parameters
+    if(@broken) {
+	my $die = join "\n", 'HTTP::WebTest:', map $_->comment, @broken;
+	die $die;
+    }
 
     # start tests hook
     for my $plugin (@{$self->plugins}) {
@@ -162,11 +176,11 @@ sub run_wtscript {
     $self->run_tests($tests, { %$opts, %$opts_override });
 }
 
-=head2 num_fail
+=head2 num_fail ()
 
 =head3 Returns
 
-A number of failed tests.
+The number of failed tests.
 
 =cut
 
@@ -188,11 +202,11 @@ sub num_fail {
     return $fail;
 }
 
-=head2 num_succeed
+=head2 num_succeed ()
 
 =head3 Returns
 
-A number of passed tests.
+The number of passed tests.
 
 =cut
 
@@ -214,11 +228,11 @@ sub num_succeed {
     return $succeed;
 }
 
-=head2 have_succeed
+=head2 have_succeed ()
 
 =head3 Returns
 
-True if all tests have been passed.
+True if all tests have passed, false otherwise.
 
 =cut
 
@@ -230,7 +244,17 @@ sub have_succeed {
 
 =head2 parse ($data)
 
-Parses wtscript passed in scalar variable $data.
+Parses test specification in wtscript format.
+
+=head3 Parameters
+
+=over 4
+
+=item * $data
+
+Scalar which contains test specification in wtscript format.
+
+=back
 
 =head3 Returns
 
@@ -260,23 +284,23 @@ sub parse {
 =head1 LOW-LEVEL API METHODS
 
 Most users don't need to use this part of C<HTTP::WebTest> API
-directly. It could be useful for users who want:
+directly. It could be useful for users who want to:
 
 =over 4
 
 =item *
 
-To write C<HTTP::WebTest> plugin.
+Write an C<HTTP::WebTest> plugin.
 
 =item *
 
-To get access to L<LWP::UserAgent|LWP::UserAgent>,
+Get access to L<LWP::UserAgent|LWP::UserAgent>,
 L<HTTP::Request|HTTP::Request>, L<HTTP::Response|HTTP::Response> and
 other objects used by C<HTTP::WebTest> during runing test sequence.
 
 =back
 
-=head2 tests
+=head2 tests ()
 
 =head3 Returns
 
@@ -289,8 +313,9 @@ A reference on array which contains test objects.
 =head2 user_agent ($optional_user_agent)
 
 Can switch user agent used by C<HTTP::WebTest> object if
-C<$optional_user_agent> is a user agent object. If it is passed as
-undef resets C<HTTP::WebTest> object to use default user agent.
+C<$optional_user_agent> is a user agent object. If
+$optional_user_agent is passed as undef, the HTTP::WebTest object is
+reset to use default user agent.
 
 =head3 Returns
 
@@ -316,7 +341,7 @@ plugins used by C<HTTP::WebTest> object during tests.
 
 *plugins = make_access_method('PLUGINS', 'default_plugins');
 
-=head2 create_user_agent
+=head2 create_user_agent ()
 
 =head3 Returns
 
@@ -336,7 +361,7 @@ sub create_user_agent {
     return $user_agent;
 }
 
-=head2 reset_user_agent
+=head2 reset_user_agent ()
 
 Resets user agent to default.
 
@@ -348,7 +373,7 @@ sub reset_user_agent {
     $self->user_agent(undef);
 }
 
-=head2 reset_plugins
+=head2 reset_plugins ()
 
 Resets set of plugin objects to default.
 
@@ -360,7 +385,7 @@ sub reset_plugins {
     $self->plugins(undef);
 }
 
-=head2 default_plugins
+=head2 default_plugins ()
 
 =head3 Returns
 
@@ -406,37 +431,38 @@ sub global_test_param {
     return $self->_global_test_params->{$param};
 }
 
-=head2 last_test
+=head2 last_test ()
 
 =head3 Returns
 
-A test object which corresponds to last test being or been run.
+A <HTTP::WebTest::Test|HTTP::WebTest::Test> object which corresponds
+to last test being or been run.
 
 =cut
 
 *last_test = make_access_method('LAST_TEST');
 
-=head2 last_request
+=head2 last_request ()
 
 =head3 Returns
 
-A request object used in last test.
+A <HTTP::Request|HTTP::Request> object used in last test.
 
 =cut
 
 sub last_request { shift->last_test->request(@_) }
 
-=head2 last_response
+=head2 last_response ()
 
 =head3 Returns
 
-A response object returned for last request.
+A <HTTP::Response|HTTP::Response> object used in last test.
 
 =cut
 
 sub last_response { shift->last_test->response(@_) }
 
-=head2 last_response_time
+=head2 last_response_time ()
 
 =head3 Returns
 
@@ -446,7 +472,7 @@ A response time for last request.
 
 sub last_response_time { shift->last_test->response_time(@_) }
 
-=head2 last_results
+=head2 last_results ()
 
 =head3 Returns
 
@@ -488,8 +514,9 @@ sub run_test {
 
     $self->_global_test_params($params);
 
-    # check test params
-    my %checks = $self->validate_test($test);
+    # validate test params
+    my %checks = ($self->validate_params($test->params),
+		  $self->validate_params($params));
     # be sure that checks are sorted by param name
     my @broken = grep { not $_->ok } map $checks{$_}, sort keys %checks;
 
@@ -497,6 +524,7 @@ sub run_test {
 	$self->last_test->reset;
 	$self->last_results([ [ 'Test parameters error', @broken ] ]);
     } else {
+
 	# create request (note that actual url is more likely to be
 	# set in plugins)
 	my $request = HTTP::Request->new('GET' => 'http://localhost/');
@@ -545,9 +573,9 @@ sub run_test {
 
 =head2 convert_tests (@tests)
 
-Converts test objects C<@tests> of any supported type to canonic
-representation (i.e. to L<HTTP::WebTest::Test|HTTP::WebTest::Test>
-objects).
+Converts test objects C<@tests> of any supported type to internal
+canonical representation (i.e. to
+L<HTTP::WebTest::Test|HTTP::WebTest::Test> objects).
 
 =head3 Returns
 
@@ -566,29 +594,29 @@ sub convert_tests {
     return wantarray ? @conv : $conv[0];
 }
 
-=head2 validate_test ($test)
+=head2 validate_params ($params)
 
-Validates test.
+Validates test parameters.
 
 =head3 Returns
 
-A hash with results of checks.
+A hash with results of checks. The keys are the test parameters and
+the values are L<HTTP::WebTest::TestResult|HTTP::WebTest::TestResult>
+objects.
 
 =cut
 
-sub validate_test {
+sub validate_params {
     my $self = shift;
-    my $test = shift;
-
-    $test = $self->convert_tests($test);
+    my $params = shift;
 
     my %checks = ();
 
      # check params with all plugins
      for my $plugin (@{$self->plugins}) {
- 	if($plugin->can('validate_test')) {
+ 	if(my $validate_params = $plugin->can('validate_params')) {
  	    %checks = (%checks,
- 		       $plugin->validate_test($test));
+ 		       $plugin->$validate_params($params));
  	}
      }
 
@@ -725,7 +753,11 @@ L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>
 
 L<HTTP::WebTest::Plugins|HTTP::WebTest::Plugins>
 
-L<LWP::UserAgent>
+L<LWP::UserAgent|LWP::UserAgent>
+
+L<HTTP::Request|HTTP::Request>
+
+L<HTTP::Response|HTTP::Response>
 
 L<HTTP::WebTest::Cookies|HTTP::WebTest::Cookies>
 

@@ -2,19 +2,38 @@ NAME
     HTTP::WebTest - Test remote URLs or local web files
 
 DESCRIPTION
+  Beta software warning
+    THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS PROBABLY
+    NOT AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be downloaded at
+    http://search.cpan.org/search?dist=HTTP-WebTest-1.07
+
   Introduction
     This module runs tests on remote URLs or local web files containing
     Perl/JSP/HTML/JavaScript/etc. and generates a detailed test report. This
-    module has plugin based architecture. Plugins can define test types and
-    provide various report capabilities. This module comes with a set of
-    default plugins but can be easily extended with third party plugins.
+    module can be used "as-is" or its functionality can be extended using
+    plugins. Plugins can define test types and provide additional report
+    capabilities. This module comes with a set of default plugins but can be
+    easily extended with third party plugins.
 
-    The test specifications can be read from a parameter file (wtscript) or
-    input as method arguments. If you are testing a local file, Apache is
-    started on a private/dynamic port with a configuration file in a temporary
-    directory. The module can display the test results via report plugin(s).
-    Default report plugin can output them on the terminal, directs them to a
-    file or scalar variable and/or email them.
+    The wt script is provided for running "HTTP::WebTest" from the command
+    line.
+
+    The test specifications can be read from a parameter file in wtscript
+    format or input as method arguments. If you are testing a local file,
+    Apache is started on a private/dynamic port with a configuration file in a
+    temporary directory.
+
+    The test results can be displayed on the terminal, directed to a file,
+    stored in a scalar variable. The test results can also be emailed. The
+    report can be modified and extended using report plugins.
+
+    Each URL/web file is tested by fetching it from the web server using a
+    local instance of an HTTP user agent. The basic test is simply whether or
+    not the fetch was successful. You may also test using literal strings or
+    regular expressions that are either required to exist or forbidden to
+    exist in the fetched page. You may also specify tests for the minimum and
+    maximum number of bytes in the returned page. You may also specify tests
+    for the minimum and maximum web server response time.
 
     Data flow for "HTTP::WebTest" using a remote URL:
 
@@ -69,16 +88,23 @@ RESTRICTIONS / BUGS
     Local file tests don't work on Win32 systems.
 
     The module's HTTP requests time out after 3 minutes (the default value for
-    LWP::UserAgent). If the file_path parameter is specified, Apache must be
+    LWP::UserAgent). If the "file_path" parameter is specified, Apache must be
     installed.
 
-AUTHOR
+SUPPORT
+    Please email bug reports, suggestions, questions, etc. to "HTTP::WebTest"
+    maillist "http-webtest-general@lists.sourceforge.net". You can sign up at
+    http://lists.sourceforge.net/lists/listinfo/http-webtest-general.
+
+AUTHORS
     Richard Anderson <Richard.Anderson@unixscripts.com> have wrote
     "HTTP::WebTest 1.xx".
 
-    Ilya Martynov <ilya@martynov.org> made rewrite of "HTTP::WebTest". He is
-    maintaining "HTTP::WebTest" now. Please email him bug reports,
-    suggestions, questions, etc.
+    Ilya Martynov <ilya@martynov.org> made rewrite of "HTTP::WebTest". New
+    version of "HTTP::WebTest" have introduced extended API and plugin based
+    architecture.
+
+    Please don't email authors directly. Use "HTTP::WebTest" maillists.
 
 COPYRIGHT
     Copyright (c) 2000-2001 Richard Anderson. All rights reserved.

@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 03-proxy.t,v 1.1.2.3 2001/07/19 21:24:05 ilya Exp $
+# $Id: 03-proxy.t,v 1.1.1.1 2002/01/24 12:26:17 m_ilya Exp $
 
 # This script tests proxy support in HTTP::WebTest.
 

@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.1.2.17 2002/01/15 17:16:08 ilya Exp $
+# $Id: ReportPlugin.pm,v 1.1.1.1 2002/01/24 12:26:28 m_ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -30,22 +30,40 @@ use base qw(HTTP::WebTest::Plugin);
 
 =head1 TEST PARAMETERS
 
+=for pod_merge copy params
+
 =head2 output_ref
 
-A reference on scalar which accumulates text of test report.
-This parameter make sense only in Perl scripts.
+I<GLOBAL PARAMETER>
+
+A reference on scalar which accumulates text of test report. If this
+test parameter is specified then value of test parameter C<fh_out> is
+ignore.
+
+This parameter can be used only when passing the test parameters
+as arguments from a calling Perl script.
 
 =head2 fh_out
 
+I<GLOBAL PARAMETER>
+
 A filehandle (or anything else that supports C<print>) to use for test
-report output. This parameter make sense only in Perl scripts.
+report output. This parameter is ignored if test parameter
+C<output_ref> is specified also.
+
+This parameter can be used only when passing the test parameters
+as arguments from a calling Perl script.
 
 =head2 mail_addresses
+
+I<GLOBAL PARAMETER>
 
 A list of e-mail addresses where report will be send (if sending
 report is enabled with C<mail> test parameter).
 
 =head2 mail
+
+I<GLOBAL PARAMETER>
 
 Option to e-mail output to one or more addresses specified by
 C<mail_addresses> test parameter.
@@ -72,6 +90,8 @@ C<no>
 
 =head2 mail_server
 
+I<GLOBAL PARAMETER>
+
 Fully-qualified name of of the mail server (e.g., mailhost.mycompany.com).
 
 =head3 Default value
@@ -80,7 +100,9 @@ C<localhost>
 
 =head2 mail_from
 
-Sets From: header for report e-mails.
+I<GLOBAL PARAMETER>
+
+Sets From: header for test report e-mails.
 
 =head3 Default Value
 
@@ -102,7 +124,7 @@ sub param_types {
 
 =cut
 
-=head2 test_output
+=head2 test_output ()
 
 =head3 Returns
 
@@ -125,8 +147,8 @@ Also stores this data into buffer accessible via method C<test_output>.
 sub print {
     my $self = shift;
 
-    my $output_ref = $self->test_param('output_ref');
-    my $fh_out     = $self->test_param('fh_out');
+    my $output_ref = $self->global_test_param('output_ref');
+    my $fh_out     = $self->global_test_param('fh_out');
 
     my $text = join '', @_;
 
@@ -141,7 +163,7 @@ sub print {
     }
 }
 
-=head2 start_tests
+=head2 start_tests ()
 
 This method is called by L<HTTP::WebTest|HTTP::WebTest> at the begin
 of test run. Its implementation in this class inits output buffer for
@@ -168,7 +190,7 @@ sub start_tests {
     $self->test_output(undef);
 }
 
-=head2 end_tests
+=head2 end_tests ()
 
 This method is called by L<HTTP::WebTest|HTTP::WebTest> at the end of
 test run. Its implementation in this class can email test report
@@ -191,10 +213,10 @@ it in new method:
 sub end_tests {
     my $self = shift;
 
-    my $mail_addresses = $self->test_param('mail_addresses');
-    my $mail           = $self->test_param('mail');
-    my $mail_server    = $self->test_param('mail_server');
-    my $mail_from      = $self->test_param('mail_from');
+    my $mail_addresses = $self->global_test_param('mail_addresses');
+    my $mail           = $self->global_test_param('mail');
+    my $mail_server    = $self->global_test_param('mail_server');
+    my $mail_from      = $self->global_test_param('mail_from');
 
     my $num_fail = $self->webtest->num_fail;
 

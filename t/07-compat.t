@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 07-compat.t,v 1.1.2.3 2001/11/20 00:05:17 ilya Exp $
+# $Id: 07-compat.t,v 1.1.1.1 2002/01/24 12:26:10 m_ilya Exp $
 
 # This script tests backward compatiblity with HTTP::WebTest 1.xx
 

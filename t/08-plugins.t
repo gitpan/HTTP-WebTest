@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 08-plugins.t,v 1.1.2.2 2002/01/07 01:57:21 ilya Exp $
+# $Id: 08-plugins.t,v 1.1.1.1 2002/01/24 12:26:17 m_ilya Exp $
 
 # This script tests external plugin support in HTTP::WebTest.
 

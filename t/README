@@ -1,7 +1,11 @@
-$Id: README,v 1.1.2.1 2002/01/15 18:00:41 ilya Exp $
+$Id: README,v 1.1.1.1 2002/01/24 12:26:18 m_ilya Exp $
+
+This file contains information relevant to the tests that are run
+after building the software with "make" and testing with "make test".
+Unless you maintain this module you probably don't need to read it.
 
 Please note that cookie tests require your hostname to contain at
-least two dots. Otherwise these tests will be skipped.
+least two periods (dots). Otherwise these tests will be skipped.
 
 If test script doesn't detect your hostname correctly you can set it
 with environment variable TEST_HOSTNAME.
@@ -9,12 +13,14 @@ with environment variable TEST_HOSTNAME.
 Response time and 'apache_max_wait' tests can take long time. It is
 possible to disable them by setting environment variable TEST_FAST.
 
-Once report plugin changes its output format it will break most tests
-since they compare output with reference files in t/test.out
-directory. Test scripts can update reference files in t/test.out if
-environment variable TEST_FIX is set. But before setting this variable
-always double check that report format have been changed but not tests
-have been broken.
+If HTTP::WebTest changes its output then it breaks test suite tests
+because they compare HTTP::WebTest output with reference files in
+t/test.out directory. Obviously it can be caused by bug in
+HTTP::WebTest. In this case that bug should be fixed. However test
+suite tests could be broken if HTTP::WebTest changes its output due to
+changes in its plugins. The simple way to update all reference files
+in t/test.out is setting environment variable TEST_FIX during 'make
+test'.
 
 Another useful environment variable is TEST_VERBOSE. If it set then on
 'make test' it will be possible to see output from test scripts which
