@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: pod_merge.PL,v 1.1.1.1 2002/01/24 12:26:38 m_ilya Exp $
+# $Id: pod_merge.PL,v 1.2 2002/05/15 19:27:16 m_ilya Exp $
 
 use 5.006;
 
@@ -54,7 +54,10 @@ $merged_data =~ s/\n# \$Id.*//;
 my %sections = ();
 $sections{params} = '';
 for my $plugin (@plugins) {
-    $sections{params} .= file_scan($plugin, 'params');
+    my $core_params = file_scan($plugin, 'params');
+    my $opt_params  = mark_non_core(file_scan($plugin, 'opt_params'));
+    $sections{params} .= $core_params;
+    $sections{params} .= $opt_params;
 }
 
 # sort content of sections
@@ -85,9 +88,11 @@ sub file_scan {
     my $data = read_file($file);
 
     my $regex = section_copy_re($type);
-    my @sections = $data =~ /$regex/g;
+    my $section = join '', $data =~ /$regex/g;
 
-    return join '', @sections;
+    my($package) = $data =~ /package \s+ ( \w+ (?: :: \w+)* )/gx;
+
+    return wantarray ? ($section, $package) : $section;
 }
 
 # returns regexps which gets content between =for pod_merge copy
@@ -103,8 +108,8 @@ sub section_copy_re {
     return $regex;
 }
 
-# returns regexp used to replace everthing between =for pod_merge
-# replace and =cut
+# returns regexp which can be used to replace everthing between =for
+# pod_merge replace and =cut
 sub section_replace_re {
     my $type = shift;
     my $regex = qr/(?<= \n)
@@ -114,4 +119,14 @@ sub section_replace_re {
                   /sx;
 
     return $regex;
+}
+
+# adds NON-CORE PARAMETER line to parameter definition
+sub mark_non_core {
+    my $sec = shift;
+    my $package = shift;
+    $sec =~ s/(?<= \n)
+              (=head2 \s+ \w+ \s*? \n)
+             /$1\nI<NON-CORE PARAMETER> from L<$package>\n/gsx;
+    return $sec;
 }

@@ -1,4 +1,4 @@
-# $Id: Parser.pm,v 1.8 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Parser.pm,v 1.14 2002/06/15 23:09:22 m_ilya Exp $
 
 package HTTP::WebTest::Parser;
 
@@ -22,121 +22,17 @@ Parses wtscript and converts it in set of test objects.
 
 use strict;
 
-use IO::File;
-use Parse::RecDescent;
 use Text::Balanced qw(extract_codeblock extract_delimited);
 
-use vars qw(@ERRORS);
+use HTTP::WebTest::Utils qw(eval_in_playground make_sub_in_playground);
 
-# array where parser stores error messages
-@ERRORS = ();
+use constant ST_FILE       => 0;
+use constant ST_TEST_BLOCK => 1;
 
-# wtscript grammar
-my $parser = new Parse::RecDescent (q{
-    file: chunk(s) eofile { [ @{$item{chunk}} ] }
-          | {
-                for my $error (@{$thisparser->{errors}}) {
-                    my ($text, $line) = @$error;
-                    push @HTTP::WebTest::Parser::ERRORS,
-                         "Line $line:$text\n";
-                }
-                $thisparser->{errors} = undef;
-            }
-
-    chunk: <rulevar: $short_text>
-
-    chunk: comment
-         | test
-         | param
-         | <error: Test parameter or test block is expected near @{[$text =~ /(.*)/]}>
-
-    comment: /#.*/ { [ 'comment', $item[1] ] }
-
-    test: starttest testchunk(s) endtest
-        {
-          [ 'test',
-            [
-              [ 'param', 'test_name', $item{starttest} ],
-              @{$item{testchunk}}
-            ]
-          ]
-        }
-
-    testchunk: comment
-             | param
-             | <error: Test parameter or end of test block is expected near @{[$text =~ /(.*)/]}>
-
-    starttest: 'test_name' '=' scalar { $item{scalar} }
-
-    endtest: 'end_test'
-
-    param: name '=' value { [ 'param', $item{name}, $item{value} ] }
-
-    name : /[a-zA-Z_]+/ { $item[1] eq 'test_name' ? undef : $item[1] }
-
-    value: '(' <commit> list ')'  { $item{list} }
-         | <error?: Missing right bracket>
-         | scalar                 { $item{scalar} }
-
-    list: listelem(s) { [ map ref($_) eq 'ARRAY' ?
-                              @$_ :
-                              $_, @{$item{listelem}} ] }
-
-    listelem: scalar '=>' scalar { [$item[1], $item[3]] }
-            | scalar
-
-    scalar: <rulevar: $delim >
-
-    scalar: /(?=')/ <commit> qscalar { $item{qscalar} }
-          | <error?: Can't find string terminator "'" anywhere before EOF>
-          | /(?=")/ <commit> qscalar { $item{qscalar} }
-          | <error?: Can't find string terminator """ anywhere before EOF>
-          | /(?=\{)/ <commit> eval
-          | <error?: Missing right curly>
-          | uscalar
-
-    qscalar: <rulevar: $extracted >
-
-    qscalar: { $extracted = extract_delimited($text) }
-             {
-		 my $delim =  substr $extracted, 0, 1;
-		 # let Perl remove quote chars and handle special
-		 # sequences like \n but don't treat $ and @ as
-		 # special.  Note \\\\ in patterns.  It is actually
-		 # just *one* backslash.  Four chars are because of
-		 # double quoting (one inside parser grammar
-		 # definition, second inside regexp body)
-                 if($delim eq '"') {
-                     $extracted =~ s/(^|[^\\\\])((?:\\\\\\\\)*)(\\\\)(\$|\@)/$1$2$3$3$4/g;
-    		     $extracted =~ s/(\$|\@)/\\\\$1/g;
-                 }
-		 my $string = eval "$extracted";
-		 $string;
-             }
-
-    uscalar: <rulevar: $word_re = qr/ (?: [^=)\s] | [^)\s] (?!>) ) /x>
-
-    uscalar: / (?: $word_re+ [ \t]+ )* $word_re+ /xo
-
-    eval: <rulevar: $extracted >
-
-    eval: <rulevar: $exception >
-
-    eval: {
-            $extracted = extract_codeblock($text);
-            defined $extracted ? 1 : undef;
-          }
-          <commit>
-          {
-            my $sub = eval "package HTTP::WebTest::PlayGround;\n" .
-                           "sub { $extracted }\n";
-            $exception = $@;
-            $sub;
-          }
-        | <error?: Eval error\n$exception\nnear @{[$text =~ /(.*)/]}>
-
-    eofile: /^\Z/
-			     });
+# horizontal space regexp
+my $reHS = qr/[\t ]/;
+# sequence of any chars which doesn't contain ')', space chars and '=>'
+my $reWORD = qr/(?: (?: [^=)\s] | [^)\s] (?!>) )+ )/x;
 
 =head2 parse ($data)
 
@@ -151,60 +47,231 @@ objects and a reference on hash which contains test params.
 
 sub parse {
     my $class = shift;
-    my $content = shift;
+    my $data = shift;
 
-    # reset errors
-    @ERRORS = ();
+    my($tests, $opts) = eval { _parse($data) };
 
-    # parse data
-    my $data = $parser->file($content);
+    if($@) {
+	my $exc = $@;
+	chomp $exc;
 
-    # check if we have any errors
-    if(@ERRORS) {
-	die "HTTP::WebTest: wtscript parsing error\n$ERRORS[0]";
+	my $parse_pos = pos $data;
+
+	# find reminder of string near error (without surrounding
+	# whitespace)
+	$data =~ /\G $reHS* (.*?) $reHS* $/gmx;
+	my $near = $1;
+	if($near eq '') {
+	    $near = 'at the end of line';
+	} else {
+	    $near = "near '$near'";
+	}
+
+	# count lines
+	my $line_num = () = substr($data, 0, $parse_pos) =~ m|$|gmx;
+        pos($data) = $parse_pos;
+	$line_num-- if $data =~ /\G \z/gx;
+
+	die <<MSG;
+HTTP::WebTest: wtscript parsing error
+Line $line_num $near: $exc
+MSG
     }
 
-    # convert parsed data to test specification
-    my @data = grep $_->[0] ne 'comment', @$data;
-    my @params = grep $_->[0] eq 'param', @data;
-    my @tests = grep $_->[0] eq 'test', @data;
 
-    my %params = _conv_param->(@params);
-    for my $test (@tests) {
-	my @test = grep $_->[0] ne 'comment', @{$$test[1]};
-	$test = { _conv_param->(@test) };
-    }
-
-    return (\@tests, \%params);
+    return ($tests, $opts);
 }
 
-# converts params data derived from parser wt script into param hash
-sub _conv_param {
-    my @params = @_;
+sub _parse {
+    my $state = ST_FILE;
+    my $opts  = {};
+    my $tests = [];
+    my $test  = undef;
 
-    my %params = ();
-    my %counter = ();
+  PARSER:
+    while(1) {
+	# eat whitespace
+	$_[0] =~ /\G \s+/gcx;
 
-    for my $param (@params) {
-	my($type, $name, $value) = @$param;
+	if($_[0] =~ /\G \#.*/gcx) {
+	    # found comment - just ignore it
+	    next;
+	}
 
-	die "HTTP:::WebTest: $type is not param"
-	    unless $type eq 'param';
+	if($state == ST_FILE) {
+	    if($_[0] =~ /\G \z/gcx) {
+		# end of file
+		last PARSER;
+	    } elsif($_[0] =~ /\G test_name (?=\W)/gcx) {
+		# found new test block start
+		$test = {};
+		$state = ST_TEST_BLOCK;
 
-	$counter{$name} ++;
+		# find test block name
+		if($_[0] =~ /\G $reHS* = $reHS* (?: \n $reHS*)?/gcx) {
+		    $test->{test_name} = _parse_scalar($_[0]);
 
-	if($counter{$name} > 1) {
-	    if($counter{$name} > 2) {
-		push @{$params{$name}}, $value;
+		    die "Test name is missing\n"
+			unless defined $test->{test_name};
+		}
 	    } else {
-		$params{$name} = [ $params{$name}, $value ];
+		# expect global test parameter
+		my($name, $value) = _parse_param($_[0]);
+
+		if(defined $name) {
+		    _set_test_param($opts, $name, $value);
+		} else {
+		    die "Global test parameter or test block is expected\n";
+		}
+	    }
+	} elsif($state == ST_TEST_BLOCK) {
+	    if($_[0] =~ /\G end_test (?=\W)/gcx) {
+		push @$tests, $test;
+		$state = ST_FILE;
+	    } else {
+		# expect test parameter
+		my($name, $value) = _parse_param($_[0]);
+
+		if(defined $name) {
+		    _set_test_param($test, $name, $value);
+		} else {
+		    die "Test parameter or end_test is expected\n";
+		}
 	    }
 	} else {
-	    $params{$name} = $value;
+	    die "Unknown state\n";
 	}
     }
 
-    return %params;
+    return($tests, $opts);
+}
+
+sub _set_test_param {
+    my $href  = shift;
+    my $name  = shift;
+    my $value = shift;
+
+    if(exists $href->{$name}) {
+	$href->{$name} = [ $href->{$name} ]
+	    if ref($href->{$name}) and ref($href->{$name}) eq 'ARRAY';
+	push @{$href->{$name}}, $value;
+    } else {
+	$href->{$name} = $value;
+    }
+}
+
+sub _parse_param {
+    my $name;
+
+    if($_[0] =~ /\G ([a-zA-Z_]+)                 # param name
+                 $reHS* = $reHS* (?: \n $reHS*)? # = (and optional space chars)
+                /gcx) {
+	$name = $1;
+    } else {
+	return;
+    }
+
+    my $value = _parse_value($_[0]);
+    return unless defined $value;
+
+    return ($name, $value);
+}
+
+sub _parse_value {
+    if($_[0] =~ /\G \(/gcx) {
+	# list elem
+        #
+        # ( scalar
+        #   ...
+        #   scalar )
+        #
+        # ( scalar => scalar
+        #   ...
+        #   scalar => scalar )
+
+	my @list = ();
+
+	while(1) {
+	    # eat whitespace
+	    $_[0] =~ /\G \s+/gcx;
+
+	    # exit loop on closing bracket
+	    last if $_[0] =~ /\G \)/gcx;
+
+	    my $value = _parse_scalar($_[0]);
+
+	    die "Missing right bracket\n"
+		unless defined $value;
+
+	    push @list, $value;
+
+	    if($_[0] =~ /\G $reHS* => $reHS* /gcx) {
+		# handles second part of scalar => scalar syntax
+		my $value = _parse_scalar($_[0]);
+
+		die "Missing right bracket\n"
+		    unless defined $value;
+
+		push @list, $value;
+	    }
+	}
+
+	return \@list;
+    } else {
+	# may return undef
+	return _parse_scalar($_[0]);
+    }
+}
+
+sub _parse_scalar {
+    my $parse_pos = pos $_[0];
+
+    if($_[0] =~ /\G (['"])/gcx) {
+	my $delim = $1;
+
+        pos($_[0]) = $parse_pos;
+	my($extracted) = extract_delimited($_[0]);
+	die "Can't find string terminator \"$delim\"\n"
+	    if $extracted eq '';
+
+	if($delim eq "'" or $extracted !~ /[\$\@\%]/) {
+	    # variable interpolation impossible - just evalute string
+	    # to get rid of escape chars
+	    my $ret = eval_in_playground($extracted);
+
+	    chomp $@;
+	    die "Eval error\n$@\n" if $@;
+
+	    return $ret;
+	} else {
+	    # variable interpolation possible - evaluate as subroutine
+	    # which will be used as callback
+	    my $ret = make_sub_in_playground($extracted);
+
+	    chomp $@;
+	    die "Eval error\n$@\n" if $@;
+
+	    return $ret;
+	}
+    } elsif($_[0] =~ /\G \{/gcx) {
+        pos($_[0]) = $parse_pos;
+	my($extracted) = extract_codeblock($_[0]);
+	die "Missing right curly bracket\n"
+	    if $extracted eq '';
+
+	my $ret = make_sub_in_playground($extracted);
+
+	chomp $@;
+	die "Eval error\n$@\n" if $@;
+
+	return $ret;
+    } else {
+	$_[0] =~ /\G ((?: $reWORD $reHS+ )* $reWORD )/gcxo;
+	my $extracted = $1;
+
+	# may return undef
+	return $extracted;
+    }
 }
 
 =head1 COPYRIGHT

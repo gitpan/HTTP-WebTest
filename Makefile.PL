@@ -1,44 +1,60 @@
-# $Id: Makefile.PL,v 1.6 2002/05/12 14:40:37 m_ilya Exp $
+# $Id: Makefile.PL,v 1.8 2002/06/15 21:43:33 m_ilya Exp $
 
 use 5.005;
 
 use strict;
 
 use ExtUtils::MakeMaker;
-use Data::Dumper;
 use File::Spec;
 
-my %CONFIG = ();
-
-# what do we need to delete on realclean?
-my $REALCLEAN = '.config';
 # list of authors
 my $AUTHOR = 'Richard Anderson <richard@richard-anderson.org>, ' .
              'Ilya Martynov <ilya@martynov.org>';
 
 WriteMakefile( NAME         => 'HTTP::WebTest',
-	       VERSION_FROM => 'lib/HTTP/WebTest.pm',
-	       PREREQ_PM    => { 'Algorithm::Diff'   => 0,
-				 'CGI::Cookie'       => 0,
+	       VERSION_FROM => 'lib/HTTP/WebTest.pm.in',
+	       PREREQ_PM    => { 'CGI::Cookie'       => 0,
 				 'File::Temp'        => 0,
-				 'HTTP::Daemon'      => 0,
 				 'LWP'               => 5.60,
 				 'MIME::Base64'      => 0,
 				 'Net::SMTP'         => 0,
-				 'Parse::RecDescent' => 0,
+				 'Text::Balanced'    => 0,
 				 'Pod::Usage'        => 0,
 				 'Pod::Man'          => 1.14,
 				 'Time::HiRes'       => 0,
 				 'URI'               => 0 },
-	       realclean    => { FILES => $REALCLEAN },
+	       realclean    => { FILES => '.config' },
 	       EXE_FILES    => [ File::Spec->catfile(qw(bin wt)) ],
 	       AUTHOR       => $AUTHOR,
 	       ABSTRACT     => 'Run tests on remote URLs or local web files');
 
-sub MY::dist_core {
+package MY;
+
+sub libscan {
+    my $self = shift;
+    my $path = shift;
+
+    # ignore backup files
+    return undef if $path =~ /~/;
+
+    return $self->SUPER::libscan($path);
+}
+
+sub test {
     my $self = shift;
 
-    my $make = $self->MY::SUPER::dist_core();
+    my $make = $self->SUPER::test(@_);
+
+    # add dependencies for test targets
+    $make =~ s/(test(?:db)? :: )(.*)/$1test_config $2/g;
+
+    return $make;
+}
+
+sub dist_core {
+    my $self = shift;
+
+    my $make = $self->SUPER::dist_core();
 
     # add our hook for dist target
     $make =~ s/^dist : /dist : distprepare /m;
@@ -46,18 +62,15 @@ sub MY::dist_core {
     return $make;
 }
 
-sub MY::postamble {
+sub postamble {
     my $make = '';
 
     # verify standard input and output are attached to a terminal
     if(-t STDIN and -t STDOUT) {
 	$make .= apache_dir_setup();
-	$CONFIG{APACHE_EXEC} = apache_exec_setup();
 
 	print STDOUT "\n";
     }
-
-    write_config();
 
     # add pod merge target
     my $webtest_pm = File::Spec->catfile(qw(lib HTTP WebTest.pm));
@@ -81,10 +94,18 @@ MAKE
     $make .= <<MAKE;
 
 distprepare :: README
-\t\$(NOOP)
+\t\@\$(NOOP)
 
 distprepare :: $webtest_pm
-\t\$(NOOP)
+\t\@\$(NOOP)
+MAKE
+
+    # add test_config target (test and testdb targets depend on it)
+    my $test_config_pl = File::Spec->catfile(qw(scripts test_config.PL));
+    $make .= <<MAKE;
+
+test_config:
+\t\$(PERL) $test_config_pl .config
 MAKE
 
     return $make;
@@ -143,72 +164,6 @@ pure_install ::
 TEXT
 
     return $make;
-}
-
-# finds where apache binary is located
-sub apache_exec_setup {
-    my $apache_exec = undef;
-
-    # verify that we don't run on Win32 system. Local web files
-    # test mode is not supported on that platform
-    if($^O ne 'MSWin32') {
-	while(1) {
-	    print_prompt(<<TEXT);
-
-HTTP-WebTest automated test suite contains tests for local web files
-test mode. Running these tests requires Apache web server. If you do
-not have Apache you can skip these tests.
-
-Run local web files test mode tests during 'make test'? [Y/n]:
-TEXT
-
-	    my $response = <STDIN>;
-	    chomp($response);
-	    if($response =~ /^(?:y(?:es)?|)$/i) {
-		# user asked to run tests
-		$apache_exec = $ENV{'APACHE'} || which('apache') ||
-		               which('httpd') || '/usr/lib/httpd/httpd';
-
-		print_prompt(<<TEXT);
-
-Please enter filename of Apache executable file.
-
-Filename? [$apache_exec]:
-TEXT
-
-		my $response = <STDIN>;
-		chomp($response);
-		$apache_exec = $response if $response;
-		last if -x $apache_exec;
-		print STDOUT <<TEXT;
-
-ERROR: $apache_exec is not a valid executable file
-TEXT
-	    } else {
-		last;
-	    }
-	}
-    }
-
-    return $apache_exec;
-}
-
-# finds executable in PATH (code is stolen from Apache::test)
-sub which {
-    foreach (map { "$_/$_[0]" } split /:/, $ENV{PATH}) {
-        next unless m,^/,;
-        return $_ if -x;
-    }
-}
-
-# dumps config params hash
-sub write_config {
-    local *FILE;
-    open FILE, '> .config' or die "Can't write to file '.config': $!";
-
-    print FILE Data::Dumper->Dump([\%CONFIG], [qw(*CONFIG)]);
-
-    close FILE;
 }
 
 sub print_prompt {

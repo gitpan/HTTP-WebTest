@@ -25,7 +25,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '1.99_06';
+$VERSION = '1.99_07';
 # workaround for warning caused by underscore char in $VERSION
 $VERSION = eval $VERSION;
 
@@ -272,11 +272,15 @@ You can specify list parameters using forms such as:
              'second value'
            )
 
-You can specify a null (placeholder) value using '' or "".  Within single
-or double quotes, the usual Perl string quoting rules apply.  Thus, single
-quotes mean that all enclosed characters are interpreted literally: '\n'
-is backslash-n rather than a newline character.  Double quotes mean that
-Perl metasymbols are interpreted: "\n\t" is a newline and a tab.
+You can specify a null (placeholder) value using '' or "".  Within
+single or double quotes, the usual Perl string quoting rules apply.
+Thus, single quotes mean that all enclosed characters are interpreted
+literally: '\n' is backslash-n rather than a newline character.
+Double quotes mean that Perl metasymbols are interpreted: "\n\t" is a
+newline and a tab.  Double quoted strings can also contain Perl
+variables to be expanded: "$var" is string which contains value of
+Perl variable C<$var>.  Perl variables can be defined by plugin
+modules or in code sections described below.
 
 Also it is possible to specify Perl code instead of scalar, instead of
 list parameter value or instead of element of list paramater.  Curly
@@ -432,39 +436,39 @@ loaded by default:
 
 =over 4
 
-=item L<HTTP::WebTest::Plugin::Apache>
+=item L<HTTP::WebTest::Plugin::Apache|HTTP::WebTest::Plugin::Apache>
 
 This plugin provides support for local web file test mode.
 
-=item L<HTTP::WebTest::Plugin::ContentSizeTest>
+=item L<HTTP::WebTest::Plugin::ContentSizeTest|HTTP::WebTest::Plugin::ContentSizeTest>
 
 This plugin provides size checks of HTTP response bodies.
 
-=item L<HTTP::WebTest::Plugin::Cookies>
+=item L<HTTP::WebTest::Plugin::Cookies|HTTP::WebTest::Plugin::Cookies>
 
 This plugin provides means to control sending and recieve cookies.
 
-=item L<HTTP::WebTest::Plugin::DefaultReport>
+=item L<HTTP::WebTest::Plugin::DefaultReport|HTTP::WebTest::Plugin::DefaultReport>
 
 Default test report plugin.
 
-=item L<HTTP::WebTest::Plugin::Loader>
+=item L<HTTP::WebTest::Plugin::Loader|HTTP::WebTest::Plugin::Loader>
 
 This plugin allows to load external plugin modules.
 
-=item L<HTTP::WebTest::Plugin::ResponseTimeTest>
+=item L<HTTP::WebTest::Plugin::ResponseTimeTest|HTTP::WebTest::Plugin::ResponseTimeTest>
 
 This plugin provides support for response time tests.
 
-=item L<HTTP::WebTest::Plugin::SetRequest>
+=item L<HTTP::WebTest::Plugin::SetRequest|HTTP::WebTest::Plugin::SetRequest>
 
 This plugin initializes test HTTP requests.
 
-=item L<HTTP::WebTest::Plugin::StatusTest>
+=item L<HTTP::WebTest::Plugin::StatusTest|HTTP::WebTest::Plugin::StatusTest>
 
 This plugin checks HTTP response statuses.
 
-=item L<HTTP::WebTest::Plugin::TextMatchTest>
+=item L<HTTP::WebTest::Plugin::TextMatchTest|HTTP::WebTest::Plugin::TextMatchTest>
 
 This plugin provides test parameters which allow to check body of HTTP
 responses.
@@ -482,25 +486,26 @@ C<plugins> when needed.
 
 =over 4
 
-=item L<HTTP::WebTest::Plugin::Click>
+=item L<HTTP::WebTest::Plugin::Click|HTTP::WebTest::Plugin::Click>
 
 This plugin allows to use names of links and button on HTML pages to
 build test requests.
 
-=item L<HTTP::WebTest::Plugin::HarnessReport>
+=item L<HTTP::WebTest::Plugin::HarnessReport|HTTP::WebTest::Plugin::HarnessReport>
 
 This report plugin can generate L<Test::Harness|Test::Harness>
 compatible test reports.
 
-=item L<HTTP::WebTest::Plugin::Hooks>
+=item L<HTTP::WebTest::Plugin::Hooks|HTTP::WebTest::Plugin::Hooks>
 
 This plugin allows to define callback test parameters which are
-evaluated at specific time of L<HTTP::WebTest> test run.  These test
+evaluated at specific time of C<HTTP::WebTest> test run.  These test
 parameters can define user-defined checks.
 
 =back
 
-See documentation on these modules for more information.
+Information about test parameters supported by add-on plugin modules
+is summarized below in section L<TEST PARAMETERS|TEST PARAMETERS>.
 
 =head2 Writting Plugin Modules
 
@@ -518,6 +523,10 @@ with different values in test blocks.
 
 Parameters marked as I<GLOBAL PARAMETER> can be used only as global
 and it cannot be overriden in test blocks.
+
+Parameters marked as I<NON-CORE PARAMETER> are defined in add-on
+plugin modules which must be loaded explicitly using test parameter
+C<plugins>.
 
 =head2 accept_cookies
 
@@ -609,6 +618,33 @@ See Apache documentation
 
 A list which contains two elements: userid/password pair to be used
 for web page access authorization.
+
+=head2 click_button
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
+
+Given name of submit button (i.e. C<<input type="submit"E<gt>> tag
+inside of C<<formE<gt>> tag) on previosly requested HTML page builds
+test request to the submitted page.
+
+Note that you still need to pass all form parameters yourself using
+C<params> test parameter.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
+=head2 click_link
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Click>
+
+Given name of link (i.e. C<<aE<gt>> tag) on previosly requested HTML
+page builds test request to the linked page.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
 
 =head2 cookie
 
@@ -1001,6 +1037,41 @@ Minimum web server response time (seconds) expected.
 
 Any number less than C<max_rtime> (if C<max_rtime> is specified).
 
+=head2 on_request
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
+
+Value of this test parameter is ignored.  However it is evaluted
+before test request to web page is done so it is useful to do some
+initalization before the request.
+
+=head2 on_response
+
+I<NON-CORE PARAMETER> from L<HTTP::WebTest::Plugin::Hooks>
+
+This is a list parameter which is treated as test result.  It is
+evaluted when response for the test request is received.
+
+It can be useful to define custom tests without writting new plugins
+and/or it can be useful to run some code when response for the test
+request is received.
+
+=head3 Allowed values
+
+    ( YESNO1, COMMENT1
+      YESNO2, COMMENT2
+      ....
+      YESNON, COMMENTN )
+
+Here C<YESNO>, C<COMMENT> - is a test result.  C<YESNO> - is either
+C<yes> if test is successful or C<no> if it is not.  C<COMMENT> is a
+text of comment associated with this test.
+
+=head3 Example
+
+See example in L<HTTP::WebTest::Cookbook|HTTP::WebTest::Cookbook>.
+
+
 =head2 output_ref
 
 I<GLOBAL PARAMETER>
@@ -1046,11 +1117,11 @@ A list of module names.  Loads these modules and registers them as
 L<HTTP::WebTest|HTTP::WebTest> plugins.  If name of plugin starts with
 C<::> prepends it with C<HTTP::WebTest::Plugin>.  So
 
-    plugins = ( ::ValidateHTML )
+    plugins = ( ::Click )
 
 is equal to
 
-    plugins = ( HTTP::WebTest::Plugin::ValidateHTML )
+    plugins = ( HTTP::WebTest::Plugin::Click )
 
 
 =head2 proxies

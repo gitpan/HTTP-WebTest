@@ -8,6 +8,7 @@ bin/wt
 http-webtest/conf/httpd.conf-dist
 http-webtest/htdocs/webtest/is_apache_responding.html
 http-webtest/logs/.placeholder
+lib/Bundle/HTTP/WebTest.pm
 lib/HTTP/WebTest.pm
 lib/HTTP/WebTest.pm.in
 lib/HTTP/WebTest/API.pm
@@ -35,6 +36,7 @@ lib/HTTP/WebTest/Utils.pm
 scripts/README
 scripts/make_readme.PL
 scripts/pod_merge.PL
+scripts/test_config.PL
 t/01-api.t
 t/02-generic.t
 t/03-proxy.t
@@ -48,6 +50,7 @@ t/10-click.t
 t/HTTP/WebTest/Plugin/Counter.pm
 t/HelloWorld.pm
 t/README
+t/StartTests.pm
 t/borked1.wt
 t/borked2.wt
 t/borked3.wt

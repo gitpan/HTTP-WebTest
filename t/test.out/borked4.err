@@ -1,2 +1,2 @@
 HTTP::WebTest: wtscript parsing error
-Line 3: Can't find string terminator """ anywhere before EOF
+Line 3 near '"unfinished': Can't find string terminator """

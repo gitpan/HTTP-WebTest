@@ -1,4 +1,4 @@
-# $Id: Utils.pm,v 1.2 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Utils.pm,v 1.4 2002/06/06 18:29:14 m_ilya Exp $
 
 package HTTP::WebTest::Utils;
 
@@ -11,6 +11,7 @@ HTTP::WebTest::Utils - Some misc staff used by various parts of HTTP::WebTest
     use HTTP::WebTest::Utils;
     use HTTP::WebTest::Utils qw(make_access_method find_port);
     use HTTP::WebTest::Utils qw(copy_dir load_package);
+    use HTTP::WebTest::Utils qw(eval_in_playground);
 
     *method = make_access_method($field);
     *method = make_access_method($field, $default_value);
@@ -21,6 +22,9 @@ HTTP::WebTest::Utils - Some misc staff used by various parts of HTTP::WebTest
     copy_dir($src_dir, $dst_dir);
 
     load_package($package);
+
+    my $ret = eval_in_playground($code);
+    die $@ if $@;
 
 =head1 DESCRIPTION
 
@@ -44,7 +48,9 @@ use base qw(Exporter);
 
 use vars qw(@EXPORT_OK);
 
-@EXPORT_OK = qw(make_access_method find_port copy_dir load_package);
+@EXPORT_OK = qw(make_access_method find_port
+                copy_dir load_package
+                eval_in_playground make_sub_in_playground);
 
 =head2 make_access_method($field, $optional_default_value)
 
@@ -193,6 +199,45 @@ sub load_package {
     eval "require $package";
 
     die $@ if $@;
+}
+
+=head2 eval_in_playground ($code)
+
+Evaluates perl code inside playground package.
+
+=head3 Returns
+
+A return value of evaluated code.
+
+=cut
+
+sub eval_in_playground {
+    my $code = shift;
+
+    return eval <<CODE;
+package HTTP::WebTest::PlayGround;
+
+no strict;
+local \$^W; # aka no warnings in new perls
+
+$code
+CODE
+}
+
+=head2 make_sub_in_playground ($code)
+
+Creates anonymous subroutine inside playground package.
+
+=head3 Returns
+
+A reference on anonymous subroutine.
+
+=cut
+
+sub make_sub_in_playground {
+    my $code = shift;
+
+    return eval_in_playground("sub { local \$^W; $code }");
 }
 
 =head1 COPYRIGHT

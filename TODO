@@ -1,18 +1,10 @@
-$Id: TODO,v 1.11 2002/05/12 14:17:39 m_ilya Exp $
+$Id: TODO,v 1.13 2002/06/15 21:34:09 m_ilya Exp $
 
 My current TODO:
 
-* test broken tests diagnostics
-
-* resurrect all parameter checks from old HTTP::WebTest
-
-* generate index of test parameters in a reference
+* support hidden fields in Click plugin
 
 * polish local mode tests - they are *very* non portable now
-
-* add support for interactive queries for auth and pauth params
-
-* save_output option for backward compatibility API
 
 * extended syntax of wtscript files which allows nested structures
 

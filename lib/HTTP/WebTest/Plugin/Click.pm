@@ -1,4 +1,4 @@
-# $Id: Click.pm,v 1.8 2002/05/12 14:42:07 m_ilya Exp $
+# $Id: Click.pm,v 1.9 2002/05/15 19:27:53 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Click;
 
@@ -32,6 +32,8 @@ use URI;
 use base qw(HTTP::WebTest::Plugin);
 
 =head1 TEST PARAMETERS
+
+=for pod_merge copy opt_params
 
 =head2 click_button
 

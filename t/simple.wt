@@ -1,4 +1,4 @@
-# $Id: simple.wt,v 1.6 2002/02/12 11:48:21 m_ilya Exp $
+# $Id: simple.wt,v 1.8 2002/06/06 18:27:44 m_ilya Exp $
 
 # some comments here
 
@@ -24,16 +24,16 @@ test_name = Some name here
                       'test \''
                       'test $a'
                       'test @a'
-                      "test $a"
-                      "test @a"
                       "test \$a"
+                      "test \@a"
                       "\$a"
-                      "\\$a"
-                      "\\\$a")
+                      "\\\$a"
+                      "$test1")
     regex_forbid =  ( More = tests
                       Some @#$%^&* chars
                       "more" => tests and fun
                       abcdef 1234 => " a b c d ' e f "
+	              "$undefined"
                     )
     auth = ( name => value )
     ignore_case =yes

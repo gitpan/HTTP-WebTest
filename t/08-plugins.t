@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 08-plugins.t,v 1.1.1.1 2002/01/24 12:26:17 m_ilya Exp $
+# $Id: 08-plugins.t,v 1.2 2002/05/26 20:03:16 m_ilya Exp $
 
 # This script tests external plugin support in HTTP::WebTest.
 
@@ -17,7 +17,7 @@ use lib 't';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 3 }
+BEGIN { plan tests => 4 }
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -64,6 +64,23 @@ my $WEBTEST = HTTP::WebTest->new;
 		  opts => $opts,
 		  tests => $tests,
 		  check_file => 't/test.out/plugin-hello-counter');
+}
+
+# 4: test with StartTests plugin (plugin which defines start_tests
+# hook)
+{
+    # reset counter which get increased in StartTests::start_tests()
+    $StartTests::counter = 0;
+
+    my $opts = { plugins => [ 'StartTests',
+			      'HTTP::WebTest::Plugin::Counter' ],
+	         default_report => 'no' };
+
+    my $tests = [ ];
+
+    $WEBTEST->run_tests($tests, $opts);
+
+    ok($StartTests::counter == 1);
 }
 
 # try to stop server even we have been crashed

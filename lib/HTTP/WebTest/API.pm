@@ -1,4 +1,4 @@
-# $Id: API.pm,v 1.10 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: API.pm,v 1.15 2002/06/13 09:22:14 m_ilya Exp $
 
 # note that it is not package HTTP::WebTest::API.  That's right
 package HTTP::WebTest;
@@ -102,11 +102,26 @@ sub run_tests {
     $self->tests([ @tests ]);
     $self->_global_test_params($params);
 
-    # start tests hook
-    for my $plugin (@{$self->plugins}) {
-	if($plugin->can('start_tests')) {
-	    $plugin->start_tests;
+    # start tests hook; note that plugins can load other plugins and
+    # modify $self->plugins in start tests hook
+    my %initialized = ();
+    while(1) {
+	my $done = 1;
+
+	my @plugins = @{$self->plugins};
+	for my $plugin (@plugins) {
+	    unless($initialized{$plugin}) {
+		if($plugin->can('start_tests')) {
+		    $plugin->start_tests;
+		}
+		$initialized{$plugin} = 1;
+		# we must on more round to check for uninitialized
+		# plugins
+		$done = 0;
+	    }
 	}
+
+	last if $done;
     }
 
     # run all tests
@@ -127,7 +142,7 @@ sub run_tests {
     }
 }
 
-=head2 run_wtscript ($file, $optional_params)
+=head2 run_wtscript ($wtscript, $optional_params)
 
 Reads wtscript and runs tests it defines.
 
@@ -135,9 +150,12 @@ Reads wtscript and runs tests it defines.
 
 =over 4
 
-=item * $file
+=item * $wtscript
 
-A filename of wtscript file.
+Either a filename of wtscript file or wtscript passed as string. Very
+simple heuristic is used distinguish first from second. If
+C<$wtscript> contains either C<\n> or C<\r> it is treated like
+wtscript string. Otherwise it is filename.
 
 =item * $optional_params
 
@@ -150,17 +168,20 @@ override parameters defined in wtscript.
 
 sub run_wtscript {
     my $self = shift;
-    my $file = shift;
+    my $wtscript = shift;
     my $opts_override = shift || {};
 
-    my $fh = new IO::File;
-    $fh->open("< $file") or
-	die "HTTP::WebTest: Can't open file $file: $!";
+    unless($wtscript =~ /[\r\n]/) {
+	my $fh = new IO::File;
+	my $file = $wtscript;
+	$fh->open("< $file") or
+	    die "HTTP::WebTest: Can't open file $file: $!";
 
-    my $data = join '', <$fh>;
-    $fh->close;
+	$wtscript = join '', <$fh>;
+	$fh->close;
+    }
 
-    my ($tests, $opts) = $self->parse($data);
+    my ($tests, $opts) = $self->parse($wtscript);
 
     $self->run_tests($tests, { %$opts, %$opts_override });
 }
@@ -334,7 +355,7 @@ plugins used by C<HTTP::WebTest> object during tests.
 
 =head3 Returns
 
-A new L<LWP::UserAgent> object initialized with default settings.
+A new L<LWP::UserAgent|LWP::UserAgent> object initialized with default settings.
 
 =cut
 
@@ -437,7 +458,7 @@ A number of last test being or been run.
 
 =head3 Returns
 
-A <HTTP::WebTest::Test|HTTP::WebTest::Test> object which corresponds
+A L<HTTP::WebTest::Test|HTTP::WebTest::Test> object which corresponds
 to last test being or been run.
 
 =cut
@@ -448,7 +469,7 @@ to last test being or been run.
 
 =head3 Returns
 
-A <HTTP::Request|HTTP::Request> object used in last test.
+A L<HTTP::Request|HTTP::Request> object used in last test.
 
 =cut
 
@@ -458,7 +479,7 @@ sub last_request { shift->last_test->request(@_) }
 
 =head3 Returns
 
-A <HTTP::Response|HTTP::Response> object used in last test.
+A L<HTTP::Response|HTTP::Response> object used in last test.
 
 =cut
 
@@ -595,7 +616,8 @@ C<HTTP::WebTest 2.xx> offers more rich API than its predecessor
 C<HTTP::WebTest 1.xx>.  However while old API is deprecated it is still
 supported.
 
-It is not recommended to use it in new applications.
+It is not recommended to use it in new applications as it may be
+removed eventually in new versions of C<HTTP::WebTest>.
 
 =cut
 

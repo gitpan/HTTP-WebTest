@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 01-api.t,v 1.6 2002/02/21 01:02:10 m_ilya Exp $
+# $Id: 01-api.t,v 1.7 2002/06/07 08:57:50 m_ilya Exp $
 
 # This script tests public API of HTTP::WebTest.
 
@@ -15,7 +15,7 @@ require 't/utils.pl';
 
 use vars qw($HOSTNAME $PORT $URL);
 
-BEGIN { plan tests => 13 }
+BEGIN { plan tests => 14 }
 
 # init test
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -96,7 +96,29 @@ my $WEBTEST = HTTP::WebTest->new;
 		   check_file => 't/test.out/run-wtscript');
 }
 
-# 12-13: test num_fail and num_succeed
+# 12: run inlined wtscript
+{
+    my $output = '';
+
+    $WEBTEST->run_wtscript(<<WTSCRIPT, { output_ref => \$output });
+text_forbid = ( FAILED TEST )
+
+test_name = Some name here
+    url = ${URL}test-file1
+    regex_require = ( TEST TEST )
+end_test
+
+test_name = Another name
+    url = ${URL}no-such-file
+end_test
+WTSCRIPT
+
+    canonical_output(server_url => $URL, output_ref => \$output);
+    compare_output(output_ref => \$output,
+		   check_file => 't/test.out/run-wtscript');
+}
+
+# 13-14: test num_fail and num_succeed
 {
     my $tests = [ { url => abs_url($URL, '/test-file1') },
 		  { url => abs_url($URL, '/status-forbidden') },

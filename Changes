@@ -1,4 +1,4 @@
-$Id: Changes,v 1.25 2002/05/12 14:17:39 m_ilya Exp $
+$Id: Changes,v 1.29 2002/06/15 20:25:10 m_ilya Exp $
 
 THIS IS A BETA VERSION THAT IS A REWRITE OF VERSION 1.07 AND IS
 PROBABLY NOT AS WELL DEBUGGED AS VERSION 1.07. Version 1.07 can be
@@ -6,22 +6,43 @@ downloaded at http://search.cpan.org/search?dist=HTTP-WebTest-1.07
 
 Revision history for Perl module HTTP::WebTest.
 
+Current version
+
+ENHANCEMENTS:
+
+* Non-core test parameters are included in POD documentation in
+HTTP::WebTest.
+
+* Added Bundle::HTTP::WebTest file which has list of all dependanices
+including optional.
+
+* $webtest->run_wtscript accepts wtscript passed as string.
+
+* Parser for wtscript files is rewritten. It doesn't use
+Parse::RecDescent anymore. New parser is faster and provides better
+error diagnostics for parse errors.
+
+INCOMPATIBILITIES:
+
+* Changed syntax of wtscript files.  Parser of wtscript files expands
+Perl variables in double quoted strings.
+
 1.99_06 Sun May 12 2002
 
 ENHANCEMENTS:
 
 * New core test parameter 'http_headers'.  Allows to add additional
-HTTP headers to HTTP request or override default HTTP headers in HTTP
-request.  Thanks to Duncan Cameron for patch.
+HTTP headers to HTTP request or to override default HTTP headers in
+HTTP request.  Thanks to Duncan Cameron for patch.
 
 * New plugin HTTP::WebTest::Plugin::Click.  This plugin allows to use
 names of links and button on HTML pages to build test requests.
 
 BUG FIXES:
 
-* Set Content-type to 'application/x-www-form-urlencoded' for
-POST. Fixed for second time.  Apparently code to do this was lost
-during HTTP-WebTest rewrite.  Thanks to Duncan Cameron for patch.
+* Set Content-type to 'application/x-www-form-urlencoded' for POST.
+Fixed for second time.  Apparently code to do this was lost during
+HTTP-WebTest rewrite.  Thanks to Duncan Cameron for patch.
 
 1.99_05 Mon Apr  8 2002
 
@@ -64,7 +85,7 @@ INCOMPATIBILITIES:
 been fixed to conform new API. This change is required for proper
 support of embeded Perl in wtscript files.
 
-* Changed format of wtscript files.  Speaking more precisely rules for
+* Changed syntax of wtscript files.  Speaking more precisely rules for
 test parameters value quoting have been changed to be more Perl alike.
 It means that value of param should be written either as
 

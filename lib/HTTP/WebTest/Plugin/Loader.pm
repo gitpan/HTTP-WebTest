@@ -1,4 +1,4 @@
-# $Id: Loader.pm,v 1.3 2002/05/12 13:35:35 m_ilya Exp $
+# $Id: Loader.pm,v 1.4 2002/05/15 19:27:53 m_ilya Exp $
 
 package HTTP::WebTest::Plugin::Loader;
 
@@ -35,11 +35,11 @@ A list of module names.  Loads these modules and registers them as
 L<HTTP::WebTest|HTTP::WebTest> plugins.  If name of plugin starts with
 C<::> prepends it with C<HTTP::WebTest::Plugin>.  So
 
-    plugins = ( ::ValidateHTML )
+    plugins = ( ::Click )
 
 is equal to
 
-    plugins = ( HTTP::WebTest::Plugin::ValidateHTML )
+    plugins = ( HTTP::WebTest::Plugin::Click )
 
 =cut
 
