@@ -1,0 +1,13 @@
+Failed  Succeeded  Test Name
+   1          1    *** no name ***
+
+
+URL: http://http.web.test/test.shtml
+
+  APACHE ERROR LOG TEST
+    Number of messages in Apache error log ( = 4 ) is zero ?     FAIL
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+
+
+Total web tests failed: 1  succeeded: 1

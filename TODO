@@ -1,0 +1,33 @@
+$Id: TODO,v 1.1.2.62 2002/01/06 00:48:36 ilya Exp $
+
+My current TODO:
+
+* port .wt parsing code (somewhat finished - syntax checks are missing)
+
+* polish local mode tests - they are *very* non portable now
+
+* add support for interactive queries for auth and pauth params
+
+* write tutorial
+
+* add test parameters which allows to load third party plugins
+
+* write plugin writer guide
+
+* test, test, test and test it with code and .wt files which were
+  written for stable HTTP-WebTest
+
+* save_output option for backward compatibility API
+
+* automated tests for mail sending
+
+* plugin for page validation with HTML::Validate
+
+* report plugin with output compatible with Test::Harness (using
+  Test::Builder ?)
+
+* embeded Perl in wtscripts
+
+* simple navigation using link names and button names (with HTML::Form)
+
+* HTTP proxy which autogenerates skeleton of test file

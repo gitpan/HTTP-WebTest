@@ -1,0 +1,54 @@
+# $Id: simple.wt,v 1.1.2.3 2001/11/20 01:55:21 ilya Exp $
+
+# some comments here
+
+text_require = ( Require some
+                 text )
+
+# more comments
+
+text_forbid = ( Another => syntax
+                for list
+                elements )
+
+test_name = Some name here
+    # another comment here
+    url = www.dot.com
+    regex_require = (
+                      'Quoted text " test'
+                      "We can => quote '" )
+    regex_forbid =  ( More = tests
+                      Some @#$%^&* chars
+                      "more" => tests and fun
+                      abcdef 1234 => " a b c d ' e f "
+                    )
+    auth = ( name => value )
+end_test
+
+test_name = Another name
+    url = www.tiv.net
+    cookie = ( 0
+               webtest
+               This is the cookie value
+               /
+               .unixscripts.com
+               ''
+               0
+               ''
+               2592000
+               ''
+               Comment
+               What a tasty cookie! )
+    cookie = ( 0
+               webtest1
+               This is the cookie value
+               /
+               .unixscripts.com
+               ''
+               0
+               ''
+               2592000
+               ''
+               Comment
+               What a tasty cookie! )
+end_test

@@ -1,0 +1,44 @@
+Failed  Succeeded  Test Name
+   0          3    *** no name ***
+   1          2    *** no name ***
+   1          2    *** no name ***
+   0          3    *** no name ***
+
+
+URL: http://http.web.test/sleep-2
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  RESPONSE TIME CHECK
+    Response time (  2.00 ) is > or =  1.00 ?                    SUCCEED
+    Response time (  2.00 ) is < or =  3.00 ?                    SUCCEED
+
+
+URL: http://http.web.test/sleep-4
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  RESPONSE TIME CHECK
+    Response time (  4.00 ) is > or =  1.00 ?                    SUCCEED
+    Response time (  4.00 ) is < or =  3.00 ?                    FAIL
+
+
+URL: http://http.web.test/sleep-2
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  RESPONSE TIME CHECK
+    Response time (  2.00 ) is > or =  3.00 ?                    FAIL
+    Response time (  2.00 ) is < or =  6.00 ?                    SUCCEED
+
+
+URL: http://http.web.test/sleep-4
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  RESPONSE TIME CHECK
+    Response time (  4.00 ) is > or =  3.00 ?                    SUCCEED
+    Response time (  4.00 ) is < or =  6.00 ?                    SUCCEED
+
+
+Total web tests failed: 2  succeeded: 10

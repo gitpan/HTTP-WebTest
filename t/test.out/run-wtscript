@@ -1,0 +1,24 @@
+Failed  Succeeded  Test Name
+   1          2    *** no name ***
+   1          1    *** no name ***
+
+
+URL: http://http.web.test/test-file1
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  FORBIDDEN TEXT
+    FAILED TEST                                                  FAIL
+  REQUIRED REGEX
+    TEST TEST                                                    SUCCEED
+
+
+URL: http://http.web.test/no-such-file
+
+  STATUS CODE CHECK
+    404 Not Found                                                FAIL
+  FORBIDDEN TEXT
+    FAILED TEST                                                  SUCCEED
+
+
+Total web tests failed: 2  succeeded: 3

@@ -1,0 +1,286 @@
+# $Id: Reference.pod,v 1.1.2.8 2002/01/06 01:52:48 ilya Exp $
+
+=head1 NAME
+
+HTTP::WebTest::Reference - HTTP::WebTest reference.
+
+=head1 SYNOPSIS
+
+Not applicable.
+
+=head1 DESCRIPTION
+
+This document describes:
+
+=over 4
+
+=item *
+
+How tests can be specificated. See section L<TEST SPECIFICATION|TEST
+SPECIFICATION>.
+
+=item *
+
+All test parameters supported by default L<HTTP::WebTest|HTTP::WebTest>
+plugins. See section L<TEST PARAMETERS|TEST PARAMETERS>.
+
+=back
+
+=head1 TEST SPECIFICATION
+
+The test specifications can be read from a parameter file (wtscript)
+or input in form of array of hashes.
+
+=head2 Wtscript
+
+L<HTTP::WebTest|HTTP::WebTest> can read test specification from file
+in format called as C<wtscript>. Tests defined by wtscript file can be
+run either using Perl API of L<HTTP::WebTest|HTTP::WebTest>
+
+    use HTTP::WebTest;
+
+    my $webtest = new HTTP::WebTest;
+    $webtest->run_wtscript('script.wt');
+
+or by using program L<wt|wt> supplied with this module.
+
+=head3 File format
+
+The following is ignored in wtscript file:
+
+=over 4
+
+=item *
+
+lines consisting of nothing but white space (blanks or tabs)
+
+=item *
+
+lines beginning with a number sign (C<#>)
+
+=item *
+
+lines beginning with white space (blanks or tabs) followed by a number
+sign
+
+=back
+
+The order of the parameters in the parameter file is arbitrary,
+with the following exceptions:
+
+=over 4
+
+=item *
+
+Test block parameters MUST occur between a test_name parameter
+and an end_test directive.
+
+=item *
+
+Global parameters must NOT occur between a test_name parameter
+and an end_test directive. (This requirement does not apply to
+parameters that are both global and test block parameters.)
+
+=back
+
+Parameters are either scalar (single-valued) or lists (single or
+multi-valued).
+
+You can specify scalar parameters using forms such as:
+
+    name = value
+    name =
+           value
+    name = 'value'
+
+You can specify list parameters using forms such as:
+
+    name = ( first value
+             second value )
+    name = ( first value => second value
+             third value => fourth value
+           )
+    name = ( first value => second value )
+    name = (
+             'first value'
+             'second value' )
+    name = (
+             first value
+             second value
+             third value => 'fourth value'
+           )
+    name =
+           ( first value
+             'second value' )
+    name = (
+             'first value'
+             'second value'
+           )
+
+(The equals sign must be followed by a space, tab or newline; all
+other spaces are optional.)
+
+PARAMETER VALUES BEGINNING AND ENDING WITH A SINGLE QUOTE WILL HAVE
+THE SINGLE QUOTES REMOVED. For example, 'foobar' is parsed as a value
+of foobar and ''foobar'' is parsed as a value of 'foobar'. To specify
+a null (placeholder) value, use ''.
+
+You MUST enclose the parameter value in single quotes if you want
+to specify:
+
+=over 4
+
+=item *
+
+a value beginning with a left parenthesis
+
+=item *
+
+a value ending with a right parenthesis
+
+=item *
+
+a value beginning with leading white space (blanks or tabs)
+
+=item *
+
+a value ending with trailing white space (blanks or tabs)
+
+=item *
+
+a value beginning and ending with single quotes
+
+=back
+
+=head3 Examples of wtscript files
+
+The parameters below specify tests of a local file and a remote URL.
+The tests specified by the C<text_forbid> parameter apply to both the
+"RayCosoft home page" and the "Yahoo home page" tests. Hence, if
+either returned page contains one of the case-insensitive strings in
+text_forbid, the test fails. If any test fails or the fetch of the URL
+fails, an e-mail will be sent to tester@unixscripts.com.
+
+
+    apache_exec = /usr/sbin/apache
+    ignore_case = yes
+    mail = errors
+    mail_addresses = ( tester@unixscripts.com )
+    mail_server = mailhost.unixscripts.com
+    text_forbid = ( Premature end of script headers
+                    an error occurred while processing this directive
+                  )
+
+    test_name = 'RayCosoft home page (static)'
+        file_path = ( raycosoft_home.html => . )
+        text_require = (
+            <a href="/dept/peopledev/new_employee/"><font color="#0033cc">
+            <a href="https://www.raycosoft.com/"><font color=
+                       )
+    end_test
+
+    test_name = Yahoo home page
+        url = www.yahoo.com
+        text_require = ( <a href=r/qt>Quotations</a>...<br> )
+        min_bytes = 13000
+        max_bytes = 99000
+        min_rtime = 0.010
+        max_rtime = 30.0
+    end_test
+
+The parameters below specify a test of a local file containing Perl
+code using the L<Apache::ASP|Apache::ASP> module. The C<includes.htm>
+file requires five include files and two Perl modules, which are
+copied using the C<include_file_path> parameter.
+
+    apache_exec = /usr/sbin/apache
+    ignore_case = yes
+    include_file_path = ( footer.inc => htdocs/apps/myapp/inc
+                          header.inc => htdocs/apps/myapp/inc
+                          head.inc   => htdocs/apps/myapp/inc
+                          go.script  => htdocs/shared/includes
+                          go.include => htdocs/shared/includes
+                          ../utils/DBconn.pm  => lib/perl/utils
+                          ../utils/Window.pm  => lib/perl/utils
+                        )
+
+    test_name = includes.htm
+        file_path = ( includes.htm => apps/myapp )
+        min_bytes = 33000
+        max_bytes = 35000
+        text_require = ( input type=hidden name=control value= )
+        text_forbid  = ( Premature end of script headers
+                         an error occurred while processing this directive
+                       )
+    end_test
+
+=head2 Array of Hashes
+
+Each hash in array defines tests for one URL. Keys in hashes are test
+parameter names and values in hashes are values of test
+parameters. Also there can be defined global test parameters in form
+of hash for each test sequence.
+
+Tests can be run as
+
+    use HTTP::WebTest;
+
+    my $webtest = new HTTP::WebTest;
+    $webtest->run_tests(
+                        [ # test 1
+                          { param1 => value1,
+                            param2 => value2 },
+                          # test 2
+                          { param1 => value1,
+                            param2 => value2 },
+                        ],
+                        { global_param1 => value1,
+                          global_param2 => value2 }
+                       );
+
+=head3 Example
+
+This Perl script tests Yahoo home page and sends full test report to
+C<tester@unixscripts.com>.
+
+    use HTTP::WebTest;
+
+    my $tests = [
+                 { name         => 'Yahoo home page',
+                   url          => 'http://www.yahoo.com',
+                   text_require => [ '<a href=r/qt>Quotations</a>...<br>' ],
+                   min_bytes    => 13000,
+                   max_bytes    => 99000,
+                 }
+                ];
+    my $options = { mail_server    => 'mailhost.unixscripts.com',
+                    mail_addresses => [ 'tester@unixscripts.com' ],
+                    mail           => 'all',
+                    ignore_case    => 'yes',
+                  };
+
+    $webtest->run_tests($tests, $options);
+
+=head1 TEST PARAMETERS
+
+=for pod_merge TEST PARAMETERS
+
+Content of this section should be autogenerated from POD docs in plugin
+modules.
+
+=head1 COPYRIGHT
+
+Copyright (c) 2000-2001 Richard Anderson. All rights reserved.
+
+Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+
+This module is free software.  It may be used, redistributed and/or
+modified under the terms of the Perl Artistic License.
+
+=head1 SEE ALSO
+
+L<HTTP::WebTest|HTTP::WebTest>
+
+L<wt|wt>
+
+=cut

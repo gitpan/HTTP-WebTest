@@ -1,0 +1,34 @@
+Failed  Succeeded  Test Name
+   0          3    *** no name ***
+   0          3    *** no name ***
+   0          3    *** no name ***
+
+
+URL: http://http.web.test/test1.txt
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    abcde                                                        SUCCEED
+    123                                                          SUCCEED
+
+
+URL: http://http.web.test/test1.txt
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    abcde                                                        SUCCEED
+    123                                                          SUCCEED
+
+
+URL: http://http.web.test/test1.txt
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    abcde                                                        SUCCEED
+    123                                                          SUCCEED
+
+
+Total web tests failed: 0  succeeded: 9

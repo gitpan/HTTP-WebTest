@@ -1,0 +1,34 @@
+Failed  Succeeded  Test Name
+   1          0    *** no name ***
+   1          0    *** no name ***
+   1          0    *** no name ***
+   0          2    *** no name ***
+
+
+URL: http://proxy.test/pauth-test-user-passwd
+
+  STATUS CODE CHECK
+    407 Proxy Authentication Required                            FAIL
+
+
+URL: http://proxy.test/pauth-test-user-passwd
+
+  STATUS CODE CHECK
+    407 Proxy Authentication Required                            FAIL
+
+
+URL: http://proxy.test/pauth-test-user-passwd
+
+  STATUS CODE CHECK
+    407 Proxy Authentication Required                            FAIL
+
+
+URL: http://proxy.test/pauth-test-user-passwd
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    URL: <http://proxy.test/pauth-test-user-passwd>              SUCCEED
+
+
+Total web tests failed: 3  succeeded: 2

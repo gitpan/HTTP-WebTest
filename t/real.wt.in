@@ -1,0 +1,12 @@
+# $Id: real.wt.in,v 1.1.2.4 2001/11/19 23:57:33 ilya Exp $
+
+text_forbid = ( FAILED TEST )
+
+test_name = Some name here
+    url = <<SERVER_URL>>test-file1
+    regex_require = ( TEST TEST )
+end_test
+
+test_name = Another name
+    url = <<SERVER_URL>>no-such-file
+end_test

@@ -1,0 +1,32 @@
+Failed  Succeeded  Test Name
+   1          0    *** no name ***
+   1          0    *** no name ***
+   1          0    *** no name ***
+   0          1    *** no name ***
+
+
+URL: http://http.web.test/auth-test-user-passwd
+
+  STATUS CODE CHECK
+    401 Unauthorized                                             FAIL
+
+
+URL: http://http.web.test/auth-test-user-passwd
+
+  STATUS CODE CHECK
+    401 Unauthorized                                             FAIL
+
+
+URL: http://http.web.test/auth-test-user-passwd
+
+  STATUS CODE CHECK
+    401 Unauthorized                                             FAIL
+
+
+URL: http://http.web.test/auth-test-user-passwd
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+
+
+Total web tests failed: 3  succeeded: 1

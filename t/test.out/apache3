@@ -1,0 +1,40 @@
+Failed  Succeeded  Test Name
+   0          4    *** no name ***
+   0          4    *** no name ***
+   0          4    *** no name ***
+
+
+URL: http://http.web.test/test1.txt
+
+  APACHE ERROR LOG TEST
+    Number of messages in Apache error log is zero ?             SUCCEED
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    abcde                                                        SUCCEED
+    123                                                          SUCCEED
+
+
+URL: http://http.web.test/test1.txt
+
+  APACHE ERROR LOG TEST
+    Number of messages in Apache error log is zero ?             SUCCEED
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    abcde                                                        SUCCEED
+    123                                                          SUCCEED
+
+
+URL: http://http.web.test/test1.txt
+
+  APACHE ERROR LOG TEST
+    Number of messages in Apache error log is zero ?             SUCCEED
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    abcde                                                        SUCCEED
+    123                                                          SUCCEED
+
+
+Total web tests failed: 0  succeeded: 12

@@ -1,0 +1,30 @@
+# $Id: Plugins.pod,v 1.1.2.4 2002/01/06 00:50:01 ilya Exp $
+
+=head1 NAME
+
+HTTP::WebTest::Plugins - Tutorial for plugin developers.
+
+=head1 SYNOPSIS
+
+Not applicable.
+
+=head1 DESCRIPTION
+
+TODO
+
+=head1 COPYRIGHT
+
+Copyright (c) 2001,2002 Ilya Martynov. All rights reserved.
+
+This module is free software.  It may be used, redistributed and/or
+modified under the terms of the Perl Artistic License.
+
+=head1 SEE ALSO
+
+L<HTTP::WebTest|HTTP::WebTest>
+
+L<HTTP::WebTest::Tutorial|HTTP::WebTest::Tutorial>
+
+L<HTTP::WebTest::Reference|HTTP::WebTest::Reference>
+
+=cut

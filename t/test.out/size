@@ -1,0 +1,44 @@
+Failed  Succeeded  Test Name
+   0          3    *** no name ***
+   1          2    *** no name ***
+   1          2    *** no name ***
+   0          3    *** no name ***
+
+
+URL: http://http.web.test/test-file1
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  CONTENT SIZE CHECK
+    Number of returned bytes (    52 ) is > or =    10 ?         SUCCEED
+    Number of returned bytes (    52 ) is < or =   100 ?         SUCCEED
+
+
+URL: http://http.web.test/test-file2
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  CONTENT SIZE CHECK
+    Number of returned bytes ( 14138 ) is > or =    10 ?         SUCCEED
+    Number of returned bytes ( 14138 ) is < or =   100 ?         FAIL
+
+
+URL: http://http.web.test/test-file1
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  CONTENT SIZE CHECK
+    Number of returned bytes (    52 ) is > or =   100 ?         FAIL
+    Number of returned bytes (    52 ) is < or = 50000 ?         SUCCEED
+
+
+URL: http://http.web.test/test-file2
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  CONTENT SIZE CHECK
+    Number of returned bytes ( 14138 ) is > or =   100 ?         SUCCEED
+    Number of returned bytes ( 14138 ) is < or = 50000 ?         SUCCEED
+
+
+Total web tests failed: 2  succeeded: 10

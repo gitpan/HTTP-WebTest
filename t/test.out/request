@@ -1,0 +1,59 @@
+Failed  Succeeded  Test Name
+   0          4    *** no name ***
+   0          4    *** no name ***
+   0          4    *** no name ***
+   0          4    *** no name ***
+   0          4    *** no name ***
+
+
+URL: http://http.web.test/show-request
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    Method: <GET>                                                SUCCEED
+    Query: <>                                                    SUCCEED
+    Content: <>                                                  SUCCEED
+
+
+URL: http://http.web.test/show-request
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    Method: <GET>                                                SUCCEED
+    Query: <>                                                    SUCCEED
+    Content: <>                                                  SUCCEED
+
+
+URL: http://http.web.test/show-request
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    Method: <POST>                                               SUCCEED
+    Query: <>                                                    SUCCEED
+    Content: <>                                                  SUCCEED
+
+
+URL: http://http.web.test/show-request?a=b&c=d&e=f
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    Method: <GET>                                                SUCCEED
+    Query: <a=b&c=d&e=f>                                         SUCCEED
+    Content: <>                                                  SUCCEED
+
+
+URL: http://http.web.test/show-request
+
+  STATUS CODE CHECK
+    200 OK                                                       SUCCEED
+  REQUIRED TEXT
+    Method: <POST>                                               SUCCEED
+    Query: <>                                                    SUCCEED
+    Content: <a=b&c=d&e=f>                                       SUCCEED
+
+
+Total web tests failed: 0  succeeded: 20
