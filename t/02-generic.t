@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 02-generic.t,v 1.26 2003/01/03 22:32:32 m_ilya Exp $
+# $Id: 02-generic.t,v 1.28 2003/07/14 08:21:08 m_ilya Exp $
 
 # This script tests generic test types of HTTP::WebTest.
 
@@ -13,7 +13,7 @@ use HTTP::WebTest;
 use HTTP::WebTest::SelfTest;
 use HTTP::WebTest::Utils qw(start_webserver stop_webserver);
 
-use Test::More tests => 35;
+use Test::More tests => 37;
 
 # init tests
 my $PID = start_webserver(port => $PORT, server_sub => \&server_sub);
@@ -659,6 +659,43 @@ SKIP: {
                   out_filter => $out_filter);
 }
 
+# 36: test if cookies are being sent in redirects
+SKIP: {
+    my $skip = $HOSTNAME !~ /\..*\./ ?
+	       'cannot test cookies - hostname does not contain two dots' :
+	       undef;
+    skip $skip, 1 if $skip;
+
+    # make sure previous tests do not cause side effects on this test
+    $WEBTEST->user_agent->cookie_jar->clear;
+
+    my $tests = [ { url => abs_url($URL, '/redirect'),
+                    cookies => [ [ name   => 'N001',
+                                   value  => 'V001',
+                                   path   => '/',
+                                   domain => $HOSTNAME ] ] },
+                  { url => abs_url($URL, '/redirect-show-cookies'),
+                    text_require => [ '<N001>=<V001>' ] }
+                ];
+
+    check_webtest(webtest => $WEBTEST,
+                  server_url => $URL,
+                  tests => $tests,
+                  check_file => 't/test.out/cookies-in-redirect');
+}
+
+# 37: test if we don't mangle urls like
+# http://website.com?http://website2.com?var=val
+{
+    my $tests = [ { url => abs_url($URL, '/test?test') } ];
+
+    check_webtest(webtest => $WEBTEST,
+		  server_url => $URL,
+		  tests => $tests,
+		  check_file => 't/test.out/url');
+}
+
+
 # try to stop server even we have been crashed
 END { stop_webserver($PID) if defined $PID }
 
@@ -753,6 +790,11 @@ sub server_sub {
     } elsif($path eq '/redirect') {
 	my $response = new HTTP::Response(RC_FOUND);
 	$response->header(Location => '/test-file1');
+
+	$connect->send_response($response);
+    } elsif($path eq '/redirect-show-cookies') {
+	my $response = new HTTP::Response(RC_FOUND);
+	$response->header(Location => '/show-cookies');
 
 	$connect->send_response($response);
     } elsif($path =~ m|/auth-(\w+)-(\w+)-(\w+)|) {

@@ -1,8 +1,8 @@
 package Bundle::HTTP::WebTest;
 
-# $Id: WebTest.pm,v 1.9 2003/03/02 11:52:10 m_ilya Exp $
+# $Id: WebTest.pm,v 1.10 2003/04/26 15:17:20 m_ilya Exp $
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 =head1 NAME
 
@@ -36,9 +36,11 @@ Pod::Man
 
 Time::HiRes
 
-Test::More
-
 Test::Builder::Tester - only required to run C<make test>
+
+Test::MockObject - only required to run C<make test>
+
+Test::More
 
 URI
 

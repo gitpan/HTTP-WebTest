@@ -1,4 +1,4 @@
-# $Id: ReportPlugin.pm,v 1.7 2003/03/22 12:26:35 m_ilya Exp $
+# $Id: ReportPlugin.pm,v 1.9 2003/04/26 15:13:26 m_ilya Exp $
 
 package HTTP::WebTest::ReportPlugin;
 
@@ -53,19 +53,63 @@ C<output_ref> is specified also.
 This parameter can be used only when passing the test parameters
 as arguments from a calling Perl script.
 
-=head2 mail_addresses
-
-I<GLOBAL PARAMETER>
-
-A list of e-mail addresses where report will be send (if sending
-report is enabled with C<mail> test parameter).
-
 =head2 mail
 
 I<GLOBAL PARAMETER>
 
 Option to e-mail output to one or more addresses specified by
 C<mail_addresses> test parameter.
+
+=head2 mail_success_subject
+
+I<GLOBAL PARAMETER>
+
+Sets C<Subject> header for test report e-mails when all tests are
+passed successfully.  In this string some character sequences have
+special meaning (see C<mail_failure_subject> parameter for their
+description).
+
+=head3 Default Value
+
+C<Web tests succeeded>
+
+=head2 mail_failure_subject
+
+I<GLOBAL PARAMETER>
+
+Sets C<Subject> header for test report e-mails when some tests
+fail.  In this string some character sequences have special meaning:
+
+=over 4
+
+=item %f
+
+the number of failed tests
+
+=item %s
+
+the number of successful tests
+
+=item %t
+
+the total number of tests
+
+=item %%
+
+replaced with single C<%>
+
+=back
+
+=head3 Default Value
+
+C<WEB TESTS FAILED! FOUND %f ERROR(S)>
+
+=head2 mail_addresses
+
+I<GLOBAL PARAMETER>
+
+A list of e-mail addresses where report will be send (if sending
+report is enabled with C<mail> test parameter).
 
 =over 4
 
@@ -111,13 +155,15 @@ Name of user under which test script runs.
 
 # declare some supported test params
 sub param_types {
-    return q(output_ref     stringref
-             fh_out         anything
-             mail_addresses list('scalar','...')
-             mail           scalar
-             mail_server    scalar
-             mail_from      scalar
-             test_name      scalar);
+    return q(output_ref           stringref
+             fh_out               anything
+             mail_addresses       list('scalar','...')
+             mail                 scalar
+             mail_server          scalar
+             mail_from            scalar
+             test_name            scalar
+             mail_success_subject scalar
+             mail_failure_subject scalar);
 }
 
 =head1 CLASS METHODS
@@ -228,10 +274,9 @@ sub _email_report_is_expected {
 
     my $mail = $self->global_test_param('mail');
 
-    # check if we need to mail report
-    return 0 unless defined $mail;
-    return 0 unless $mail eq 'all' or $mail eq 'errors';
-    return 0 if $mail eq 'errors' and $self->webtest->num_fail == 0;
+    return unless defined $mail;
+    return unless $mail eq 'all' or $mail eq 'errors';
+    return if $mail eq 'errors' and !$self->webtest->have_succeed;
 
     return 1;
 }
@@ -257,23 +302,44 @@ sub _send_email_report {
     $self->_smtp_cmd($smtp, 'data');
     $self->_smtp_cmd($smtp, 'datasend', "From: $from\n");
     {
-        local $" = ', ';
-        $self->_smtp_cmd($smtp, 'datasend', "To: @$mail_addresses\n");
+        my $mail_addresses = join ', ', @$mail_addresses;
+        $self->_smtp_cmd($smtp, 'datasend', "To: $mail_addresses\n");
     }
-    if ($self->webtest->num_fail > 0) {
-	$self->_smtp_cmd($smtp, 'datasend',
-			 'Subject: WEB TESTS FAILED! ' .
-			 'FOUND ' .
-                         $self->webtest->num_fail .
-                         "ERROR(S)\n");
-    } else {
-	$self->_smtp_cmd($smtp, 'datasend',
-			 "Subject: Web tests succeeded\n");
-    }
+    $self->_smtp_cmd($smtp, 'datasend',
+                     'Subject: ' . $self->_subject_header . "\n");
     $self->_smtp_cmd($smtp, 'datasend', "\n");
     $self->_smtp_cmd($smtp, 'datasend', ${$self->test_output});
     $self->_smtp_cmd($smtp, 'dataend');
     $self->_smtp_cmd($smtp, 'quit');
+}
+
+# returns value of subject header for email report
+sub _subject_header {
+    my $self = shift;
+
+    $self->global_validate_params(qw(mail_success_subject mail_failure_subject));
+
+    my $success_subject
+        = $self->global_test_param('mail_success_subject',
+                                   'Web tests succeeded');
+    my $fail_subject
+        = $self->global_test_param('mail_failure_subject',
+                                   'WEB TESTS FAILED! FOUND %f ERROR(S)');
+
+    my %replace = ('f' => $self->webtest->num_fail,
+                   's' => $self->webtest->num_succeed,
+                   't' => ($self->webtest->num_fail +
+                           $self->webtest->num_succeed),
+                   '%' => '%'
+                  );
+
+    my $subject = ($self->webtest->have_succeed ?
+                   $success_subject :
+                   $fail_subject);
+
+    $subject =~ s/%(.)/exists $replace{$1} ? $replace{$1} : '%' . $1/ge;
+
+    return $subject;
 }
 
 # simple helper method that automates error handling

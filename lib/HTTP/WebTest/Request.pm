@@ -1,4 +1,4 @@
-# $Id: Request.pm,v 1.5 2003/03/02 11:52:10 m_ilya Exp $
+# $Id: Request.pm,v 1.6 2003/07/14 08:21:08 m_ilya Exp $
 
 package HTTP::WebTest::Request;
 
@@ -96,17 +96,14 @@ sub uri {
     if(@_) {
 	$self->base_uri(@_);
 	my $new_uri = $self->base_uri;
-	if(defined $new_uri) {
-	    my @params = $new_uri->query_form;
-	    $new_uri->query(undef);
-	    $self->params(\@params);
-	}
+        $self->params([]);
     }
 
     my $uri = $self->base_uri;
 
-    $uri->query_form(@{$self->params})
-	if defined($self->method) and $self->method eq 'GET';
+    if(@{$self->params} and $self->method and $self->method eq 'GET') {
+        $uri->query_form(@{$self->params});
+    }
 
     return $uri;
 }

@@ -1,10 +1,10 @@
 # This is a -*-perl-*- source file
 
-# $Id: WebTest.pm.in,v 1.32 2003/03/24 11:12:06 m_ilya Exp $
+# $Id: WebTest.pm.in,v 1.33 2003/04/26 15:14:49 m_ilya Exp $
 
 package HTTP::WebTest;
 
-$VERSION = '2.02';
+$VERSION = '2.03';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;

@@ -1,12 +1,29 @@
-$Id: Changes,v 1.76 2003/03/24 19:44:45 m_ilya Exp $
+$Id: Changes,v 1.81 2003/07/14 19:20:43 m_ilya Exp $
 
 Revision history for Perl module HTTP::WebTest.
+
+2.03 Mon Jul 14 2003
+
+ENHANCEMENTS:
+
+* New test parameters 'mail_success_subject' and
+'mail_failure_subject' to redefine default value of Subject field in
+test report emails.  Based on patch by Amit Kaul.
+
+BUG FIXES:
+
+* HTTP::WebTest used to mangle test URLs like
+'http://website.com?http://website2.com?var=val' by URL escaping
+everything after the first question mark. Now it does modify test URL
+unless it is doing GET request and test parameter 'params' is
+specified in a test specification.  Thanks to Brian Webb for a
+bugreport.
 
 2.02 Mon Mar 24 2003
 
 BUG FIXES:
 
-* Fixed bug when test reports were not send when multiple email
+* Fixed a bug when test reports were not send if multiple email
 addresses were specified as test report recipients (test parameter
 'mail_addresses').  Thanks to Amit Kaul for a bugreport and a patch.
 

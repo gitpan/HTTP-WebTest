@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 10-click.t,v 1.12 2002/12/22 21:25:49 m_ilya Exp $
+# $Id: 10-click.t,v 1.13 2003/04/26 15:12:14 m_ilya Exp $
 
 # This script tests HTTP::WebTest::Plugin::Click plugin
 
@@ -285,7 +285,6 @@ sub catch_webtest {
 	compare_output(check_file => $check_file,
 		       output_ref => \$text);
     } else {
-	# no exception - test have failed
-	ok(0);
+	fail('Was expecting an exception - did not get any');
     }
 }

@@ -1,4 +1,4 @@
-$Id: INSTALL,v 1.11 2002/12/22 21:25:50 m_ilya Exp $
+$Id: INSTALL,v 1.12 2003/04/26 15:17:21 m_ilya Exp $
 
 PREREQUISITES
 
@@ -22,6 +22,7 @@ If you want to run test suite ('make test') you need also
 
 * Algorithm::Diff
 * Test::Builder::Tester
+* Test::MockObject
 
 INSTALLATION
 

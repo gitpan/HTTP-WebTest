@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
 
-# $Id: 12-request.t,v 1.4 2002/12/22 21:25:49 m_ilya Exp $
+# $Id: 12-request.t,v 1.6 2003/07/14 08:21:07 m_ilya Exp $
 
 # Unit tests for HTTP::WebTest::Request
 
 use strict;
 
-use Test::More tests => 25;
+use Test::More tests => 24;
 
 use HTTP::WebTest::Request;
 
@@ -14,17 +14,16 @@ use HTTP::WebTest::Request;
 my $REQUEST;
 {
     $REQUEST = HTTP::WebTest::Request->new;
-    ok(defined $REQUEST);
-    ok($REQUEST->isa('HTTP::WebTest::Request'));
-    ok($REQUEST->isa('HTTP::Request'));
+    isa_ok($REQUEST, 'HTTP::WebTest::Request');
+    isa_ok($REQUEST, 'HTTP::Request');
 }
 
 # test base_uri() and uri()
 {
     for my $uri (qw(http://test1 http://a.a.a http://www.a.b)) {
 	$REQUEST->base_uri($uri);
-	ok($REQUEST->base_uri eq $uri);
-	ok($REQUEST->uri eq $uri);
+	is($REQUEST->base_uri, $uri);
+	is($REQUEST->uri, $uri);
     }
 }
 
@@ -33,7 +32,7 @@ my $REQUEST;
     $REQUEST->base_uri('http://test2');
     my $uri = $REQUEST->uri;
     ok($uri->isa('URI'));
-    ok($uri->host eq 'test2');
+    is($uri->host, 'test2');
 }
 
 # check that alias url() work too
@@ -41,30 +40,30 @@ my $REQUEST;
     $REQUEST->base_uri('http://test3');
     my $uri = $REQUEST->url;
     ok($uri->isa('URI'));
-    ok($uri->host eq 'test3');
+    is($uri->host, 'test3');
 }
 
 # set/get query params via params()
 {
     # default value
-    ok(join(' ', @{$REQUEST->params}) eq '');
+    is(join(' ', @{$REQUEST->params}), '');
 
     $REQUEST->params([a => 'b']);
-    ok(join(' ', @{$REQUEST->params}) eq 'a b');
+    is(join(' ', @{$REQUEST->params}), 'a b');
 
     $REQUEST->params([d => 'xy', 1 => 2]);
-    ok(join(' ', @{$REQUEST->params}) eq 'd xy 1 2');
+    is(join(' ', @{$REQUEST->params}), 'd xy 1 2');
 }
 
 # test setting uri via uri()
 {
     $REQUEST->base_uri('http://a');
     $REQUEST->uri('http://b');
-    ok($REQUEST->uri eq 'http://b');
+    is($REQUEST->uri, 'http://b');
 
     $REQUEST->uri('http://c?x=y');
-    ok($REQUEST->uri eq 'http://c');
-    ok(join(' ', @{$REQUEST->params}) eq 'x y');
+    is($REQUEST->uri, 'http://c?x=y');
+    is(join(' ', @{$REQUEST->params}), '');
 }
 
 # set some params and watch uri() to change for GET request
@@ -72,8 +71,8 @@ my $REQUEST;
     $REQUEST->params([a => 'b']);
     $REQUEST->base_uri('http://a');
     $REQUEST->method('GET');
-    ok($REQUEST->uri eq 'http://a?a=b');
-    ok(${$REQUEST->content_ref} eq '');
+    is($REQUEST->uri, 'http://a?a=b');
+    is(${$REQUEST->content_ref}, '');
 }
 
 # set some params and watch content_ref() to change for POST request
@@ -81,8 +80,8 @@ my $REQUEST;
     $REQUEST->params([a => 'b']);
     $REQUEST->base_uri('http://a');
     $REQUEST->method('POST');
-    ok($REQUEST->uri eq 'http://a');
-    ok(${$REQUEST->content_ref} eq 'a=b');
+    is($REQUEST->uri, 'http://a');
+    is(${$REQUEST->content_ref}, 'a=b');
 }
 
 # use array refs as param values and check if file upload request is
@@ -91,6 +90,6 @@ my $REQUEST;
     $REQUEST->params([a => ['t/12-request.t']]);
     $REQUEST->base_uri('http://a');
     $REQUEST->method('POST');
-    ok($REQUEST->uri eq 'http://a');
+    is($REQUEST->uri, 'http://a');
     ok(${$REQUEST->content_ref} =~ 'Content-Disposition: form-data; name="a".*; filename="12-request.t');
 }

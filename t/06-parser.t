@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-# $Id: 06-parser.t,v 1.22 2003/03/02 11:57:03 m_ilya Exp $
+# $Id: 06-parser.t,v 1.23 2003/04/26 15:12:15 m_ilya Exp $
 
 # This script tests wt scripts parser
 
@@ -158,6 +158,6 @@ sub parse_error_check {
 	compare_output(check_file => $check_file,
 		       output_ref => \$text);
     } else {
-	ok(0);
+	fail('Was expecting an exception - did not get any');
     }
 }

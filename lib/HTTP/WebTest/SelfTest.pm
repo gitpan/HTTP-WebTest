@@ -1,4 +1,4 @@
-# $Id: SelfTest.pm,v 1.7 2003/03/02 11:52:10 m_ilya Exp $
+# $Id: SelfTest.pm,v 1.8 2003/07/03 11:22:01 m_ilya Exp $
 
 package HTTP::WebTest::SelfTest;
 
@@ -41,7 +41,6 @@ use vars qw(@EXPORT $HOSTNAME $PORT $URL);
 
 use Algorithm::Diff qw(diff);
 use MIME::Base64;
-use Sys::Hostname;
 use URI;
 
 use HTTP::WebTest::Utils qw(find_port start_webserver stop_webserver);
@@ -52,7 +51,7 @@ The hostname of the test webserver.
 
 =cut
 
-$HOSTNAME = $ENV{TEST_HOSTNAME} || hostname;
+$HOSTNAME = $ENV{TEST_HOSTNAME} || '127.0.0.1';
 
 =head2 $PORT
 

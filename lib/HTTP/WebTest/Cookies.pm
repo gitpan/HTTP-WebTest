@@ -1,4 +1,4 @@
-# $Id: Cookies.pm,v 1.5 2003/03/02 11:52:10 m_ilya Exp $
+# $Id: Cookies.pm,v 1.6 2003/07/03 15:54:00 m_ilya Exp $
 
 package HTTP::WebTest::Cookies;
 
@@ -70,7 +70,7 @@ to C<SUPER::extract_cookies>.  Otherwise, does nothing.
 
 sub extract_cookies {
     my $self = shift;
-    if($self->accept_cookies) { $self->SUPER::extract_cookies(@_); }
+    $self->SUPER::extract_cookies(@_) if $self->accept_cookies;
 }
 
 =head2 add_cookie_header (...)
@@ -82,7 +82,7 @@ passes all arguments to C<SUPER::add_cookie_header>.  Otherwise, does nothing.
 
 sub add_cookie_header {
     my $self = shift;
-    if($self->send_cookies) { $self->SUPER::add_cookie_header(@_); }
+    $self->SUPER::add_cookie_header(@_) if $self->send_cookies;
 }
 
 =head1 COPYRIGHT

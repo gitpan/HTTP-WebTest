@@ -1,6 +1,6 @@
 Changes
 INSTALL
-MANIFEST
+MANIFEST			This list of files
 Makefile.PL
 README
 TODO
@@ -39,6 +39,7 @@ t/01-api.t
 t/02-generic.t
 t/03-proxy.t
 t/05-report.t
+t/05a-email-report.t
 t/06-parser.t
 t/07-compat.t
 t/08-plugins.t
@@ -84,6 +85,7 @@ t/test.out/cookie1
 t/test.out/cookie2
 t/test.out/cookie2a
 t/test.out/cookie3
+t/test.out/cookies-in-redirect
 t/test.out/default-report-yes
 t/test.out/delay
 t/test.out/file-upload
@@ -124,6 +126,7 @@ t/test.out/text_match1
 t/test.out/text_match2
 t/test.out/time
 t/test.out/timeout
+t/test.out/url
 t/test.out/user_agent
 t/test.out/write_params
 t/test1.html

@@ -25,7 +25,7 @@
 
 package HTTP::WebTest;
 
-$VERSION = '2.02';
+$VERSION = '2.03';
 
 # actual content of HTTP::WebTest package is in HTTP::WebTest::API
 require HTTP::WebTest::API;
@@ -958,6 +958,13 @@ I<GLOBAL PARAMETER>
 Option to e-mail output to one or more addresses specified by
 C<mail_addresses> test parameter.
 
+=head2 mail_addresses
+
+I<GLOBAL PARAMETER>
+
+A list of e-mail addresses where report will be send (if sending
+report is enabled with C<mail> test parameter).
+
 =over 4
 
 =item * all
@@ -978,12 +985,36 @@ C<no>
 
 =back
 
-=head2 mail_addresses
+=head2 mail_failure_subject
 
 I<GLOBAL PARAMETER>
 
-A list of e-mail addresses where report will be send (if sending
-report is enabled with C<mail> test parameter).
+Sets C<Subject> header for test report e-mails when some tests
+fail.  In this string some character sequences have special meaning:
+
+=over 4
+
+=item %f
+
+the number of failed tests
+
+=item %s
+
+the number of successful tests
+
+=item %t
+
+the total number of tests
+
+=item %%
+
+replaced with single C<%>
+
+=back
+
+=head3 Default Value
+
+C<WEB TESTS FAILED! FOUND %f ERROR(S)>
 
 =head2 mail_from
 
@@ -1004,6 +1035,19 @@ Fully-qualified name of of the mail server (e.g., mailhost.mycompany.com).
 =head3 Default value
 
 C<localhost>
+
+=head2 mail_success_subject
+
+I<GLOBAL PARAMETER>
+
+Sets C<Subject> header for test report e-mails when all tests are
+passed successfully.  In this string some character sequences have
+special meaning (see C<mail_failure_subject> parameter for their
+description).
+
+=head3 Default Value
+
+C<Web tests succeeded>
 
 =head2 max_bytes
 
